@@ -5,6 +5,7 @@ from PyQt5 import uic
 
 import rclpy as rp
 from turtlesim.srv import TeleportAbsolute #test를 위해서 
+from turtles_msgs.srv import Target
 
 #page 상수 정의
 HOME_PAGE = 0
@@ -66,7 +67,9 @@ class WindowClass(QMainWindow, from_class) :
 
         #service call test
         self.service_call.clicked.connect(self.service_call_clicked)
-    
+
+        print(Target)
+
     def service_call_clicked(self):
         rp.init()
         test_node = rp.create_node('client_test')
