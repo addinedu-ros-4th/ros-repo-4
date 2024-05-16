@@ -7,6 +7,7 @@ import rclpy as rp
 from turtlesim.srv import TeleportAbsolute #test를 위해서 
 from turtles_msgs.srv import Target
 
+
 #page 상수 정의
 HOME_PAGE = 0
 LOGIN_PAGE = 1
@@ -68,18 +69,22 @@ class WindowClass(QMainWindow, from_class) :
         #service call test
         self.service_call.clicked.connect(self.service_call_clicked)
 
-        print(Target)
 
     def service_call_clicked(self):
         rp.init()
         test_node = rp.create_node('client_test')
-
-        service_name = '/turtle1/teleport_absolute'
-        cli = test_node.create_client(TeleportAbsolute, service_name)
-        req = TeleportAbsolute.Request()
-        req.x = 1.
-        req.y = 1.
-        req.theta = 3.14
+        
+        service_name = '/turtles'
+        cli = test_node.create_client(Target, service_name)
+        req = Target.Request()
+        req.target = "station1"
+        
+        # service_name = '/turtle1/teleport_absolute'
+        # cli = test_node.create_client(TeleportAbsolute, service_name)
+        # req = TeleportAbsolute.Request()
+        # req.x = 1.
+        # req.y = 1.
+        # req.theta = 3.14
 
         print(req)
 
