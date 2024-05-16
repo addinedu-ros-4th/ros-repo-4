@@ -1,0 +1,15 @@
+// generated from rosidl_adapter/resource/srv.idl.em
+// with input from turtles_msgs/srv/Target.srv
+// generated code does not contain a copyright notice
+
+
+module turtles_msgs {
+  module srv {
+    struct Target_Request {
+      string target;
+    };
+    struct Target_Response {
+      string result;
+    };
+  };
+};
