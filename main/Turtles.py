@@ -3,6 +3,9 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5 import uic
 
+import rclpy as rp
+from turtlesim.srv import TeleportAbsolute #test를 위해서 
+
 #page 상수 정의
 HOME_PAGE = 0
 LOGIN_PAGE = 1
@@ -60,6 +63,31 @@ class WindowClass(QMainWindow, from_class) :
         #login logout 버튼 연결
         self.logout_button.clicked.connect(self.logout_button_clicked)
         self.login_button.clicked.connect(self.login_button_clicked)
+
+        #service call test
+        self.service_call.clicked.connect(self.service_call_clicked)
+    
+    def service_call_clicked(self):
+        rp.init()
+        test_node = rp.create_node('client_test')
+
+        service_name = '/turtle1/teleport_absolute'
+        cli = test_node.create_client(TeleportAbsolute, service_name)
+        req = TeleportAbsolute.Request()
+        req.x = 1.
+        req.y = 1.
+        req.theta = 3.14
+
+        print(req)
+
+        while not cli.wait_for_service(timeout_sec=1.0):
+            print("Waiting for service")
+
+        future = cli.call_async(req)
+
+        while not future.done():
+            rp.spin_once(test_node)
+            print(future.done(), future.result())
 
     def logout_button_clicked(self):
         self.stackedWidget.setCurrentIndex(LOGIN_PAGE)
