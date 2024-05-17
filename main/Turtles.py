@@ -72,6 +72,8 @@ class ServerThread(QThread):
                     client_socket, _ = server_socket.accept()
                     client_sockets.append(client_socket)
                     print("새로운 클라이언트 연결")
+                    print(len(client_sockets))
+
                 else:
                     # 기존 클라이언트의 데이터 수신 및 처리
                     data = sock.recv(1024)
@@ -85,6 +87,8 @@ class ServerThread(QThread):
 
     def stop(self):
         self.server_socket.close()
+    
+    
 
 
 from_class = uic.loadUiType("Turtles.ui")[0]
@@ -136,8 +140,43 @@ class WindowClass(QMainWindow, from_class) :
         #tcp server thread  
         self.tcpserver_thread.update.connect(self.update_tcp_server_thread)
 
+        #food trailer servo 버튼 연결
+        self.foodtank_servo_open_button.clicked.connect(self.foodtank_servo_open_button_clicked)
+        self.foodtank_servo_close_button.clicked.connect(self.foodtank_servo_close_button_clicked)
+        self.foodtrailer_servo_open_button.clicked.connect(self.foodtrailer_servo_open_button_clicked)
+        self.foodtrailer_servo_close_button.clicked.connect(self.foodtrailer_servo_close_button_clicked)
+
+    def foodtrailer_servo_open_button_clicked(self):
+        self.send_to_rasp("FT1,1")
+        print("FT1,1 send")
+
+    def foodtrailer_servo_close_button_clicked(self):
+        self.send_to_rasp("FT1,0")
+        print("FT1,0 send")
+
+    def foodtank_servo_open_button_clicked(self):
+        self.send("FT1,1")
+        print("FT1,1 send")
+
+    def foodtank_servo_close_button_clicked(self):
+        self.send("FT1,0")
+        print("FT1,0 send")
+
+    def send(self, data=""):
+        #send
+        # response = str(data)
+        print(data)
+        client_sockets[1].send(data.encode("utf-8"))
+
+    def send_to_rasp(self, data=""):
+        #send
+        # response = str(data)
+        print(data)
+        client_sockets[1].send(data.encode("utf-8"))
+
     def closeEvent(self,event):
         self.tcpserverStop()
+        server_thread.stop()
         event.accept()
 
     def tcpserverStart(self):
