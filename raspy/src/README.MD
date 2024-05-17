@@ -8,12 +8,12 @@ Raspberry Pi 에서 socket client로 연결하기
   * 255.255.255.*  <- net mask가 255.255.255.0 이므로 맨 마지막 자리 빼고는 같아야 함    
      
 2. raspberry Pi에 socket 설치      
-  sudo apt-get install socket     
+  ```sudo apt-get install socket  ```   
 설치 문제 있으면 sudo apt update 해보기!    
      
 3. Rpi.GPIO 패키지 설치    
-  sudo apt-get install python3-dev     
-  sudo apt-get install python3-rpi.gpio     
+ ```sudo apt-get install python3-dev ```     
+  ```sudo apt-get install python3-rpi.gpio ```     
      
 * 인터넷에 찾아보면 python3 대신 python 이 들어간 명령어를 쓰던데 그러면 모듈 import에서 에러남     
       
