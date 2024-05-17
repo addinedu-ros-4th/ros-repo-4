@@ -496,7 +496,7 @@
      <enum>QFrame::Box</enum>
     </property>
     <property name="currentIndex">
-     <number>7</number>
+     <number>5</number>
     </property>
     <widget class="QWidget" name="home_page">
      <widget class="QLabel" name="label">
@@ -1249,14 +1249,40 @@
      <widget class="QLabel" name="label_7">
       <property name="geometry">
        <rect>
-        <x>570</x>
-        <y>440</y>
+        <x>110</x>
+        <y>50</y>
         <width>381</width>
         <height>17</height>
        </rect>
       </property>
       <property name="text">
        <string>Control Robot Page</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="foodtrailer_servo_open_button">
+      <property name="geometry">
+       <rect>
+        <x>100</x>
+        <y>190</y>
+        <width>201</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Food Trailer Servo Open</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="foodtrailer_servo_close_button">
+      <property name="geometry">
+       <rect>
+        <x>100</x>
+        <y>230</y>
+        <width>201</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Food Trailer Servo Close</string>
       </property>
      </widget>
     </widget>

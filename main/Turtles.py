@@ -1,11 +1,18 @@
 import sys
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
-from PyQt5 import uic
+from PyQt5 import uic, QtCore
+from PyQt5.QtCore import QThread, pyqtSignal
 
 import rclpy as rp
 from turtlesim.srv import TeleportAbsolute #test를 위해서 
 from turtles_msgs.srv import Target
+
+import time
+import socket
+import select 
+
+
 
 
 #page 상수 정의
@@ -27,6 +34,58 @@ SCHEDULE_FACILITIES_PAGE = 14
 LOG_PAGE = 15
 
 
+server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+host = "192.168.0.86"
+port = 3000
+server_socket.bind((host, port))
+server_socket.listen(5)
+
+client_sockets = [server_socket]
+
+class TcpServer(QThread):
+    update = QtCore.pyqtSignal()
+
+    def __init__(self, sec =0, parent = None):
+        super().__init__()
+        self.main = parent
+        self.moving = True
+
+    def run(self):
+        while self.moving == True:
+            self.update.emit()
+            time.sleep(0.5)
+    
+class ServerThread(QThread):
+    new_connection = pyqtSignal(object)
+
+    def __init__(self):
+        super().__init__()
+        
+
+    def run(self):
+        while True:
+            readable, _, _ = select.select(client_sockets, [], [])
+
+            for sock in readable:
+                if sock == server_socket:
+                    # 새로운 클라이언트 연결
+                    client_socket, _ = server_socket.accept()
+                    client_sockets.append(client_socket)
+                    print("새로운 클라이언트 연결")
+                else:
+                    # 기존 클라이언트의 데이터 수신 및 처리
+                    data = sock.recv(1024)
+                    if not data:
+                        # 클라이언트 연결 종료
+                        client_sockets.remove(sock)
+                        sock.close()
+                    else:
+                        print("받은 데이터:", data.decode())
+                
+
+    def stop(self):
+        self.server_socket.close()
+
 
 from_class = uic.loadUiType("Turtles.ui")[0]
 
@@ -35,6 +94,11 @@ class WindowClass(QMainWindow, from_class) :
         super().__init__()
         self.setupUi(self)
         self.setWindowTitle("Turtles : Herding Heroes")
+
+        #Thread
+        self.tcpserver_thread = TcpServer(parent=self)
+        self.count = 0
+        self.tcpserverStart()
 
         #login 화면으로 초기화면 셋팅
         self.stackedWidget.setCurrentIndex(LOGIN_PAGE)
@@ -69,6 +133,31 @@ class WindowClass(QMainWindow, from_class) :
         #service call test
         self.service_call.clicked.connect(self.service_call_clicked)
 
+        #tcp server thread  
+        self.tcpserver_thread.update.connect(self.update_tcp_server_thread)
+
+    def closeEvent(self,event):
+        self.tcpserverStop()
+        event.accept()
+
+    def tcpserverStart(self):
+        self.tcpserver_thread.start()
+
+    def tcpserverStop(self):
+        self.tcpserver_thread.stop()
+
+    def update_tcp_server_thread(self):
+        pass
+        # # 서버 소켓 생성
+        # server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        # server_socket.bind((host, port))
+        # server_socket.listen(5)
+
+        # print(f"서버가 {host}:{port}에서 대기 중입니다...")
+
+        # client_socket, client_address = server_socket.accept()
+        # print(client_socket)
+        # print(f"클라이언트 {client_address}가 연결되었습니다.")
 
     def service_call_clicked(self):
         rp.init()
@@ -158,9 +247,9 @@ class WindowClass(QMainWindow, from_class) :
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-
+    server_thread = ServerThread()
+    server_thread.start()
     myWindows = WindowClass()
-
     myWindows.show()
 
     sys.exit(app.exec_())
