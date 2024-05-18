@@ -31,6 +31,7 @@ void setup() {
   client.connect(hostip, hostport);
 
   servo.attach(5);
+  servo.write(90); //FoodTank default close
 
 }
 
@@ -97,12 +98,12 @@ void loop() {
   if(op_cl == "0")
   {
     Serial.println("0");
-    servo.write(90);
+    servo.write(90); // FoodTank close
   }
   else if (op_cl == "1")
   {
     Serial.println("1");
-    servo.write(0);
+    servo.write(180); // FoodTank open
   }
 
 
