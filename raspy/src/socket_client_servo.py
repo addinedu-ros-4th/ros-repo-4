@@ -21,6 +21,10 @@ def set_angle(angle):
     GPIO.output(servo_pin, False)
     pwm.ChangeDutyCycle(0)
 
+# FoodRobot servo initial setting
+initial_angle = 0
+set_angle(initial_angle)  # FoodRobot default close
+
 
 host = "192.168.0.86"
 port = 3000
@@ -49,7 +53,7 @@ while True:
 
                         pwm.start(0)
                         try:
-                                set_angle(0)  # 0도로 회전 - 원하는 각도 입력
+                                set_angle(0)  # FoodRobot close
                         except KeyboardInterrupt:
                                 pwm.stop()
                                 GPIO.cleanup()
@@ -59,7 +63,7 @@ while True:
 
                         pwm.start(0)
                         try:
-                                set_angle(90)  # 0도로 회전 - 원하는 각도 입력
+                                set_angle(90)  # FoodRobot open
                         except KeyboardInterrupt:
                                 pwm.stop()
                                 GPIO.cleanup()
