@@ -14,8 +14,8 @@
 5. * **riviz2 - collison Enabled (check)**
 ![image](https://github.com/addinedu-ros-4th/ros-repo-4/assets/132053839/c1acd758-d872-4286-ab65-467a27bd4099)
 
-6. * **gazebo**
+6. **gazebo**
 ![image](https://github.com/addinedu-ros-4th/ros-repo-4/assets/132053839/155f0e04-c665-476d-a534-0f2f6d6554e0)
 
-7. * **navigation**
+7. **navigation**
 ![image](https://github.com/addinedu-ros-4th/ros-repo-4/assets/132053839/3dcc36a7-1135-4013-8ba3-44381b1dcd0c)
