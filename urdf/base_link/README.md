@@ -11,7 +11,7 @@
 
 4. /home/dh/amr_ws/pinkbot/ 워크스페이스로 돌아와서 colcon build를 한다.
 
-5. * **riviz2 - collison Enabled (check)**
+5. **riviz2 - collison Enabled (check)**
 ![image](https://github.com/addinedu-ros-4th/ros-repo-4/assets/132053839/c1acd758-d872-4286-ab65-467a27bd4099)
 
 6. **gazebo**
