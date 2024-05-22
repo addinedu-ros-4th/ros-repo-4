@@ -21,6 +21,7 @@ setup(
     entry_points={
         'console_scripts': [
             'nav_service = turtles_service.nav_service:main',
+            'waypoint_service = turtles_service.waypoint_service:main'
 
         ],
     },
