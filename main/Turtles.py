@@ -5,8 +5,7 @@ from PyQt5 import uic, QtCore
 from PyQt5.QtCore import QThread, pyqtSignal
 
 import rclpy as rp
-from turtlesim.srv import TeleportAbsolute #test를 위해서 
-
+from turtles_service_msgs.srv import NavToPose
 import time
 import socket
 import select 
@@ -100,6 +99,7 @@ class WindowClass(QMainWindow, from_class) :
         super().__init__()
         self.setupUi(self)
         self.setWindowTitle("Turtles : Herding Heroes")
+        rp.init()
 
         #Thread
         self.tcpserver_thread = TcpServer(parent=self)
@@ -138,12 +138,12 @@ class WindowClass(QMainWindow, from_class) :
 
         #service call test
         self.service_call.clicked.connect(self.service_call_clicked)
-        # self.nav_to_station1_button.clicked.connect(self.nav_to_station1_button_clicked)
-        # self.nav_to_station2_button.clicked.connect(self.nav_to_station2_button_clicked)
-        # self.nav_to_foodtank1_button.clicked.connect(self.nav_to_foodtank1_button_clicked)
-        # self.nav_to_foodtank2_button.clicked.connect(self.nav_to_foodtank2_button_clicked)
-        # self.nav_to_barn_entrance_button.clicked.connect(self.nav_to_barn_entrance_button_clicked)
-        # self.nav_to_barn_exit_button.clicked.connect(self.nav_to_barn_exit_button_clicked)
+        self.nav_to_station1_button.clicked.connect(self.nav_to_station1_button_clicked)
+        self.nav_to_station2_button.clicked.connect(self.nav_to_station2_button_clicked)
+        self.nav_to_foodtank1_button.clicked.connect(self.nav_to_foodtank1_button_clicked)
+        self.nav_to_foodtank2_button.clicked.connect(self.nav_to_foodtank2_button_clicked)
+        self.nav_to_barn_entrance_button.clicked.connect(self.nav_to_barn_entrance_button_clicked)
+        self.nav_to_barn_exit_button.clicked.connect(self.nav_to_barn_exit_button_clicked)
 
 
 
@@ -209,7 +209,7 @@ class WindowClass(QMainWindow, from_class) :
         # print(f"클라이언트 {client_address}가 연결되었습니다.")
 
     def service_call_clicked(self):
-        rp.init()
+        pass
         # test_node = rp.create_node('client_test')
         
         # service_name = '/turtles'
@@ -230,25 +230,132 @@ class WindowClass(QMainWindow, from_class) :
         #     print(future.done(), future.result())
 
     def nav_to_station1_button_clicked(self):
-        rp.init()
-        # test_node = rp.create_node('client_test')
+        test_node = rp.create_node('client_test')
         
-        # service_name = '/turtles'
-        # cli = test_node.create_client(Target, service_name)
-        # req = Target.Request()
-        # req.target = "station1"
+        service_name = '/nav_service'
+        cli = test_node.create_client(NavToPose, service_name)
+        req = NavToPose.Request()
+        req.x = 0.007822726853191853
+        req.y = -0.024536626413464546
+        req.z = 0.002471923828125
         
+        print(req)
 
-        # print(req)
+        while not cli.wait_for_service(timeout_sec=1.0):
+            print("Waiting for service")
 
-        # while not cli.wait_for_service(timeout_sec=1.0):
-        #     print("Waiting for service")
+        future = cli.call_async(req)
 
-        # future = cli.call_async(req)
+        while not future.done():
+            rp.spin_once(test_node)
+            print(future.done(), future.result())
 
-        # while not future.done():
-        #     rp.spin_once(test_node)
-        #     print(future.done(), future.result())
+    def nav_to_station2_button_clicked(self):
+        test_node = rp.create_node('client_test')
+        
+        service_name = '/nav_service'
+        cli = test_node.create_client(NavToPose, service_name)
+        req = NavToPose.Request()
+        req.x = 0.004148332867771387
+        req.y = -0.8876231908798218
+        req.z = 0.058197021484375
+        
+        print(req)
+
+        while not cli.wait_for_service(timeout_sec=1.0):
+            print("Waiting for service")
+
+        future = cli.call_async(req)
+
+        while not future.done():
+            rp.spin_once(test_node)
+            print(future.done(), future.result())
+
+    def nav_to_foodtank1_button_clicked(self):
+        test_node = rp.create_node('client_test')
+        
+        service_name = '/nav_service'
+        cli = test_node.create_client(NavToPose, service_name)
+        req = NavToPose.Request()
+        req.x = 0.6322089433670044
+        req.y = 0.03546354919672012
+        req.z =  -0.001434326171875
+        
+        print(req)
+
+        while not cli.wait_for_service(timeout_sec=1.0):
+            print("Waiting for service")
+
+        future = cli.call_async(req)
+
+        while not future.done():
+            rp.spin_once(test_node)
+            print(future.done(), future.result())
+
+    def nav_to_foodtank2_button_clicked(self):
+        test_node = rp.create_node('client_test')
+        
+        service_name = '/nav_service'
+        cli = test_node.create_client(NavToPose, service_name)
+        req = NavToPose.Request()
+        req.x = 0.6378898620605469
+        req.y = -0.9446680545806885
+        req.z =  -0.005340576171875
+        
+        print(req)
+
+        while not cli.wait_for_service(timeout_sec=1.0):
+            print("Waiting for service")
+
+        future = cli.call_async(req)
+
+        while not future.done():
+            rp.spin_once(test_node)
+            print(future.done(), future.result())
+
+    def nav_to_barn_entrance_button_clicked(self):
+        test_node = rp.create_node('client_test')
+        
+        service_name = '/nav_service'
+        cli = test_node.create_client(NavToPose, service_name)
+        req = NavToPose.Request()
+        req.x = 1.7415525913238525
+        req.y = -0.3976095914840698
+        req.z = 0.002471923828125
+
+        
+        print(req)
+
+        while not cli.wait_for_service(timeout_sec=1.0):
+            print("Waiting for service")
+
+        future = cli.call_async(req)
+
+        while not future.done():
+            rp.spin_once(test_node)
+            print(future.done(), future.result())
+
+    def nav_to_barn_exit_button_clicked(self):
+        test_node = rp.create_node('client_test')
+        
+        service_name = '/nav_service'
+        cli = test_node.create_client(NavToPose, service_name)
+        req = NavToPose.Request()
+        req.x = 2.916684865951538
+        req.y = -0.3893338143825531
+        req.z = 0.002471923828125
+
+        
+        print(req)
+
+        while not cli.wait_for_service(timeout_sec=1.0):
+            print("Waiting for service")
+
+        future = cli.call_async(req)
+
+        while not future.done():
+            rp.spin_once(test_node)
+            print(future.done(), future.result())
 
     def logout_button_clicked(self):
         self.stackedWidget.setCurrentIndex(LOGIN_PAGE)
