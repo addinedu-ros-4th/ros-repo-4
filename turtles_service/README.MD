@@ -1,4 +1,6 @@
-
+ 
+* way point 서비스 실행하기 전에 navigation pinkbot에서 실행 한 상태여야 함!    
+        
 * way point service run     
        
 ![image](https://github.com/addinedu-ros-4th/ros-repo-4/assets/137265648/f0c24fe7-6746-4eff-9813-ea622023d375)
