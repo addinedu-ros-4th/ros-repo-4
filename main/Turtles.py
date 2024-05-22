@@ -6,7 +6,6 @@ from PyQt5.QtCore import QThread, pyqtSignal
 
 import rclpy as rp
 from turtlesim.srv import TeleportAbsolute #test를 위해서 
-from turtles_msgs.srv import Target
 
 import time
 import socket
@@ -200,19 +199,13 @@ class WindowClass(QMainWindow, from_class) :
 
     def service_call_clicked(self):
         rp.init()
-        test_node = rp.create_node('client_test')
+        # test_node = rp.create_node('client_test')
         
-        service_name = '/turtles'
-        cli = test_node.create_client(Target, service_name)
-        req = Target.Request()
-        req.target = "station1"
+        # service_name = '/turtles'
+        # cli = test_node.create_client(Target, service_name)
+        # req = Target.Request()
+        # req.target = "station1"
         
-        # service_name = '/turtle1/teleport_absolute'
-        # cli = test_node.create_client(TeleportAbsolute, service_name)
-        # req = TeleportAbsolute.Request()
-        # req.x = 1.
-        # req.y = 1.
-        # req.theta = 3.14
 
         print(req)
 
