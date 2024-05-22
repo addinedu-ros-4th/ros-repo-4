@@ -54,6 +54,9 @@ class TcpServer(QThread):
             self.update.emit()
             time.sleep(0.5)
     
+    def stop(self):
+        self.moving = False
+    
 class ServerThread(QThread):
     new_connection = pyqtSignal(object)
 
@@ -135,6 +138,14 @@ class WindowClass(QMainWindow, from_class) :
 
         #service call test
         self.service_call.clicked.connect(self.service_call_clicked)
+        # self.nav_to_station1_button.clicked.connect(self.nav_to_station1_button_clicked)
+        # self.nav_to_station2_button.clicked.connect(self.nav_to_station2_button_clicked)
+        # self.nav_to_foodtank1_button.clicked.connect(self.nav_to_foodtank1_button_clicked)
+        # self.nav_to_foodtank2_button.clicked.connect(self.nav_to_foodtank2_button_clicked)
+        # self.nav_to_barn_entrance_button.clicked.connect(self.nav_to_barn_entrance_button_clicked)
+        # self.nav_to_barn_exit_button.clicked.connect(self.nav_to_barn_exit_button_clicked)
+
+
 
         #tcp server thread  
         self.tcpserver_thread.update.connect(self.update_tcp_server_thread)
@@ -207,16 +218,37 @@ class WindowClass(QMainWindow, from_class) :
         # req.target = "station1"
         
 
-        print(req)
+        # print(req)
 
-        while not cli.wait_for_service(timeout_sec=1.0):
-            print("Waiting for service")
+        # while not cli.wait_for_service(timeout_sec=1.0):
+        #     print("Waiting for service")
 
-        future = cli.call_async(req)
+        # future = cli.call_async(req)
 
-        while not future.done():
-            rp.spin_once(test_node)
-            print(future.done(), future.result())
+        # while not future.done():
+        #     rp.spin_once(test_node)
+        #     print(future.done(), future.result())
+
+    def nav_to_station1_button_clicked(self):
+        rp.init()
+        # test_node = rp.create_node('client_test')
+        
+        # service_name = '/turtles'
+        # cli = test_node.create_client(Target, service_name)
+        # req = Target.Request()
+        # req.target = "station1"
+        
+
+        # print(req)
+
+        # while not cli.wait_for_service(timeout_sec=1.0):
+        #     print("Waiting for service")
+
+        # future = cli.call_async(req)
+
+        # while not future.done():
+        #     rp.spin_once(test_node)
+        #     print(future.done(), future.result())
 
     def logout_button_clicked(self):
         self.stackedWidget.setCurrentIndex(LOGIN_PAGE)
