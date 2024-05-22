@@ -5,12 +5,13 @@ from rclpy.action import ActionClient
 from nav2_msgs.action import NavigateToPose
 from geometry_msgs.msg import PoseStamped
 from rclpy.callback_groups import ReentrantCallbackGroup
+from turtles_service_msgs.srv import NavToPose
 
 class NavService(Node):
 
     def __init__(self):
         super().__init__('nav_service')
-        self.srv = self.create_service(Trigger, 'turtle_service', self.service_callback)
+        self.srv = self.create_service(NavToPose, 'nav_service', self.service_callback)
         self.action_client = ActionClient(self, NavigateToPose, '/navigate_to_pose')
         self.callback_group = ReentrantCallbackGroup()
 
@@ -21,9 +22,9 @@ class NavService(Node):
         # Set your goal pose here
         goal_msg.pose = PoseStamped()
         goal_msg.pose.header.frame_id = 'map'
-        goal_msg.pose.pose.position.x = 12.38
-        goal_msg.pose.pose.position.y = -7.37
-        goal_msg.pose.pose.position.z = 0.0
+        goal_msg.pose.pose.position.x = request.x
+        goal_msg.pose.pose.position.y = request.y
+        goal_msg.pose.pose.position.z = request.z
         goal_msg.pose.pose.orientation.x = 0.0
         goal_msg.pose.pose.orientation.y = 0.0
         goal_msg.pose.pose.orientation.z = 0.0
@@ -33,7 +34,6 @@ class NavService(Node):
         self._send_goal_future = self.action_client.send_goal_async(goal_msg)
         self._send_goal_future.add_done_callback(self.goal_response_callback)
         
-        response.success = True
         response.message = "NavigateToPose action called successfully"
         return response
 
