@@ -9,17 +9,26 @@ from rdp import rdp
 from geometry_msgs.msg import Twist
 
 
-right_laser_range_start = 50
-right_laser_range_end = 90
+right_laser_range_start = 60
+right_laser_range_end = 80
 
-left_laser_range_start = 180
-left_laser_range_end = 220
+diagonal_right_laser_range_start = 90
+diagonal_right_laser_range_end = 110
 
-front_laser_range_start = 110
-front_laser_range_end =160
+front_laser_range_start = 120
+front_laser_range_end =150
+
+diagonal_left_laser_range_start = 160
+diagonal_left_laser_range_end = 180
+
+left_laser_range_start = 190
+left_laser_range_end = 210
+
+
 
 min_distance_to_wall = 0.2
-min_inclination = 0.0009
+min_inclination = 0.002
+min_distance_for_front = 0.3
 
 
 class WallFollowing(Node):
@@ -42,12 +51,16 @@ class WallFollowing(Node):
         front_raw_data = msg.ranges[front_laser_range_start:front_laser_range_end]
         left_raw_data = msg.ranges[left_laser_range_start:left_laser_range_end]
         right_raw_data = msg.ranges[right_laser_range_start:right_laser_range_end]
+        diagonal_left_raw_data = msg.ranges[diagonal_left_laser_range_start: diagonal_left_laser_range_end]
+        diagonal_right_raw_data = msg.ranges[diagonal_right_laser_range_start: diagonal_right_laser_range_end]
 
         # #데이터에서 0이거나 1 이상인 값을 제외한다
 
         front_filtered_data = [value for value in front_raw_data if 0.0 < value < 1.0]
         left_filtered_data = [value for value in left_raw_data if 0.0 < value < 1.0]
         right_filtered_data = [value for value in right_raw_data if 0.0 < value < 1.0]
+        diagonal_left_filtered_data = [value for value in diagonal_left_raw_data if 0.0 < value < 1.0]
+        diagonal_right_filtered_data = [value for value in diagonal_right_raw_data if 0.0 < value < 1.0]
 
         #data length만큼 x 데이터를 만든다
 
@@ -82,7 +95,13 @@ class WallFollowing(Node):
 
         #각 벽 까지의 거리 중 가장 min 한 값 구하기 
 
-
+        #min value 가 -1이면 filtered 가 비어 있다는 얘기, 다 0 이거나 다 멀리 있거나 
+        min_front = 0
+        min_left = 0
+        min_right = 0
+        min_diagonal_left = 0
+        min_diagonal_right = 0 
+        
         if len(front_filtered_data) > 0:
             min_front = min(front_filtered_data)
             print("min_front :", end="")
@@ -104,6 +123,19 @@ class WallFollowing(Node):
         else:
             print("right_filtered_data is probably empty")
 
+        if len(diagonal_left_filtered_data) > 0:
+            min_diagonal_left = min(diagonal_left_filtered_data)
+            print("min_diagonal_left :", end="")
+            print(min_diagonal_left)
+        else:
+            print("diagonal_left_filtered_data is probably empty")
+
+        if len(diagonal_right_filtered_data) > 0:
+            min_diagonal_right = min(diagonal_right_filtered_data)
+            print("min_diagonal_right: " , end="")
+            print(min_diagonal_right)
+        else:
+            print("diagonal_right_filtered_data is probably empty")
 
         msg = Twist()
 
@@ -126,28 +158,58 @@ class WallFollowing(Node):
 
             else:
                 print("I don't know what is happening 1 ")
-        else:
-            if ((abs(a_left)>= min_inclination)) and ((abs(a_right) >= min_inclination)):
-                print("both wall out of range")
-            elif abs(a_left) >= min_inclination:
-                print("left wall inclination is out of range")
-            elif abs(a_right) >=min_inclination :
-                print("right wall is out of range")
-            else:
-                print("inclination error")
-            
-            if (a_left > 0) and (a_right > 0):
+
+            if ((a_left > 0) and (a_right > 0)) and ((a_right != -1) and (a_right < 0)):
                 print("turn right")
                 msg.linear.x = 0.0
                 msg.angular.z = -0.3
-
-            elif (a_left < 0) and (a_right < 0):
+            elif ((a_left != -1) and (a_left < 0)) and ((a_right != -1) and (a_right < 0)):
                 print("turn left")
                 msg.linear.x = 0.0
                 msg.angular.z = 0.3
-
             else:
                 print("unknown sign")
+
+        else:
+            if ((abs(a_left)>= min_inclination)) and ((abs(a_right) >= min_inclination)):
+                print("both wall out of range")
+                # if ((min_front == 0) or (min_front > min_distance_for_front)):
+                if (min_diagonal_left> min_diagonal_right) and (min_diagonal_left > min_distance_to_wall) :
+                    print("wall is far away.. left diagonal")
+                    msg.linear.x = 0.1
+                    msg.angular.z = 0.3
+                elif (min_diagonal_right > min_diagonal_left) and (min_diagonal_right > min_distance_to_wall):
+                    print("move forward..wall is far away.. right diagonal")
+                    msg.linear.x = 0.1
+                    msg.angular.z = -0.3
+                else:
+                    if ((min_front == 0) or (min_front > min_distance_for_front)):
+                        print("move forward..wall is far away..")
+                        msg.linear.x = 0.3
+                        msg.angular.z = 0.0
+                # else:
+                #     if (min_diagonal_right > min_diagonal_left):
+                #         print("min_front exist.. right diagonal")
+                #         msg.linear.x = 0.1
+                #         msg.angular.z = -0.2
+                #     else:
+                #         print("min_front exist..wall is far away..")
+                #         msg.linear.x = 0.1
+                #         msg.angular.z = 0.2
+
+                
+            elif abs(a_left) >= min_inclination:
+                print("left wall inclination is out of range..try turning left")
+                msg.linear.x = 0.0
+                msg.angular.z = 0.2
+            elif abs(a_right) >=min_inclination :
+                print("right wall is out of range... try turning right")
+                msg.linear.x = 0.0
+                msg.angular.z = -0.2
+            else:
+                print("inclination error")
+            
+            
 
 
         print("-----------------")
