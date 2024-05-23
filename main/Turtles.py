@@ -30,6 +30,7 @@ SCHEDULE_ROBOT_PAGE = 12
 SCHEDULE_FOOD_PAGE = 13
 SCHEDULE_FACILITIES_PAGE = 14
 LOG_PAGE = 15
+SETTING_PAGE = 16
 
 
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -108,6 +109,7 @@ class WindowClass(QMainWindow, from_class) :
 
         #login 화면으로 초기화면 셋팅
         self.stackedWidget.setCurrentIndex(LOGIN_PAGE)
+        self.toolBox.setCurrentIndex(7)
 
         #버튼과 페이지 이동 연결
         self.home_page_button.clicked.connect(self.home_page_button_clicked)
@@ -367,6 +369,8 @@ class WindowClass(QMainWindow, from_class) :
     def toolbox_changed(self):
         if self.toolBox.currentIndex() == 5:
             self.stackedWidget.setCurrentIndex(LOG_PAGE)
+        elif self.toolBox.currentIndex() == 6:
+            self.stackedWidget.setCurrentIndex(SETTING_PAGE)
 
     def home_page_button_clicked(self):
         self.stackedWidget.setCurrentIndex(HOME_PAGE)

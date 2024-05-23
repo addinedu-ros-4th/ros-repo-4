@@ -496,7 +496,7 @@
      <enum>QFrame::Box</enum>
     </property>
     <property name="currentIndex">
-     <number>7</number>
+     <number>16</number>
     </property>
     <widget class="QWidget" name="home_page">
      <widget class="QLabel" name="label">
@@ -1566,6 +1566,21 @@
       </property>
      </widget>
     </widget>
+    <widget class="QWidget" name="setting_page">
+     <widget class="QLabel" name="label_8">
+      <property name="geometry">
+       <rect>
+        <x>170</x>
+        <y>70</y>
+        <width>161</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>setting page</string>
+      </property>
+     </widget>
+    </widget>
    </widget>
    <widget class="QWidget" name="horizontalLayoutWidget">
     <property name="geometry">
@@ -1588,7 +1603,7 @@
         </font>
        </property>
        <property name="currentIndex">
-        <number>1</number>
+        <number>6</number>
        </property>
        <widget class="QWidget" name="monitor_page">
         <property name="geometry">
@@ -1596,7 +1611,7 @@
           <x>0</x>
           <y>0</y>
           <width>219</width>
-          <height>403</height>
+          <height>365</height>
          </rect>
         </property>
         <attribute name="label">
@@ -1642,7 +1657,7 @@
           <x>0</x>
           <y>0</y>
           <width>219</width>
-          <height>403</height>
+          <height>365</height>
          </rect>
         </property>
         <attribute name="label">
@@ -1681,7 +1696,7 @@
           <x>0</x>
           <y>0</y>
           <width>219</width>
-          <height>403</height>
+          <height>365</height>
          </rect>
         </property>
         <attribute name="label">
@@ -1713,7 +1728,7 @@
           <x>0</x>
           <y>0</y>
           <width>219</width>
-          <height>403</height>
+          <height>365</height>
          </rect>
         </property>
         <attribute name="label">
@@ -1766,7 +1781,7 @@
           <x>0</x>
           <y>0</y>
           <width>219</width>
-          <height>403</height>
+          <height>365</height>
          </rect>
         </property>
         <attribute name="label">
@@ -1812,22 +1827,27 @@
           <x>0</x>
           <y>0</y>
           <width>219</width>
-          <height>403</height>
+          <height>365</height>
          </rect>
         </property>
         <attribute name="label">
          <string>Log</string>
         </attribute>
        </widget>
-       <widget class="QWidget" name="page">
+       <widget class="QWidget" name="setting_page">
         <property name="geometry">
          <rect>
           <x>0</x>
           <y>0</y>
           <width>219</width>
-          <height>403</height>
+          <height>365</height>
          </rect>
         </property>
+        <attribute name="label">
+         <string>Setting</string>
+        </attribute>
+       </widget>
+       <widget class="QWidget" name="page_2">
         <attribute name="label">
          <string/>
         </attribute>
