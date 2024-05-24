@@ -20,9 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'nav_service = turtles_service.nav_service:main',
-            'waypoint_service = turtles_service.waypoint_service:main'
-
+            'nav_service = turtles_service.move_coordinate:main',
         ],
     },
 )

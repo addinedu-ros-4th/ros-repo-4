@@ -496,7 +496,7 @@
      <enum>QFrame::Box</enum>
     </property>
     <property name="currentIndex">
-     <number>6</number>
+     <number>16</number>
     </property>
     <widget class="QWidget" name="home_page">
      <widget class="QLabel" name="label">
@@ -1331,8 +1331,8 @@
      <widget class="QLabel" name="label_9">
       <property name="geometry">
        <rect>
-        <x>110</x>
-        <y>90</y>
+        <x>40</x>
+        <y>50</y>
         <width>381</width>
         <height>17</height>
        </rect>
@@ -1344,14 +1344,105 @@
      <widget class="QPushButton" name="service_call">
       <property name="geometry">
        <rect>
-        <x>550</x>
-        <y>330</y>
+        <x>50</x>
+        <y>100</y>
         <width>89</width>
         <height>25</height>
        </rect>
       </property>
       <property name="text">
        <string>service call</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="nav_to_station1_button">
+      <property name="geometry">
+       <rect>
+        <x>50</x>
+        <y>150</y>
+        <width>151</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>nav_to Station1</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="nav_to_station2_button">
+      <property name="geometry">
+       <rect>
+        <x>50</x>
+        <y>210</y>
+        <width>151</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>nav_to Station 2</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="nav_to_foodtank2_button">
+      <property name="geometry">
+       <rect>
+        <x>280</x>
+        <y>210</y>
+        <width>151</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>nav_to Food tank 2</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="nav_to_foodtank1_button">
+      <property name="geometry">
+       <rect>
+        <x>280</x>
+        <y>150</y>
+        <width>151</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>nav_to Food tank 1</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="nav_to_barn_entrance_button">
+      <property name="geometry">
+       <rect>
+        <x>490</x>
+        <y>150</y>
+        <width>231</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>nav_to Barn Entrance</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="nav_to_barn_exit_button">
+      <property name="geometry">
+       <rect>
+        <x>490</x>
+        <y>210</y>
+        <width>231</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>nav_to Barn Exit</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="wall_following_button">
+      <property name="geometry">
+       <rect>
+        <x>50</x>
+        <y>310</y>
+        <width>151</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Wall following</string>
       </property>
      </widget>
     </widget>
@@ -1475,6 +1566,258 @@
       </property>
      </widget>
     </widget>
+    <widget class="QWidget" name="setting_page">
+     <widget class="QLabel" name="label_8">
+      <property name="geometry">
+       <rect>
+        <x>30</x>
+        <y>10</y>
+        <width>161</width>
+        <height>51</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>20</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>setting page</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="server_label">
+      <property name="geometry">
+       <rect>
+        <x>680</x>
+        <y>130</y>
+        <width>371</width>
+        <height>51</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>20</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>서버가 대기중입니다.</string>
+      </property>
+     </widget>
+     <widget class="QGroupBox" name="groupBox">
+      <property name="geometry">
+       <rect>
+        <x>30</x>
+        <y>80</y>
+        <width>601</width>
+        <height>151</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>18</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="title">
+       <string> Open Server</string>
+      </property>
+      <widget class="QSplitter" name="splitter_2">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>100</y>
+         <width>441</width>
+         <height>32</height>
+        </rect>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <widget class="QLabel" name="label_16">
+        <property name="font">
+         <font>
+          <pointsize>20</pointsize>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="text">
+         <string>PORT</string>
+        </property>
+       </widget>
+       <widget class="QLineEdit" name="port_input">
+        <property name="font">
+         <font>
+          <pointsize>15</pointsize>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QLabel" name="label_14">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>50</y>
+         <width>121</width>
+         <height>32</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>20</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>IP    </string>
+       </property>
+      </widget>
+      <widget class="QLineEdit" name="ip_input">
+       <property name="geometry">
+        <rect>
+         <x>140</x>
+         <y>50</y>
+         <width>321</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>15</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="connect_button">
+       <property name="geometry">
+        <rect>
+         <x>490</x>
+         <y>50</y>
+         <width>89</width>
+         <height>81</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>15</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>Connect</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="quit_button">
+       <property name="geometry">
+        <rect>
+         <x>490</x>
+         <y>50</y>
+         <width>89</width>
+         <height>81</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>15</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>Quit</string>
+       </property>
+      </widget>
+     </widget>
+     <widget class="QLabel" name="client_label">
+      <property name="geometry">
+       <rect>
+        <x>680</x>
+        <y>330</y>
+        <width>361</width>
+        <height>51</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>20</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>클라이언트가 접속했습니다.</string>
+      </property>
+     </widget>
+     <widget class="QGroupBox" name="groupBox_2">
+      <property name="geometry">
+       <rect>
+        <x>30</x>
+        <y>250</y>
+        <width>511</width>
+        <height>231</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>18</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="title">
+       <string>Connected Clients</string>
+      </property>
+      <widget class="QTableWidget" name="client_table">
+       <property name="geometry">
+        <rect>
+         <x>9</x>
+         <y>40</y>
+         <width>491</width>
+         <height>180</height>
+        </rect>
+       </property>
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>13</pointsize>
+         <weight>50</weight>
+         <bold>false</bold>
+        </font>
+       </property>
+       <attribute name="verticalHeaderDefaultSectionSize">
+        <number>35</number>
+       </attribute>
+       <column>
+        <property name="text">
+         <string>Client IP</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>Client Port</string>
+        </property>
+       </column>
+      </widget>
+     </widget>
+    </widget>
    </widget>
    <widget class="QWidget" name="horizontalLayoutWidget">
     <property name="geometry">
@@ -1497,7 +1840,7 @@
         </font>
        </property>
        <property name="currentIndex">
-        <number>1</number>
+        <number>6</number>
        </property>
        <widget class="QWidget" name="monitor_page">
         <property name="geometry">
@@ -1505,7 +1848,7 @@
           <x>0</x>
           <y>0</y>
           <width>219</width>
-          <height>403</height>
+          <height>365</height>
          </rect>
         </property>
         <attribute name="label">
@@ -1551,7 +1894,7 @@
           <x>0</x>
           <y>0</y>
           <width>219</width>
-          <height>403</height>
+          <height>365</height>
          </rect>
         </property>
         <attribute name="label">
@@ -1590,7 +1933,7 @@
           <x>0</x>
           <y>0</y>
           <width>219</width>
-          <height>403</height>
+          <height>365</height>
          </rect>
         </property>
         <attribute name="label">
@@ -1622,7 +1965,7 @@
           <x>0</x>
           <y>0</y>
           <width>219</width>
-          <height>403</height>
+          <height>365</height>
          </rect>
         </property>
         <attribute name="label">
@@ -1675,7 +2018,7 @@
           <x>0</x>
           <y>0</y>
           <width>219</width>
-          <height>403</height>
+          <height>365</height>
          </rect>
         </property>
         <attribute name="label">
@@ -1721,20 +2064,33 @@
           <x>0</x>
           <y>0</y>
           <width>219</width>
-          <height>403</height>
+          <height>365</height>
          </rect>
         </property>
         <attribute name="label">
          <string>Log</string>
         </attribute>
        </widget>
-       <widget class="QWidget" name="page">
+       <widget class="QWidget" name="setting_page">
         <property name="geometry">
          <rect>
           <x>0</x>
           <y>0</y>
           <width>219</width>
-          <height>403</height>
+          <height>365</height>
+         </rect>
+        </property>
+        <attribute name="label">
+         <string>Setting</string>
+        </attribute>
+       </widget>
+       <widget class="QWidget" name="page_2">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>219</width>
+          <height>365</height>
          </rect>
         </property>
         <attribute name="label">
