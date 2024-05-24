@@ -333,9 +333,9 @@ class WindowClass(QMainWindow, from_class) :
         service_name = '/nav_service'
         cli = test_node.create_client(NavToPose, service_name)
         req = NavToPose.Request()
-        req.x = 0.6378898620605469
-        req.y = -0.9446680545806885
-        req.z =  -0.005340576171875
+        req.x = 1.0566225051879883
+        req.y = 0.7861793637275696
+        req.z = 0.002471923828125
         
         print(req)
 
@@ -354,9 +354,9 @@ class WindowClass(QMainWindow, from_class) :
         service_name = '/nav_service'
         cli = test_node.create_client(NavToPose, service_name)
         req = NavToPose.Request()
-        req.x = 1.7415525913238525
-        req.y = -0.3976095914840698
-        req.z = 0.002471923828125
+        req.x = 0.3123237192630768
+        req.y = 0.7631283402442932
+        req.z = -0.001434326171875
 
         
         print(req)
