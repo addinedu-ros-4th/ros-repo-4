@@ -7,20 +7,20 @@ import threading
 import time
 import rclpy
 from rclpy.node import Node
-from turtles_service_msgs.srv import NavigateTo
+from turtles_service_msgs.srv import ArucoNavigateTo
 from rclpy.action import ActionClient
 from nav2_msgs.action import NavigateToPose
 from geometry_msgs.msg import PoseStamped, Twist
 from tf_transformations import euler_from_quaternion, quaternion_from_euler
 
-TCP_IP = '192.168.0.49'  # 서버 IP 주소
-TCP_PORT = 5002       # 서버 포트
+TCP_IP = '192.168.0.20'  # 클라이언트 IP 주소
+TCP_PORT = 5002          # 서버 포트
 
-class NavService(Node):
+class Nav_Aruco_Service(Node):
 
     def __init__(self):
-        super().__init__('nav_service')
-        self.srv = self.create_service(NavigateTo, 'turtle_service', self.service_callback)
+        super().__init__('Nav_Aruco_Service')
+        self.srv = self.create_service(ArucoNavigateTo, 'correct_turtles', self.service_callback)
         self.action_client = ActionClient(self, NavigateToPose, '/navigate_to_pose')
 
         self.cmd_vel_pub = self.create_publisher(Twist, '/base_controller/cmd_vel_unstamped', 10)
@@ -37,7 +37,7 @@ class NavService(Node):
                                           [0, 0, 1]])
         self.distortion = np.array([-0.43948, 0.18514, 0, 0])
 
-        self.create_timer(2.0, self.rotation_loop)
+        self.create_timer(0.1, self.rotation_loop)
 
         self.image_queue = []
         self.processing_thread = threading.Thread(target=self.process_images)
@@ -48,14 +48,19 @@ class NavService(Node):
         self.tcp_thread.start()
 
     def receive_images_via_tcp(self):
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.connect((TCP_IP, TCP_PORT))
+        server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        server_socket.bind((TCP_IP, TCP_PORT))
+        server_socket.listen(1)
+        self.get_logger().info('Waiting for connection...')
+        conn, addr = server_socket.accept()
+        self.get_logger().info(f'Connected by {addr}')
+
         data = b""
         payload_size = struct.calcsize("L")
         
         while True:
             while len(data) < payload_size:
-                packet = s.recv(4096)
+                packet = conn.recv(4096)
                 if not packet: break
                 data += packet
             packed_msg_size = data[:payload_size]
@@ -63,14 +68,15 @@ class NavService(Node):
             msg_size = struct.unpack("L", packed_msg_size)[0]
             
             while len(data) < msg_size:
-                data += s.recv(4096)
+                data += conn.recv(4096)
             frame_data = data[:msg_size]
             data = data[msg_size:]
             
             frame = pickle.loads(frame_data)
             self.image_queue.append(frame)
 
-    def service_callback(self, request, response):
+    def service_callback(self, request: ArucoNavigateTo.Request, response: ArucoNavigateTo.Response):
+
         if self.target_reached:
             response.success = False
             response.message = "Already navigating to pose"
@@ -106,13 +112,16 @@ class NavService(Node):
             self.finding_final_id = False
             self.aruco_id = aruco_id
             self.final_id = final_id
+            self.aruco_found = False
 
     def rotation_loop(self):
-        if self.rotating and not self.aruco_found and not self.finding_final_id:
+        if self.finding_final_id and not self.aruco_found:
             twist = Twist()
-            twist.angular.z = 0.5  # Reduce rotation speed for better detection
+            twist.angular.z = 0.15  # 작은 각도 회전
             self.cmd_vel_pub.publish(twist)
-            self.get_logger().info('Rotating...')
+            time.sleep(0.2)  # 회전 시간 단축
+            self.cmd_vel_pub.publish(Twist())  # 회전 멈춤
+            # 여기서 탐지를 호출하지 않고, `process_images` 스레드가 계속 탐지하도록 함
 
     def stop_rotation(self):
         self.get_logger().info('Stopping rotation...')
@@ -124,63 +133,62 @@ class NavService(Node):
         while self.processing_thread_running:
             if self.image_queue:
                 frame = self.image_queue.pop(0)
-                start_time = time.time()
-                if not self.target_reached:
+                if not self.target_reached and not self.finding_final_id:
                     continue
 
-                self.get_logger().info('Processing camera image...')
                 gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
                 corners, ids, rejected = cv2.aruco.detectMarkers(gray, self.aruco_dict, parameters=self.aruco_params)
 
                 if ids is not None and len(ids) > 0:
-                    self.get_logger().info(f'ArUco marker detected: {ids}')
                     if not self.finding_final_id and self.aruco_id in ids:
                         self.aruco_found = True
-                        rvecs, tvecs, _ = cv2.aruco.estimatePoseSingleMarkers(corners, 0.05, self.intrinsic_camera, self.distortion)
-                        self.get_logger().info(f'Marker distance: {np.linalg.norm(tvecs[0][0]):.2f} meters')
+                        _, tvecs, _ = cv2.aruco.estimatePoseSingleMarkers(corners, 0.05, self.intrinsic_camera, self.distortion)
                         self.align_and_approach_marker(tvecs[0][0], 1.5)
                     elif self.finding_final_id and self.final_id in ids:
-                        self.stop_rotation()
                         self.aruco_found = True
-                        rvecs, tvecs, _ = cv2.aruco.estimatePoseSingleMarkers(corners, 0.05, self.intrinsic_camera, self.distortion)
-                        self.get_logger().info(f'Marker distance: {np.linalg.norm(tvecs[0][0]):.2f} meters')
-                        self.align_and_approach_marker(tvecs[0][0], 0.5)
-                    else:
-                        self.get_logger().info('No matching ArUco marker detected.')
-                else:
-                    self.get_logger().info('No ArUco marker detected.')
-                end_time = time.time()
-                self.get_logger().info(f'Image processing took {end_time - start_time:.2f} seconds')
+                        _, tvecs, _ = cv2.aruco.estimatePoseSingleMarkers(corners, 0.05, self.intrinsic_camera, self.distortion)
+                        self.align_and_approach_marker(tvecs[0][0], 0.5, True)
+            # 탐지 후 바로 다음 이미지를 처리할 수 있도록 대기 시간을 줄임
+            time.sleep(0.1)
 
-    def align_and_approach_marker(self, tvec, target_distance):
-        twist = Twist()
-        
-        # Align to marker
-        if abs(tvec[0]) > 0.05:  # Adjust to center horizontally
-            twist.angular.z = -0.1 if tvec[0] > 0 else 0.1
-            self.cmd_vel_pub.publish(twist)
-            time.sleep(1)  # Allow some time to turn
-            self.cmd_vel_pub.publish(Twist())  # Stop turning
-
-        if abs(tvec[1]) > 0.05:  # Adjust to center vertically
-            twist.linear.y = -0.1 if tvec[1] > 0 else 0.1
-            self.cmd_vel_pub.publish(twist)
-            time.sleep(1)  # Allow some time to move
-            self.cmd_vel_pub.publish(Twist())  # Stop moving
-
-        # Approach marker until within target distance
-        while abs(tvec[2] - target_distance) > 0.1:
+    def align_and_approach_marker(self, tvec, target_distance, is_final=False):
+        while tvec is not None and abs(tvec[2] - target_distance) > 0.1:
             twist = Twist()
-            twist.linear.x = 0.1 if tvec[2] > target_distance else -0.1
-            self.cmd_vel_pub.publish(twist)
-            time.sleep(0.5)  # Allow some time to move
-            self.cmd_vel_pub.publish(Twist())  # Stop moving
+
+            if not is_final:
+                # Only move forward or backward to reach the target distance
+                twist.linear.x = 0.1 if tvec[2] > target_distance else -0.1
+                self.cmd_vel_pub.publish(twist)
+                time.sleep(0.5)  # Allow some time to move
+                self.cmd_vel_pub.publish(Twist())  # Stop moving
+                tvec = self.check_marker_position(final_check=is_final)
+
+        self.cmd_vel_pub.publish(Twist())  # Final stop to ensure the robot has stopped
 
         if target_distance == 1.5:
             self.aruco_found = False
             self.finding_final_id = True
-            self.rotating = True
-        else:
+        elif is_final and target_distance == 0.5:
+            self.get_logger().info('Reached final target distance')
+
+    def check_marker_position(self, final_check=False):
+        while self.image_queue:
+            frame = self.image_queue.pop(0)
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            corners, ids, rejected = cv2.aruco.detectMarkers(gray, self.aruco_dict, parameters=self.aruco_params)
+            if ids is not None and len(ids) > 0:
+                if final_check and self.final_id in ids:
+                    _, tvecs, _ = cv2.aruco.estimatePoseSingleMarkers(corners, 0.05, self.intrinsic_camera, self.distortion)
+                    return tvecs[0][0]
+                elif not final_check and self.aruco_id in ids:
+                    _, tvecs, _ = cv2.aruco.estimatePoseSingleMarkers(corners, 0.05, self.intrinsic_camera, self.distortion)
+                    return tvecs[0][0]
+        return None
+
+    def check_for_final_marker(self):
+        position = self.check_marker_position(final_check=True)
+        if position is not None:
+            self.aruco_found = True
             self.stop_rotation()
 
     def create_goal_pose(self, x, y, z, ox, oy, oz, ow):
@@ -209,7 +217,7 @@ class NavService(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    nav_service = NavService()
+    nav_service = Nav_Aruco_Service()
     try:
         rclpy.spin(nav_service)
     except KeyboardInterrupt:
