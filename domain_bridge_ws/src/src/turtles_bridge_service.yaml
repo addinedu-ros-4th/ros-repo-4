@@ -1,0 +1,9 @@
+bridge:
+  - from:
+      domain_id: 14
+      service_name: /turtle_service
+      service_type: std_srvs/srv/Trigger
+    to:
+      domain_id: 5
+      service_name: /turtle_service
+      service_type: std_srvs/srv/Trigger

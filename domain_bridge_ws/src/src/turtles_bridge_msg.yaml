@@ -1,0 +1,22 @@
+name: my_domain_bridge # 1
+from_domain: 5
+topics:
+  turtles_hello:
+    type: std_msgs/msg/String
+    to_domain: 10
+
+  turtles_dayeon:
+    type: std_msgs/msg/String
+    to_domain: 26
+
+  # turtles_seongyeon:
+  #   type: std_msgs/msg/String
+  #   to_domain: 14
+
+  turtles_jun:
+    type: std_msgs/msg/String
+    to_domain: 56
+
+  turtles_nav:
+    type: std_srvs/srv/Trigger
+    to_domain: 14
