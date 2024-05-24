@@ -9,6 +9,7 @@ from turtles_service_msgs.srv import NavToPose
 import time
 import socket
 import select 
+import pandas as pd 
 
 #page 상수 정의
 HOME_PAGE = 0
@@ -48,7 +49,7 @@ class TcpServer(QThread):
     
 class ServerThread(QThread):
     new_connection = pyqtSignal(str, int)
-    connection_lost = pyqtSignal()
+    connection_lost = pyqtSignal(str, int)
     client_socket_list = []
 
     def __init__(self, host, port):
@@ -81,10 +82,11 @@ class ServerThread(QThread):
                     data = sock.recv(1024)
                     if not data:
                         # 클라이언트 연결 종료
-                        print(f"클라이언트 {sock.getpeername()} 연결이 끊어졌습니다.")
+                        client_address = sock.getpeername()
+                        print(f"클라이언트 {client_address} 연결이 끊어졌습니다.")
                         self.client_sockets.remove(sock)
                         sock.close()
-                        self.connection_lost.emit()
+                        self.connection_lost.emit(client_address[0], client_address[1])
                     else:
                         print("받은 데이터:", data.decode())
 
@@ -107,13 +109,17 @@ class WindowClass(QMainWindow, from_class) :
         self.tcpserver_thread = TcpServer(parent=self)
         self.count = 0
         self.server_thread = None
-        
+        self.client_df = pd.DataFrame(columns=['IP', 'Port'])
+
+
         self.quit_button.hide()
         self.server_label.hide()
         self.client_label.hide()
         self.connect_button.clicked.connect(self.start_tcp_server_thread)
-        self.quit_button.clicked.connect(self.stop_tcp_server_thread)  # quit_button 클릭 이벤트에 메소드 연결   
-             
+        self.quit_button.clicked.connect(self.stop_tcp_server_thread)
+        self.client_table.horizontalHeader().setStretchLastSection(True)
+        self.client_table.setColumnWidth(0, 280)
+        
         #login 화면으로 초기화면 셋팅
         self.stackedWidget.setCurrentIndex(LOGIN_PAGE)
         self.toolBox.setCurrentIndex(7)
@@ -214,7 +220,7 @@ class WindowClass(QMainWindow, from_class) :
         
         self.server_thread = ServerThread(host, port)
         self.server_thread.new_connection.connect(self.update_client_info)
-        self.server_thread.connection_lost.connect(self.clear_client_info)
+        self.server_thread.connection_lost.connect(self.remove_client_info)
         self.server_thread.start()
         self.server_label.show()
         self.connect_button.hide()
@@ -229,19 +235,40 @@ class WindowClass(QMainWindow, from_class) :
             self.quit_button.hide()  # quit_button 숨김
             self.ip_input.clear()
             self.port_input.clear()
-
+        
     @QtCore.pyqtSlot(str, int)
     def update_client_info(self, ip, port):
-        self.client_ip.setText(ip)
-        self.client_port.setText(str(port))
         self.client_label.show()
+        new_row = pd.DataFrame([{'IP': ip, 'Port': port}])
+        self.client_df = pd.concat([self.client_df, new_row], ignore_index=True)
+        self.display_client_list()
+
     
-    @QtCore.pyqtSlot()
-    def clear_client_info(self):
-        self.client_ip.clear()
-        self.client_port.clear()
+    @QtCore.pyqtSlot(str, int)
+    def remove_client_info(self, ip, port):
         print("클라이언트 연결이 끊어졌습니다.")
-        self.client_label.hide()
+        self.client_df = self.client_df[(self.client_df['IP'] != ip) | (self.client_df['Port'] != port)]
+        self.display_client_list()    
+        
+    def display_client_list(self):
+        # 열의 수를 2로 고정(IP와 Port를 위한 열)
+        self.client_table.setColumnCount(2)
+        
+        # 행의 수를 DataFrame의 길이(클라이언트 수)로 설정
+        self.client_table.setRowCount(len(self.client_df))
+        
+        # DataFrame을 순회하며 각 클라이언트의 IP와 Port 정보를 테이블에 추가
+        for row, (index, row_data) in enumerate(self.client_df.iterrows()):
+            self.client_table.setItem(row, 0, QTableWidgetItem(row_data['IP']))  # 첫 번째 열에 IP 설정
+            self.client_table.setItem(row, 1, QTableWidgetItem(str(row_data['Port'])))  # 두 번째 열에 Port 설정
+            
+        # DataFrame이 비어 있으면 클라이언트 라벨을 숨기고, 그렇지 않으면 보여줌
+        if self.client_df.empty:
+            self.client_label.hide()
+        else:
+            self.client_label.show()
+
+        
         
     def service_call_clicked(self):
         pass
