@@ -4,7 +4,7 @@
 const char* ssid = "AIE_509_2.4G";
 const char* password = "addinedu_class1";
 
-const char* hostip = "172.30.1.7" //"192.168.0.12";
+const char* hostip = "192.168.0.14";
 const int hostport = 3000;
 
 int count = 0;

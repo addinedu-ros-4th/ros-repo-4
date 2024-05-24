@@ -35,7 +35,7 @@ LOG_PAGE = 15
 
 
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-host = "192.168.0.86"
+host = "192.168.0.14"
 port = 3000
 server_socket.bind((host, port))
 server_socket.listen(5)
@@ -172,7 +172,7 @@ class WindowClass(QMainWindow, from_class) :
         #send
         # response = str(data)
         print(data)
-        client_sockets[1].send(data.encode("utf-8"))
+        client_sockets[2].send(data.encode("utf-8")) # sockets 숫자2로 바꿔야함 0은 서버, 1은 탱크, 2는 로봇
 
     def closeEvent(self,event):
         self.tcpserverStop()

@@ -52,7 +52,7 @@ _colcon_prepend_unique_value() {
 # since a plain shell script can't determine its own path when being sourced
 # either use the provided COLCON_CURRENT_PREFIX
 # or fall back to the build time prefix (if it exists)
-_colcon_package_sh_COLCON_CURRENT_PREFIX="/home/dh/amr_ws/git_ws/ros-repo-4/ros_ws/install/turtles_msgs"
+_colcon_package_sh_COLCON_CURRENT_PREFIX="/home/dh/amr_ws/git_ws/ros-repo-4/ros_ws/install/test_domain_bridge"
 if [ -z "$COLCON_CURRENT_PREFIX" ]; then
   if [ ! -d "$_colcon_package_sh_COLCON_CURRENT_PREFIX" ]; then
     echo "The build time path \"$_colcon_package_sh_COLCON_CURRENT_PREFIX\" doesn't exist. Either source a script for a different shell or set the environment variable \"COLCON_CURRENT_PREFIX\" explicitly." 1>&2
@@ -78,9 +78,8 @@ _colcon_package_sh_source_script() {
 }
 
 # source sh hooks
-_colcon_package_sh_source_script "$COLCON_CURRENT_PREFIX/share/turtles_msgs/hook/cmake_prefix_path.sh"
-_colcon_package_sh_source_script "$COLCON_CURRENT_PREFIX/share/turtles_msgs/hook/ld_library_path_lib.sh"
-_colcon_package_sh_source_script "$COLCON_CURRENT_PREFIX/share/turtles_msgs/local_setup.sh"
+_colcon_package_sh_source_script "$COLCON_CURRENT_PREFIX/share/test_domain_bridge/hook/cmake_prefix_path.sh"
+_colcon_package_sh_source_script "$COLCON_CURRENT_PREFIX/share/test_domain_bridge/local_setup.sh"
 
 unset _colcon_package_sh_source_script
 unset COLCON_CURRENT_PREFIX
