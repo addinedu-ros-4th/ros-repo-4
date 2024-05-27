@@ -10,33 +10,50 @@ import time
 import socket
 import select 
 import pandas as pd 
+from enum import Enum
 
-#page 상수 정의
-HOME_PAGE = 0
-LOGIN_PAGE = 1
-MONITOR_BARN_PAGE = 2
-MONITOR_FACILITIES_PAGE = 3 
-MONITOR_CAMERA_PAGE = 4
-CONTROL_ROBOT_PAGE = 5
-CONTROL_FACILITIES_PAGE = 6
-ROBOTMANAGER_TASK_PAGE = 7
-DATAMANAGER_ANIMAL_PAGE = 8
-DATAMANAGER_FOOD_PAGE = 9
-DATAMANAGER_VIDEO_PAGE = 10
-DATAMANAGER_FACILITIES_PAGE = 11
-SCHEDULE_ROBOT_PAGE = 12
-SCHEDULE_FOOD_PAGE = 13
-SCHEDULE_FACILITIES_PAGE = 14
-LOG_PAGE = 15
-SETTING_PAGE = 16
+
+class Pages(Enum):
+    #page 상수 정의
+    PAGE_HOME = 0
+    PAGE_LOGIN = 1
+    PAGE_MONITOR_BARN = 2
+    PAGE_MONITOR_FACILITIES = 3 
+    PAGE_MONITOR_CAMERA = 4
+    PAGE_CONTROL_ROBOT = 5
+    PAGE_CONTROL_FACILITIES = 6
+    PAGE_ROBOTMANAGER_TASK = 7
+    PAGE_DATAMANAGER_ANIMAL = 8
+    PAGE_DATAMANAGER_FOOD = 9
+    PAGE_DATAMANAGER_VIDEO = 10
+    PAGE_DATAMANAGER_FACILITIES = 11
+    PAGE_SCHEDULE_ROBOT = 12
+    PAGE_SCHEDULE_FOOD = 13
+    PAGE_SCHEDULE_FACILITIES = 14
+    PAGE_LOG = 15
+    PAGE_SETTING = 16
 
 class RobotStatus:
     def __init__(self,robot_num):
         self.robot_num = robot_num
         self.status = 0
+        self.task_id = 0
 
     def setStatus(self,robot_status):
         self.status = robot_status
+
+    def setTaskID(self,task_id):
+        self.task_id = task_id
+
+class Task:
+    def __init__(self,task_id, task_type, assigned_robot_num):
+        self.task_id = task_id
+        self.task_type = task_type
+        self.assigned_robot_num = assigned_robot_num
+        self.task_result = 0
+    
+    def setTaskResult(self,task_result):
+        self.task_result = task_result
 
 class TcpServer(QThread):
     update = QtCore.pyqtSignal()
@@ -113,6 +130,9 @@ class WindowClass(QMainWindow, from_class) :
         self.setWindowTitle("Turtles : Herding Heroes")
         rp.init()
 
+        #robot task 리스트
+        self.task_list = []
+
         self.food_robot1 = RobotStatus(1)
         self.food_robot2 = RobotStatus(2)
         
@@ -132,7 +152,7 @@ class WindowClass(QMainWindow, from_class) :
         self.client_table.setColumnWidth(0, 280)
         
         #login 화면으로 초기화면 셋팅
-        self.stackedWidget.setCurrentIndex(LOGIN_PAGE)
+        self.stackedWidget.setCurrentIndex(Pages.PAGE_LOGIN.value)
         self.toolBox.setCurrentIndex(7)
 
         #버튼과 페이지 이동 연결
@@ -184,9 +204,11 @@ class WindowClass(QMainWindow, from_class) :
 
         #task add
         self.task_add_button.clicked.connect(self.task_add_button_clicked)
+    
         
 
-
+    def checkScheduleForTaskAssig(self):
+        pass
     
 
     def robotStatusManager(self,robot_class):
@@ -453,59 +475,59 @@ class WindowClass(QMainWindow, from_class) :
             print(future.done(), future.result())
 
     def logout_button_clicked(self):
-        self.stackedWidget.setCurrentIndex(LOGIN_PAGE)
+        self.stackedWidget.setCurrentIndex(Pages.PAGE_LOGIN.value)
     
     def login_button_clicked(self):
-        self.stackedWidget.setCurrentIndex(HOME_PAGE)
+        self.stackedWidget.setCurrentIndex(Pages.PAGE_HOME.value)
 
 
     def toolbox_changed(self):
         if self.toolBox.currentIndex() == 5:
-            self.stackedWidget.setCurrentIndex(LOG_PAGE)
+            self.stackedWidget.setCurrentIndex(Pages.PAGE_LOG.value)
         elif self.toolBox.currentIndex() == 6:
-            self.stackedWidget.setCurrentIndex(SETTING_PAGE)
+            self.stackedWidget.setCurrentIndex(Pages.PAGE_SETTING.value)
 
     def home_page_button_clicked(self):
-        self.stackedWidget.setCurrentIndex(HOME_PAGE)
+        self.stackedWidget.setCurrentIndex(Pages.PAGE_HOME.value)
 
     def monitor_barnpage_button_clicked(self):
-        self.stackedWidget.setCurrentIndex(MONITOR_BARN_PAGE) 
+        self.stackedWidget.setCurrentIndex(Pages.PAGE_MONITOR_BARN.value) 
     
     def monitor_facilitiespage_button_clicked(self):
-        self.stackedWidget.setCurrentIndex(MONITOR_FACILITIES_PAGE)
+        self.stackedWidget.setCurrentIndex(Pages.PAGE_MONITOR_FACILITIES.value)
 
     def monitor_camerapage_button_clicked(self):
-        self.stackedWidget.setCurrentIndex(MONITOR_CAMERA_PAGE)
+        self.stackedWidget.setCurrentIndex(Pages.PAGE_MONITOR_CAMERA.value)
     
     def control_robotpage_button_clicked(self):
-        self.stackedWidget.setCurrentIndex(CONTROL_ROBOT_PAGE)
+        self.stackedWidget.setCurrentIndex(Pages.PAGE_CONTROL_ROBOT.value)
 
     def control_facilitiespage_button_clicked(self):
-        self.stackedWidget.setCurrentIndex(CONTROL_FACILITIES_PAGE)
+        self.stackedWidget.setCurrentIndex(Pages.PAGE_CONTROL_FACILITIES.value)
 
     def robotmanager_taskpage_button_clicked(self):
-        self.stackedWidget.setCurrentIndex(ROBOTMANAGER_TASK_PAGE)
+        self.stackedWidget.setCurrentIndex(Pages.PAGE_ROBOTMANAGER_TASK.value)
     
     def datamanager_animalpage_button_clicked(self):
-        self.stackedWidget.setCurrentIndex(DATAMANAGER_ANIMAL_PAGE)
+        self.stackedWidget.setCurrentIndex(Pages.PAGE_DATAMANAGER_ANIMAL.value)
 
     def datamanager_foodpage_button_clicked(self):
-        self.stackedWidget.setCurrentIndex(DATAMANAGER_FOOD_PAGE)
+        self.stackedWidget.setCurrentIndex(Pages.PAGE_DATAMANAGER_FOOD.value)
 
     def datamanager_videopage_button_clicked(self):
-        self.stackedWidget.setCurrentIndex(DATAMANAGER_VIDEO_PAGE)
+        self.stackedWidget.setCurrentIndex(Pages.PAGE_DATAMANAGER_VIDEO.value)
 
     def datamanager_facilitiespage_button_clicked(self):
-        self.stackedWidget.setCurrentIndex(DATAMANAGER_FACILITIES_PAGE)
+        self.stackedWidget.setCurrentIndex(Pages.PAGE_DATAMANAGER_FACILITIES.value)
 
     def schedule_robotpage_button_clicked(self):
-        self.stackedWidget.setCurrentIndex(SCHEDULE_ROBOT_PAGE)
+        self.stackedWidget.setCurrentIndex(Pages.PAGE_SCHEDULE_ROBOT.value)
 
     def schedule_foodpage_button_clicked(self):
-        self.stackedWidget.setCurrentIndex(SCHEDULE_FOOD_PAGE)
+        self.stackedWidget.setCurrentIndex(Pages.PAGE_SCHEDULE_FOOD.value)
 
     def schedule_facilitiespage_button_clicked(self):
-        self.stackedWidget.setCurrentIndex(SCHEDULE_FACILITIES_PAGE)
+        self.stackedWidget.setCurrentIndex(Pages.PAGE_SCHEDULE_FACILITIES.value)
 
         
         
