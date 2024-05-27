@@ -5,7 +5,7 @@ from PyQt5 import uic, QtCore
 from PyQt5.QtCore import QThread, pyqtSignal
 
 import rclpy as rp
-from turtles_service_msgs.srv import NavToPose
+# from turtles_service_msgs.srv import NavToPose
 import time
 import socket
 import select 
@@ -56,6 +56,16 @@ class RobotType(Enum):
 class Status(Enum):
     STATUS_STANDBY = 0
     STATUS_ASSIGNED = 1
+    STATUS_STATION_CHECK = 2
+    STATUS_TANK_ASSIGN_CHECK = 3
+    STATUS_TANK_PATH_CHECK = 4
+    STATUS_MOVETO_TANK = 5
+    STATUS_RECEIVE_FOOD = 6
+    STATUS_MOVETO_BARN_ENTRANCE = 7
+    STATUS_MOVETO_ROOM = 8
+    STATUS_FEEDING = 9
+    STATUS_RETURN = 10
+
 
 class RobotStatus:
     def __init__(self,robot_num, type):
@@ -313,7 +323,9 @@ class WindowClass(QMainWindow, from_class) :
         if assign_robot == len(self.robot_list) :
             # print("All robot is assigned")
             return
-            
+
+        #할당할 로봇이 있다면     
+
         current_datetime = datetime.now()
         busy_task_time = current_datetime
         busy_index = 0
@@ -352,22 +364,25 @@ class WindowClass(QMainWindow, from_class) :
     def robotStatusManager(self):
 
         for robot in self.robot_list:
-            if robot.status == 0:
+            
+            if robot.status == Status.STATUS_STANDBY.value:
                 return
-            elif robot.status == 1:
+            elif robot.status == Status.STATUS_ASSIGNED.value:
                 print("robot_num", end="")
                 print(robot.robot_num)
                 print("status: assigned")
                 #print만 찍고 바로 다음 status로 넘겨줌
                 robot.status += 1
-            elif robot.status ==2:
+            elif robot.status == Status.STATUS_STATION_CHECK.value:
                 #amcl로 위치 확인
+
                 #aruco 마커 확인
+               
                 print("robot_num", end="")
                 print(robot.robot_num)
                 print("status: station check")
-                pass
 
+                
 
 
     def update_tcp_server_thread(self):
