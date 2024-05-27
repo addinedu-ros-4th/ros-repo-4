@@ -9,6 +9,9 @@ from turtles_service_msgs.srv import NavToPose
 import time
 import socket
 import select 
+import struct 
+import pickle
+import cv2
 import pandas as pd 
 
 #page 상수 정의
@@ -54,9 +57,11 @@ class TcpServer(QThread):
     def stop(self):
         self.moving = False
     
+
 class ServerThread(QThread):
     new_connection = pyqtSignal(str, int)
     connection_lost = pyqtSignal(str, int)
+    image_signal = pyqtSignal(QImage)
     client_socket_list = []
 
     def __init__(self, host, port):
@@ -84,25 +89,87 @@ class ServerThread(QThread):
                     self.client_sockets.append(client_socket)
                     print(f"클라이언트 {client_address}가 연결되었습니다.")
                     self.new_connection.emit(client_address[0], client_address[1])
+                    data = b""
+                    payload_size = struct.calcsize("L")
+
+                    while True:
+                        while len(data) < payload_size:
+                            packet = client_socket.recv(4096)
+                            if not packet:
+                                return
+                            data += packet
+
+                        packed_msg_size = data[:payload_size]
+                        data = data[payload_size:]
+                        msg_size = struct.unpack("L", packed_msg_size)[0]
+
+                        while len(data) < msg_size:
+                            data += client_socket.recv(4096)
+
+                        frame_data = data[:msg_size]
+                        data = data[msg_size:]
+
+                        frame = pickle.loads(frame_data)
+                        q_img = self.cv2_to_qimage(frame)
+                        self.image_signal.emit(q_img)
+                        
+                        if data == None:
+                            # 클라이언트 연결 종료
+                            client_address = sock.getpeername()
+                            print(f"클라이언트 {client_address} 연결이 끊어졌습니다.")
+                            self.client_sockets.remove(sock)
+                            sock.close()
+                            self.connection_lost.emit(client_address[0], client_address[1])
+                            break                        
                 else:
                     # 기존 클라이언트의 데이터 수신 및 처리
-                    data = sock.recv(1024)
-                    if not data:
-                        # 클라이언트 연결 종료
-                        client_address = sock.getpeername()
-                        print(f"클라이언트 {client_address} 연결이 끊어졌습니다.")
-                        self.client_sockets.remove(sock)
-                        sock.close()
-                        self.connection_lost.emit(client_address[0], client_address[1])
-                    else:
-                        print("받은 데이터:", data.decode())
+                    data = b""
+                    payload_size = struct.calcsize("L")
 
+                    while True:
+                        while len(data) < payload_size:
+                            packet = client_socket.recv(4096)
+                            if not packet:
+                                return
+                            data += packet
+
+                        packed_msg_size = data[:payload_size]
+                        data = data[payload_size:]
+                        msg_size = struct.unpack("L", packed_msg_size)[0]
+
+                        while len(data) < msg_size:
+                            data += client_socket.recv(4096)
+
+                        frame_data = data[:msg_size]
+                        data = data[msg_size:]
+
+                        frame = pickle.loads(frame_data)
+                        q_img = self.cv2_to_qimage(frame)
+                        self.image_signal.emit(q_img)
+                        
+                        if data == None:
+                            # 클라이언트 연결 종료
+                            client_address = sock.getpeername()
+                            print(f"클라이언트 {client_address} 연결이 끊어졌습니다.")
+                            self.client_sockets.remove(sock)
+                            sock.close()
+                            self.connection_lost.emit(client_address[0], client_address[1])
+                            break
+                            
+    def cv2_to_qimage(self, cv2_image):
+        height, width, channel = cv2_image.shape
+        bytes_per_line = 3 * width
+        # BGR에서 RGB로 변환
+        rgb_image = cv2.cvtColor(cv2_image, cv2.COLOR_BGR2RGB)
+        q_img = QImage(rgb_image.data, width, height, bytes_per_line, QImage.Format_RGB888)
+        return q_img
+    
     def stop(self):
         for sock in self.client_sockets:
             sock.close()
-        self.server_socket.close()
-        print("서버를 종료합니다.")
-        
+            self.server_socket.close()
+            print("서버를 종료합니다.")
+               
 from_class = uic.loadUiType("Turtles.ui")[0] 
 
 
@@ -186,9 +253,6 @@ class WindowClass(QMainWindow, from_class) :
         self.task_add_button.clicked.connect(self.task_add_button_clicked)
         
 
-
-    
-
     def robotStatusManager(self,robot_class):
 
         if robot_class.status == 0:
@@ -243,22 +307,24 @@ class WindowClass(QMainWindow, from_class) :
 
     def tcpserverStop(self):
         self.tcpserver_thread.stop()
-
+        
     def start_tcp_server_thread(self):
         host = self.ip_input.text()
         port = int(self.port_input.text())
-        
-        if self.server_thread:
-            self.server_thread.stop()
-        
         self.server_thread = ServerThread(host, port)
+        self.server_thread.start()   
+        self.server_thread.image_signal.connect(self.update_image)
         self.server_thread.new_connection.connect(self.update_client_info)
         self.server_thread.connection_lost.connect(self.remove_client_info)
         self.server_thread.start()
         self.server_label.show()
         self.connect_button.hide()
         self.quit_button.show()
-
+        
+    def update_image(self, q_img):
+        pixmap = QPixmap.fromImage(q_img)
+        self.robot_label.setPixmap(pixmap)
+        
     def stop_tcp_server_thread(self):
         if self.server_thread:
             self.server_thread.stop()  # 서버 스레드 종료
