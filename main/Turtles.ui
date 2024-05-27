@@ -496,7 +496,7 @@
      <enum>QFrame::Box</enum>
     </property>
     <property name="currentIndex">
-     <number>5</number>
+     <number>7</number>
     </property>
     <widget class="QWidget" name="home_page">
      <widget class="QLabel" name="label">
@@ -1459,6 +1459,42 @@
       </property>
       <property name="text">
        <string>Wall following</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="task_add_button">
+      <property name="geometry">
+       <rect>
+        <x>330</x>
+        <y>520</y>
+        <width>141</width>
+        <height>81</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Task add</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_20">
+      <property name="geometry">
+       <rect>
+        <x>90</x>
+        <y>510</y>
+        <width>131</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Room number</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="room_number_edit">
+      <property name="geometry">
+       <rect>
+        <x>90</x>
+        <y>550</y>
+        <width>181</width>
+        <height>25</height>
+       </rect>
       </property>
      </widget>
     </widget>

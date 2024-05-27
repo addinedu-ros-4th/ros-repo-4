@@ -30,6 +30,13 @@ SCHEDULE_FACILITIES_PAGE = 14
 LOG_PAGE = 15
 SETTING_PAGE = 16
 
+class RobotStatus:
+    def __init__(self,robot_num):
+        self.robot_num = robot_num
+        self.status = 0
+
+    def setStatus(self,robot_status):
+        self.status = robot_status
 
 class TcpServer(QThread):
     update = QtCore.pyqtSignal()
@@ -97,7 +104,7 @@ class ServerThread(QThread):
         print("서버를 종료합니다.")
         
 from_class = uic.loadUiType("Turtles.ui")[0] 
-#
+
 
 class WindowClass(QMainWindow, from_class) :
     def __init__(self):
@@ -105,12 +112,16 @@ class WindowClass(QMainWindow, from_class) :
         self.setupUi(self)
         self.setWindowTitle("Turtles : Herding Heroes")
         rp.init()
+
+        self.food_robot1 = RobotStatus(1)
+        self.food_robot2 = RobotStatus(2)
         
         self.tcpserver_thread = TcpServer(parent=self)
         self.count = 0
         self.server_thread = None
         self.client_df = pd.DataFrame(columns=['IP', 'Port'])
 
+        self.tcpserverStart()
 
         self.quit_button.hide()
         self.server_label.hide()
@@ -163,13 +174,35 @@ class WindowClass(QMainWindow, from_class) :
 
 
         #tcp server thread  
-        #self.tcpserver_thread.update.connect(self.update_tcp_server_thread)
+        self.tcpserver_thread.update.connect(self.update_tcp_server_thread)
 
         #food trailer servo 버튼 연결
         self.foodtank_servo_open_button.clicked.connect(self.foodtank_servo_open_button_clicked)
         self.foodtank_servo_close_button.clicked.connect(self.foodtank_servo_close_button_clicked)
         self.foodtrailer_servo_open_button.clicked.connect(self.foodtrailer_servo_open_button_clicked)
         self.foodtrailer_servo_close_button.clicked.connect(self.foodtrailer_servo_close_button_clicked)
+
+        #task add
+        self.task_add_button.clicked.connect(self.task_add_button_clicked)
+        
+
+
+    
+
+    def robotStatusManager(self,robot_class):
+
+        if robot_class.status == 0:
+            print(robot_class.status)
+
+    def update_tcp_server_thread(self):
+        self.robotStatusManager(self.food_robot1)
+        
+
+        
+
+
+    def task_add_button_clicked(self):
+        print(self.room_number_edit.text())
 
     def foodtrailer_servo_open_button_clicked(self):
         self.send_to_rasp("FT1,1")
