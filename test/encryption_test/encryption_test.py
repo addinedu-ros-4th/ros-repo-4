@@ -4,7 +4,7 @@ from Crypto.Random import get_random_bytes
 
 # 키와 데이터
 key = get_random_bytes(16)
-data = b"192.168.1.101"
+data = b"0000"
 
 # 암호화
 cipher = AES.new(key, AES.MODE_EAX)

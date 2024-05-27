@@ -17,6 +17,11 @@ from enum import Enum
 from YamlFileManager import YamlFileManager
 from datetime import datetime, timedelta
 
+#encryption
+from Crypto.Cipher import AES
+from Crypto.Random import get_random_bytes
+
+
 
 class Pages(Enum):
     #page 상수 정의
@@ -307,6 +312,7 @@ class WindowClass(QMainWindow, from_class) :
         self.task_add_button.clicked.connect(self.task_add_button_clicked)
     
 
+    
     def checkScheduleForTaskAssig(self):
         pass
     

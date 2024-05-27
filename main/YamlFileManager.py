@@ -14,6 +14,9 @@ class YamlFileManager:
     def getTotalRobotNum(self):
         return self.config['robot']['total_robot_num']
     
+    def getMysqlData(self):
+        return self.config['mysql']['ip'], self.config['mysql']['password']
+    
     def saveYamlFile(self,task_id):
 
         data = {
