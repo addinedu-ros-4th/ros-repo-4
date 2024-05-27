@@ -12,6 +12,7 @@ import select
 import pandas as pd 
 from enum import Enum
 from YamlFileManager import YamlFileManager
+from datetime import datetime, timedelta
 
 
 class Pages(Enum):
@@ -34,10 +35,30 @@ class Pages(Enum):
     PAGE_LOG = 15
     PAGE_SETTING = 16
 
+class TaskScheduleType(Enum):
+    TASK_SCHEDULED = 0
+    TASK_REGISTERED = 1
+
+class TaskType(Enum):
+    TASK_FOOD = 1
+    TASK_CLEANING = 2
+    TASK_ARRANGE = 3
+
+#TaskType이랑 RobotType은 숫자 같게 맞춰줘야 함... 일단은..
+class RobotType(Enum):
+    ROBOT_FOOD = 1
+    ROBOT_CLEANING = 2
+    ROBOT_ARRANGE = 3
+
+class Status(Enum):
+    STATUS_STANDBY = 0
+    STATUS_ASSIGNED = 1
+
 class RobotStatus:
-    def __init__(self,robot_num):
+    def __init__(self,robot_num, type):
         self.robot_num = robot_num
-        self.status = 0
+        self.robot_type = type # 1: food_robot 2: cleaning_robot 3: arrange_robot
+        self.status = Status.STATUS_STANDBY.value
         self.task_id = 0
 
     def setStatus(self,robot_status):
@@ -47,15 +68,20 @@ class RobotStatus:
         self.task_id = task_id
 
 class Task:
-    def __init__(self,task_id, task_type, assigned_robot_num):
-        self.task_id = task_id
-        self.task_type = task_type
-        self.assigned_robot_num = assigned_robot_num
-        self.task_result = 0
+    def __init__(self,id,schedule_type, room_num,task_time):
+        self.task_id = id 
+        self.task_type = TaskType.TASK_FOOD.value  #0: 배식 1:청소 2: 정리
+        self.task_schedule_type = schedule_type #0: schedule, 1: registered
+        self.assigned_robot_num = 0 #배정된 로봇 이름 
+        self.task_result = 0 #0: not done , 1: done
+        self.task_time = task_time #'2024-01-01 00:00:00' # 업무 할당 시간
+        self.task_room_num = room_num # room은 1부터 시작 1,2,3,4
     
     def setTaskResult(self,task_result):
         self.task_result = task_result
 
+
+    
 class TcpServer(QThread):
     update = QtCore.pyqtSignal()
 
@@ -135,13 +161,15 @@ class WindowClass(QMainWindow, from_class) :
         self.task_list = []
         self.yaml_file = YamlFileManager('config.yaml')
         self.task_id = self.yaml_file.getLastTaskID()
-        self.total_robot_num = self.yaml_file.getTotalRobotNum()
-        print(self.task_id)
-        print(self.total_robot_num)
 
-        self.food_robot1 = RobotStatus(1)
-        self.food_robot2 = RobotStatus(2)
+        self.robot_list = []
+        food_robot1 = RobotStatus(1,RobotType.ROBOT_FOOD.value)
+        # food_robot2 = RobotStatus(2,RobotType.ROBOT_FOOD.value)
         
+        self.robot_list.append(food_robot1)
+        # self.robot_list.append(food_robot2)
+        
+
         self.tcpserver_thread = TcpServer(parent=self)
         self.count = 0
         self.server_thread = None
@@ -188,17 +216,7 @@ class WindowClass(QMainWindow, from_class) :
         self.logout_button.clicked.connect(self.logout_button_clicked)
         self.login_button.clicked.connect(self.login_button_clicked)
 
-        #service call test
-        self.service_call.clicked.connect(self.service_call_clicked)
-        self.nav_to_station1_button.clicked.connect(self.nav_to_station1_button_clicked)
-        self.nav_to_station2_button.clicked.connect(self.nav_to_station2_button_clicked)
-        self.nav_to_foodtank1_button.clicked.connect(self.nav_to_foodtank1_button_clicked)
-        self.nav_to_foodtank2_button.clicked.connect(self.nav_to_foodtank2_button_clicked)
-        self.nav_to_barn_entrance_button.clicked.connect(self.nav_to_barn_entrance_button_clicked)
-        self.nav_to_barn_exit_button.clicked.connect(self.nav_to_barn_exit_button_clicked)
-
-
-
+    
         #tcp server thread  
         self.tcpserver_thread.update.connect(self.update_tcp_server_thread)
 
@@ -215,21 +233,89 @@ class WindowClass(QMainWindow, from_class) :
     def checkScheduleForTaskAssig(self):
         pass
     
+    def assignRobotTask(self):
 
-    def robotStatusManager(self,robot_class):
+        #로봇이 이미 모두 할당 되었으면 배정할 필요 x
+        assign_robot = 0
+        for robot in self.robot_list:
+            if robot.task_id != 0 : #할당이 안되어 있다 
+                assign_robot += 1
+            
+        
+        #모든 로봇이 할당 되어 있어서 return
+        if assign_robot == len(self.robot_list) :
+            # print("All robot is assigned")
+            return
+            
+        current_datetime = datetime.now()
+        busy_task_time = current_datetime
+        busy_index = 0
 
-        if robot_class.status == 0:
-            pass
+        if len(self.task_list) > 0:
+
+            #가장 빨리 할당해야 하는 task 찾기 
+            
+            for idx, task in enumerate(self.task_list):
+                if task.task_time <= busy_task_time:
+                    busy_task_time = task.task_time
+                    busy_index = idx
+            
+            # task type 맞는 지 확인하고 task 할당
+            for robot in self.robot_list:
+                if robot.task_id == 0 : #할당이 안되어 있다
+                    if robot.robot_type == self.task_list[busy_index].task_type:
+                        robot.setTaskID(self.task_list[busy_index].task_id)
+                        robot.setStatus(Status.STATUS_ASSIGNED.value)
+                        # print("robot_num : ", end="")
+                        # print(robot.robot_num)
+                        # print("assigend")
+                        return
+
+        else:
+            # print("empty")
+            return
+        
+        # if current_datetime < modified_datetime:
+        #     print("현재 시간은 수정된 시간보다 이전입니다.")
+        # elif current_datetime > modified_datetime:
+        #     print("현재 시간은 수정된 시간보다 이후입니다.")
+        # else:
+        #     print("현재 시간은 수정된 시간과 같습니다.")
+
+    def robotStatusManager(self):
+
+        for robot in self.robot_list:
+            if robot.status == 0:
+                return
+            elif robot.status == 1:
+                print("robot_num", end="")
+                print(robot.robot_num)
+                print("status: assigned")
+                #print만 찍고 바로 다음 status로 넘겨줌
+                robot.status += 1
+            elif robot.status ==2:
+                #amcl로 위치 확인
+                #aruco 마커 확인
+                print("robot_num", end="")
+                print(robot.robot_num)
+                print("status: station check")
+                pass
+
+
 
     def update_tcp_server_thread(self):
-        self.robotStatusManager(self.food_robot1)
+        self.assignRobotTask()
+        self.robotStatusManager()
         
-
-        
-
 
     def task_add_button_clicked(self):
-        print(self.room_number_edit.text())
+        #task 클래스로 객체 만들어서 list에 넣어주기
+        current_datetime = datetime.now()
+        modified_datetime = current_datetime.replace(hour=int(self.hour_edit.text()), minute=int(self.minutes_edit.text()), second=0, microsecond=0)
+        self.task_id += 1
+        temp_task = Task(self.task_id,TaskScheduleType.TASK_REGISTERED.value, self.room_number_edit.text(),modified_datetime)
+        
+        self.task_list.append(temp_task)
 
     def foodtrailer_servo_open_button_clicked(self):
         self.send_to_rasp("FT1,1")
@@ -262,7 +348,7 @@ class WindowClass(QMainWindow, from_class) :
     def closeEvent(self, event):
         #창을 종료할때 task_id 저장해주기
         self.yaml_file.saveYamlFile(self.task_id)
-        
+
         self.tcpserverStop()
         if self.server_thread:
             self.server_thread.stop()
@@ -515,6 +601,11 @@ class WindowClass(QMainWindow, from_class) :
 
     def robotmanager_taskpage_button_clicked(self):
         self.stackedWidget.setCurrentIndex(Pages.PAGE_ROBOTMANAGER_TASK.value)
+        now = datetime.now()
+        self.hour_edit.setText(str(now.hour))
+        self.minutes_edit.setText(str(now.minute))
+
+
     
     def datamanager_animalpage_button_clicked(self):
         self.stackedWidget.setCurrentIndex(Pages.PAGE_DATAMANAGER_ANIMAL.value)
