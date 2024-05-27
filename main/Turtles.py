@@ -11,6 +11,7 @@ import socket
 import select 
 import pandas as pd 
 from enum import Enum
+from YamlFileManager import YamlFileManager
 
 
 class Pages(Enum):
@@ -132,6 +133,11 @@ class WindowClass(QMainWindow, from_class) :
 
         #robot task 리스트
         self.task_list = []
+        self.yaml_file = YamlFileManager('config.yaml')
+        self.task_id = self.yaml_file.getLastTaskID()
+        self.total_robot_num = self.yaml_file.getTotalRobotNum()
+        print(self.task_id)
+        print(self.total_robot_num)
 
         self.food_robot1 = RobotStatus(1)
         self.food_robot2 = RobotStatus(2)
@@ -205,7 +211,6 @@ class WindowClass(QMainWindow, from_class) :
         #task add
         self.task_add_button.clicked.connect(self.task_add_button_clicked)
     
-        
 
     def checkScheduleForTaskAssig(self):
         pass
@@ -214,7 +219,7 @@ class WindowClass(QMainWindow, from_class) :
     def robotStatusManager(self,robot_class):
 
         if robot_class.status == 0:
-            print(robot_class.status)
+            pass
 
     def update_tcp_server_thread(self):
         self.robotStatusManager(self.food_robot1)
@@ -255,6 +260,9 @@ class WindowClass(QMainWindow, from_class) :
         ServerThread.client_socket_list.send(data.encode("utf-8"))
 
     def closeEvent(self, event):
+        #창을 종료할때 task_id 저장해주기
+        self.yaml_file.saveYamlFile(self.task_id)
+        
         self.tcpserverStop()
         if self.server_thread:
             self.server_thread.stop()
