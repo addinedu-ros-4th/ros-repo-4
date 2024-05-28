@@ -255,16 +255,15 @@ class WindowClass(QMainWindow, from_class) :
         #databases 연결
         self.data_manage = DBManager("192.168.1.101", "0000", 3306, "turtles", "TurtlesDB")
         self.animal_list = self.data_manage.getAnimal()
-        self.rfid_list = self.data_manage.AnimalRFID()
-        self.camera_list = self.data_manage.CameraPath()
-        self.food_list = self.data_manage.Food()
-        self.schedule_list = self.data_manage.FoodRobotSchedule()
+        self.rfid_list = self.data_manage.getAnimalRFID()
+        self.camera_list = self.data_manage.getCameraPath()
+        self.food_list = self.data_manage.getFood()
+        self.schedule_list = self.data_manage.getFoodRobotSchedule()
         self.userdata_list = self.data_manage.getUserData()
         self.robot_thread = RobotThread(parent=self)
         self.count = 0
         self.server_thread = None
         self.client_df = pd.DataFrame(columns=['IP', 'Port'])
-
         self.robotThreadStart()
 
         self.quit_button.hide()

@@ -27,7 +27,7 @@ class DBManager:
 
         return result_list
 
-    def AnimalRFID(self):
+    def getAnimalRFID(self):
         result_list = []
         cursor = self.local.cursor()
 
@@ -41,7 +41,7 @@ class DBManager:
 
         return result_list
 
-    def CameraPath(self):
+    def getCameraPath(self):
         result_list = []
         cursor = self.local.cursor()
 
@@ -55,7 +55,7 @@ class DBManager:
 
         return result_list
 
-    def Food(self):
+    def getFood(self):
         result_list = []
         cursor = self.local.cursor()
 
@@ -69,7 +69,7 @@ class DBManager:
 
         return result_list
 
-    def FoodRobotSchedule(self):
+    def getFoodRobotSchedule(self):
         result_list = []
         cursor = self.local.cursor()
 
