@@ -14,6 +14,15 @@ class YamlFileManager:
     def getTotalRobotNum(self):
         return self.config['robot']['total_robot_num']
     
+    def getClientMoudule(self):
+        client_section =self.config['client']
+        return {
+            'module1': client_section.get('module1', 1),
+            'module2': client_section.get('module2', 2),
+            'module3': client_section.get('module3', 3),
+            'module4': client_section.get('module4', 4)
+        }
+
     def getMysqlData(self):
         return self.config['mysql']['ip'], self.config['mysql']['password']
     
@@ -26,6 +35,12 @@ class YamlFileManager:
             'robot': {
                 'last_task_id': task_id,
                 'total_robot_num': self.getTotalRobotNum()
+            },
+            'client': {
+                'module1': 1,
+                'module2': 2,
+                'module3': 3,
+                'module4': 4,
             }
         }
 

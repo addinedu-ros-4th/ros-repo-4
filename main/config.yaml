@@ -1,3 +1,8 @@
+client:
+  module1: 1
+  module2: 2
+  module3: 3
+  module4: 4
 robot:
   last_task_id: 13
   total_robot_num: 1
