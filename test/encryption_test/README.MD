@@ -1,2 +1,2 @@
-1. 설치 하기!
-pip install pycryptodome
+1. 설치 하기!      
+```pip install pycryptodome```     
