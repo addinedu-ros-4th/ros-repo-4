@@ -27,6 +27,22 @@ class DBManager:
 
         return result_list
     
+    def getUserData(self):
+        result_list = []
+        cursor = self.local.cursor()
+
+        # 쿼리 실행
+        sql = "SELECT * FROM UserData;"
+
+        cursor.execute(sql)
+        result = cursor.fetchall()
+
+        for val in result:
+            result_list.append(list(val))
+
+        return result_list
+    
+    
     def dbclose(self):
         self.local.close()
 

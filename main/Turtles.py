@@ -89,9 +89,9 @@ class RobotStatus:
 class Task:
     def __init__(self,id,schedule_type, room_num,task_time):
         self.task_id = id 
-        self.task_type = TaskType.TASK_FOOD.value  #0: 배식 1:청소 2: 정리
-        self.task_schedule_type = schedule_type #0: schedule, 1: registered
-        self.assigned_robot_num = 0 #배정된 로봇 이름 
+        self.task_type = TaskType.TASK_FOOD.value   #0: 배식 1:청소 2: 정리
+        self.task_schedule_type = schedule_type     #0: schedule, 1: registered
+        self.assigned_robot_num = 0             #배정된 로봇 이름 
         self.task_result = 0 #0: not done , 1: done
         self.task_time = task_time #'2024-01-01 00:00:00' # 업무 할당 시간
         self.task_room_num = room_num # room은 1부터 시작 1,2,3,4
@@ -254,7 +254,8 @@ class WindowClass(QMainWindow, from_class) :
         
         #databases 연결
         self.data_manage = DBManager("192.168.1.101", "0000", 3306, "turtles", "TurtlesDB")
-
+        self.userdata_list = self.data_manage.getdata()
+        print(self.userdata_list)
         self.robot_thread = RobotThread(parent=self)
         self.count = 0
         self.server_thread = None
