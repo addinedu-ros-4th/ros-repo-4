@@ -292,7 +292,6 @@ class WindowClass(QMainWindow, from_class) :
         self.datamanager_videopage_button.clicked.connect(self.datamanager_videopage_button_clicked)
         self.datamanager_facilitiespage_button.clicked.connect(self.datamanager_facilitiespage_button_clicked)
 
-        self.schedule_robotpage_button.clicked.connect(self.schedule_robotpage_button_clicked)
         self.schedule_foodpage_button.clicked.connect(self.schedule_foodpage_button_clicked)
         self.schedule_facilitiespage_button.clicked.connect(self.schedule_facilitiespage_button_clicked)
 
