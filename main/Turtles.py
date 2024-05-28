@@ -15,6 +15,7 @@ import cv2
 import pandas as pd 
 from enum import Enum
 from YamlFileManager import YamlFileManager
+from DBManager import DBManager
 from datetime import datetime, timedelta
 
 #encryption
@@ -243,7 +244,7 @@ class WindowClass(QMainWindow, from_class) :
         self.task_list = []
         self.yaml_file = YamlFileManager('config.yaml')
         self.task_id = self.yaml_file.getLastTaskID()
-
+        
         self.robot_list = []
         food_robot1 = RobotStatus(1,RobotType.ROBOT_FOOD.value)
         # food_robot2 = RobotStatus(2,RobotType.ROBOT_FOOD.value)
@@ -251,7 +252,9 @@ class WindowClass(QMainWindow, from_class) :
         self.robot_list.append(food_robot1)
         # self.robot_list.append(food_robot2)
         
-
+        #databases 연결
+        self.data_manage = DBManager("192.168.1.101", "0000", 3306, "turtles", "TurtlesDB")
+        print(self.data_manage.getdata())
         self.tcpserver_thread = TcpServer(parent=self)
         self.count = 0
         self.server_thread = None
@@ -311,6 +314,12 @@ class WindowClass(QMainWindow, from_class) :
         #task add
         self.task_add_button.clicked.connect(self.task_add_button_clicked)
     
+    def decryption(self,data,key,tag):
+        # 복호화
+        cipher = AES.new(key, AES.MODE_EAX, nonce=cipher.nonce)
+        decrypted_data = cipher.decrypt_and_verify(data, tag)
+
+        print("Decrypted text:", decrypted_data.decode('utf-8'))
 
     
     def checkScheduleForTaskAssig(self):

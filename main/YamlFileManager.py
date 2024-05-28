@@ -17,6 +17,9 @@ class YamlFileManager:
     def getMysqlData(self):
         return self.config['mysql']['ip'], self.config['mysql']['password']
     
+    def getTagData(self):
+        return self.config['security']['ip_tag'], self.config['security']['password_tag']
+    
     def saveYamlFile(self,task_id):
 
         data = {
