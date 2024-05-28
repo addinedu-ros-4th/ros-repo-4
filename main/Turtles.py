@@ -96,7 +96,7 @@ class Task:
         self.task_time = task_time #'2024-01-01 00:00:00' # 업무 할당 시간
         self.task_room_num = room_num # room은 1부터 시작 1,2,3,4
     
-    def setTaskResult(self,task_result):
+    def setTaskResult(self, task_result):
         self.task_result = task_result
 
 
@@ -676,7 +676,7 @@ class WindowClass(QMainWindow, from_class) :
         if self.toolBox.currentIndex() == 5:
             self.stackedWidget.setCurrentIndex(Pages.PAGE_LOG.value)
         elif self.toolBox.currentIndex() == 6:
-            self.stackedWidget.setCurrentIndex(Pages.PAGE_SETTING.value)
+            self.stackedWidget.setCurrentIndex(20)
 
     def home_page_button_clicked(self):
         self.stackedWidget.setCurrentIndex(Pages.PAGE_HOME.value)
