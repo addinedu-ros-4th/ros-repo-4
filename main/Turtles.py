@@ -697,7 +697,7 @@ class WindowClass(QMainWindow, from_class) :
         self.stackedWidget.setCurrentIndex(Pages.PAGE_CONTROL_FACILITIES.value)
 
     def robotmanager_taskpage_button_clicked(self):
-        self.stackedWidget.setCurrentIndex(Pages.PAGE_ROBOTMANAGER_TASK.value)
+        self.stackedWidget.setCurrentIndex(Pages.PAGE_DATAMANAGER_FOOD.value)
         now = datetime.now()
         self.hour_edit.setText(str(now.hour))
         self.minutes_edit.setText(str(now.minute))
