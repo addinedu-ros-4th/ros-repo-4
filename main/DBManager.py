@@ -12,12 +12,68 @@ class DBManager:
             database = databases 
         )
 
-    def getdata(self):
+    
+    def getAnimal(self):
         result_list = []
         cursor = self.local.cursor()
 
-        # 쿼리 실행
-        sql = "SELECT * FROM UserData;"
+        sql = "SELECT * FROM Animal;"
+
+        cursor.execute(sql)
+        result = cursor.fetchall()
+
+        for val in result:
+            result_list.append(list(val))
+
+        return result_list
+
+    def getAnimalRFID(self):
+        result_list = []
+        cursor = self.local.cursor()
+
+        sql = "SELECT * FROM AnimalRFID;"
+
+        cursor.execute(sql)
+        result = cursor.fetchall()
+
+        for val in result:
+            result_list.append(list(val))
+
+        return result_list
+
+    def getCameraPath(self):
+        result_list = []
+        cursor = self.local.cursor()
+
+        sql = "SELECT * FROM CameraPath;"
+
+        cursor.execute(sql)
+        result = cursor.fetchall()
+
+        for val in result:
+            result_list.append(list(val))
+
+        return result_list
+
+    def getFood(self):
+        result_list = []
+        cursor = self.local.cursor()
+
+        sql = "SELECT * FROM Food;"
+
+        cursor.execute(sql)
+        result = cursor.fetchall()
+
+        for val in result:
+            result_list.append(list(val))
+
+        return result_list
+
+    def getFoodRobotSchedule(self):
+        result_list = []
+        cursor = self.local.cursor()
+
+        sql = "SELECT * FROM FoodRobotSchedule;"
 
         cursor.execute(sql)
         result = cursor.fetchall()
@@ -31,7 +87,6 @@ class DBManager:
         result_list = []
         cursor = self.local.cursor()
 
-        # 쿼리 실행
         sql = "SELECT * FROM UserData;"
 
         cursor.execute(sql)
@@ -42,7 +97,7 @@ class DBManager:
 
         return result_list
     
-    
+
     def dbclose(self):
         self.local.close()
 

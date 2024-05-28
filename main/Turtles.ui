@@ -496,7 +496,7 @@
      <enum>QFrame::NoFrame</enum>
     </property>
     <property name="currentIndex">
-     <number>12</number>
+     <number>22</number>
     </property>
     <widget class="QWidget" name="home_page">
      <widget class="QLabel" name="label">
@@ -1564,7 +1564,7 @@
         <string notr="true"/>
        </property>
        <property name="text">
-        <string>🐢 </string>
+        <string>🐢</string>
        </property>
        <property name="pixmap">
         <pixmap>../../../../../Pictures/Screenshots/grap1.png</pixmap>
@@ -1762,7 +1762,7 @@ color: rgb(192, 28, 40);</string>
        </font>
       </property>
       <property name="title">
-       <string>Food Robot A</string>
+       <string>Food Robot B</string>
       </property>
       <widget class="QLabel" name="robotB">
        <property name="geometry">
@@ -1784,7 +1784,7 @@ color: rgb(192, 28, 40);</string>
         <string notr="true"/>
        </property>
        <property name="text">
-        <string>🐢 </string>
+        <string>🐢</string>
        </property>
        <property name="pixmap">
         <pixmap>../../../../../Pictures/Screenshots/grap1.png</pixmap>
@@ -2158,7 +2158,7 @@ color: rgb(192, 28, 40);</string>
        <string/>
       </property>
      </widget>
-     <widget class="QLabel" name="label_27">
+     <widget class="QLabel" name="robot_name_label">
       <property name="geometry">
        <rect>
         <x>320</x>
@@ -2175,7 +2175,7 @@ color: rgb(192, 28, 40);</string>
        </font>
       </property>
       <property name="text">
-       <string>Food Robot 1</string>
+       <string>Food Robot </string>
       </property>
       <property name="alignment">
        <set>Qt::AlignCenter</set>
@@ -4370,8 +4370,8 @@ rgb(255, 210, 30)</string>
       <widget class="QComboBox" name="captured_date_start">
        <property name="geometry">
         <rect>
-         <x>700</x>
-         <y>40</y>
+         <x>360</x>
+         <y>100</y>
          <width>171</width>
          <height>41</height>
         </rect>
@@ -4380,7 +4380,7 @@ rgb(255, 210, 30)</string>
       <widget class="QComboBox" name="select_camera_box_video">
        <property name="geometry">
         <rect>
-         <x>250</x>
+         <x>360</x>
          <y>40</y>
          <width>171</width>
          <height>41</height>
@@ -4388,20 +4388,20 @@ rgb(255, 210, 30)</string>
        </property>
        <item>
         <property name="text">
-         <string>Food Robot1</string>
+         <string>Food Robot A</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>Food Robot2</string>
+         <string>Food Robot B</string>
         </property>
        </item>
       </widget>
       <widget class="QComboBox" name="select_camera_type_box">
        <property name="geometry">
         <rect>
-         <x>250</x>
-         <y>100</y>
+         <x>660</x>
+         <y>40</y>
          <width>171</width>
          <height>41</height>
         </rect>
@@ -4430,9 +4430,9 @@ rgb(255, 210, 30)</string>
       <widget class="QSplitter" name="splitter_14">
        <property name="geometry">
         <rect>
-         <x>50</x>
+         <x>120</x>
          <y>30</y>
-         <width>171</width>
+         <width>221</width>
          <height>121</height>
         </rect>
        </property>
@@ -4463,7 +4463,7 @@ rgb(255, 210, 30)</string>
          </font>
         </property>
         <property name="text">
-         <string>Type :</string>
+         <string>Captured Date :</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -4473,8 +4473,8 @@ rgb(255, 210, 30)</string>
       <widget class="QComboBox" name="captured_date_end">
        <property name="geometry">
         <rect>
-         <x>950</x>
-         <y>40</y>
+         <x>660</x>
+         <y>100</y>
          <width>171</width>
          <height>41</height>
         </rect>
@@ -4483,9 +4483,9 @@ rgb(255, 210, 30)</string>
       <widget class="QLabel" name="label_119">
        <property name="geometry">
         <rect>
-         <x>880</x>
-         <y>40</y>
-         <width>61</width>
+         <x>530</x>
+         <y>100</y>
+         <width>131</width>
          <height>41</height>
         </rect>
        </property>
@@ -4506,7 +4506,7 @@ rgb(255, 210, 30)</string>
       <widget class="QLabel" name="label_120">
        <property name="geometry">
         <rect>
-         <x>40</x>
+         <x>10</x>
          <y>160</y>
          <width>181</width>
          <height>58</height>
@@ -4529,7 +4529,7 @@ rgb(255, 210, 30)</string>
       <widget class="QLineEdit" name="path_edit">
        <property name="geometry">
         <rect>
-         <x>250</x>
+         <x>220</x>
          <y>170</y>
          <width>721</width>
          <height>41</height>
@@ -4539,9 +4539,9 @@ rgb(255, 210, 30)</string>
       <widget class="QLabel" name="label_115">
        <property name="geometry">
         <rect>
-         <x>470</x>
+         <x>551</x>
          <y>40</y>
-         <width>202</width>
+         <width>91</width>
          <height>41</height>
         </rect>
        </property>
@@ -4553,10 +4553,33 @@ rgb(255, 210, 30)</string>
         </font>
        </property>
        <property name="text">
-        <string>Captured Date :</string>
+        <string>Type :</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="search_button_video">
+       <property name="geometry">
+        <rect>
+         <x>1020</x>
+         <y>40</y>
+         <width>171</width>
+         <height>161</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>18</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="styleSheet">
+        <string notr="true"/>
+       </property>
+       <property name="text">
+        <string>Search</string>
        </property>
       </widget>
      </widget>
@@ -4853,7 +4876,7 @@ Others</string>
         <string/>
        </property>
       </widget>
-      <widget class="QTableWidget" name="select_employee_table">
+      <widget class="QTableWidget" name="registered_employee_table">
        <property name="geometry">
         <rect>
          <x>50</x>
@@ -5430,7 +5453,7 @@ Others</string>
         </property>
        </item>
       </widget>
-      <widget class="QTableWidget" name="tableWidget">
+      <widget class="QTableWidget" name="FeedingTable">
        <property name="geometry">
         <rect>
          <x>80</x>
@@ -5502,12 +5525,12 @@ Others</string>
       <property name="title">
        <string>Setting Ventilation Time</string>
       </property>
-      <widget class="QTableWidget" name="tableWidget_2">
+      <widget class="QTableWidget" name="VentilationTable">
        <property name="geometry">
         <rect>
-         <x>80</x>
+         <x>90</x>
          <y>70</y>
-         <width>291</width>
+         <width>301</width>
          <height>641</height>
         </rect>
        </property>
@@ -5535,7 +5558,7 @@ Others</string>
        <rect>
         <x>530</x>
         <y>690</y>
-        <width>241</width>
+        <width>181</width>
         <height>71</height>
        </rect>
       </property>
@@ -5558,9 +5581,9 @@ Others</string>
      <widget class="QGroupBox" name="groupBox_26">
       <property name="geometry">
        <rect>
-        <x>260</x>
+        <x>230</x>
         <y>40</y>
-        <width>741</width>
+        <width>841</width>
         <height>191</height>
        </rect>
       </property>
@@ -5673,13 +5696,36 @@ Others</string>
         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
        </property>
       </widget>
+      <widget class="QPushButton" name="search_button_video_2">
+       <property name="geometry">
+        <rect>
+         <x>710</x>
+         <y>80</y>
+         <width>101</width>
+         <height>91</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>18</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="styleSheet">
+        <string notr="true"/>
+       </property>
+       <property name="text">
+        <string>Search</string>
+       </property>
+      </widget>
      </widget>
-     <widget class="QTableWidget" name="harmful_animal_table_2">
+     <widget class="QTableWidget" name="log_table">
       <property name="geometry">
        <rect>
-        <x>260</x>
+        <x>230</x>
         <y>260</y>
-        <width>741</width>
+        <width>841</width>
         <height>411</height>
        </rect>
       </property>
@@ -5991,7 +6037,7 @@ Others</string>
         </font>
        </property>
        <property name="currentIndex">
-        <number>0</number>
+        <number>2</number>
        </property>
        <widget class="QWidget" name="monitor_page">
         <property name="geometry">

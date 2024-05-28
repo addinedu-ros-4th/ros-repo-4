@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5 import uic, QtCore
 from PyQt5.QtCore import QThread, pyqtSignal
-
+from PyQt5.QtCore import Qt
 import rclpy as rp
 # from turtles_service_msgs.srv import NavToPose
 import time
@@ -31,18 +31,26 @@ class Pages(Enum):
     PAGE_MONITOR_BARN = 2
     PAGE_MONITOR_FACILITIES = 3 
     PAGE_MONITOR_CAMERA = 4
-    PAGE_CONTROL_ROBOT = 5
-    PAGE_CONTROL_FACILITIES = 6
-    PAGE_ROBOTMANAGER_TASK = 7
-    PAGE_DATAMANAGER_ANIMAL = 8
-    PAGE_DATAMANAGER_FOOD = 9
-    PAGE_DATAMANAGER_VIDEO = 10
-    PAGE_DATAMANAGER_FACILITIES = 11
-    PAGE_SCHEDULE_ROBOT = 12
-    PAGE_SCHEDULE_FOOD = 13
-    PAGE_SCHEDULE_FACILITIES = 14
-    PAGE_LOG = 15
-    PAGE_SETTING = 16
+    PAGE_CHOOSE_CONTROL_ROBOT = 5
+    PAGE_CONTROL_ROBOT = 6
+    PAGE_CONTROL_FACILITIES = 7 
+    PAGE_CHOOSE_ROBOTMANAGER_TASK = 8
+    PAGE_ROBOTMANAGER_TASK = 9
+    PAGE_CHOOSE_DATAMANAGER_ANIMAL = 10
+    PAGE_REGISTER_ANIMAL = 11
+    PAGE_SEARCH_ANIMAL = 12
+    PAGE_CHOOSE_DATAMANAGER_FOOD = 13
+    PAGE_REGISTER_FOOD = 14
+    PAGE_SEARCH_FOOD = 15
+    PAGE_DATAMANAGER_VIDEO = 16
+    PAGE_CHOOSE_DATAMANAGER_FACILITIES = 17
+    PAGE_REGISTER_EMPLOYEE = 18
+    PAGE_REGISTER_OTHERS = 19
+    PAGE_SCHEDULE_FOOD = 20
+    PAGE_SCHEDULE_FACILITIES = 21
+    PAGE_LOG = 22
+    PAGE_SETTING = 23
+    
 
 class TaskScheduleType(Enum):
     TASK_SCHEDULED = 0
@@ -97,7 +105,7 @@ class Task:
         self.task_current_progress = 0              # 1: 업무 할당됨, 2: 사료 탱크 도착 3: 사료 받기 완료 4: 축사앞 도착 완료 5: 먹이통 도착 완료 6: 먹이 주기 완료  
         self.task_food_tank_num = 0                 
     
-    def setTaskResult(self,task_result):
+    def setTaskResult(self, task_result):
         self.task_result = task_result
 
     def setFoodTank(self, num):
@@ -268,12 +276,16 @@ class WindowClass(QMainWindow, from_class) :
         
         #databases 연결
         self.data_manage = DBManager("192.168.1.101", "0000", 3306, "turtles", "TurtlesDB")
-        self.userdata_list = self.data_manage.getdata()
+        self.animal_list = self.data_manage.getAnimal()
+        self.rfid_list = self.data_manage.getAnimalRFID()
+        self.camera_list = self.data_manage.getCameraPath()
+        self.food_list = self.data_manage.getFood()
+        self.schedule_list = self.data_manage.getFoodRobotSchedule()
+        self.userdata_list = self.data_manage.getUserData()
         self.robot_thread = RobotThread(parent=self)
         self.count = 0
         self.server_thread = None
         self.client_df = pd.DataFrame(columns=['IP', 'Port'])
-
         self.robotThreadStart()
 
         self.quit_button.hide()
@@ -283,6 +295,17 @@ class WindowClass(QMainWindow, from_class) :
         self.quit_button.clicked.connect(self.stop_tcp_server_thread)
         self.client_table.horizontalHeader().setStretchLastSection(True)
         self.client_table.setColumnWidth(0, 280)
+        #테이블정리
+        
+        self.search_animal_table.resizeColumnsToContents()
+        self.search_animal_table.horizontalHeader().setStretchLastSection(True)
+        self.search_food_table.resizeColumnsToContents()
+        self.search_food_table.horizontalHeader().setStretchLastSection(True)
+        self.search_camera_table.resizeColumnsToContents()
+        self.search_camera_table.horizontalHeader().setStretchLastSection(True)
+        self.registered_employee_table.horizontalHeader().setStretchLastSection(True)
+        self.harmful_animal_table.horizontalHeader().setStretchLastSection(True)
+        self.log_table.horizontalHeader().setStretchLastSection(True)
         
         #login 화면으로 초기화면 셋팅
         self.stackedWidget.setCurrentIndex(Pages.PAGE_LOGIN.value)
@@ -293,22 +316,36 @@ class WindowClass(QMainWindow, from_class) :
         
         self.monitor_barnpage_button.clicked.connect(self.monitor_barnpage_button_clicked)
         self.monitor_facilitiespage_button.clicked.connect(self.monitor_facilitiespage_button_clicked)
-        self.monitor_camerapage_button.clicked.connect(self.monitor_camerapage_button_clicked)
+        self.monitor_camerapage_button.clicked.connect(self.monitor_camerapage_button_clicked) #
 
-        self.control_robotpage_button.clicked.connect(self.control_robotpage_button_clicked)
+        self.control_robotpage_button.clicked.connect(self.control_robotpage_button_clicked) 
+        self.control_robot_a_button.clicked.connect(lambda: self.control_robotpage("Food Robot A"))
+        self.control_robot_b_button.clicked.connect(lambda: self.control_robotpage("Food Robot B"))
+        
         self.control_facilitiespage_button.clicked.connect(self.control_facilitiespage_button_clicked)
         
-        self.robotmanager_taskpage_button.clicked.connect(self.robotmanager_taskpage_button_clicked)
+        self.robotmanager_taskpage_button.clicked.connect(self.robotmanager_choose_button_clicked)
+        self.manage_robot_a_button.clicked.connect(lambda: self.robotmanager_taskpage_button_clicked("Food Robot A"))
+        self.manage_robot_b_button.clicked.connect(lambda: self.robotmanager_taskpage_button_clicked("Food Robot B"))
 
-        self.datamanager_animalpage_button.clicked.connect(self.datamanager_animalpage_button_clicked)
-        self.datamanager_foodpage_button.clicked.connect(self.datamanager_foodpage_button_clicked)
+        self.datamanager_animalpage_button.clicked.connect(self.choose_datamanager_animalpage_button_clicked)
+        self.choose_register_button_animal.clicked.connect(self.register_animal_button_clicked)
+        self.choose_search_button_animal.clicked.connect(self.search_animal_button_clicked)
+        
+        self.datamanager_foodpage_button.clicked.connect(self.choose_datamanager_foodpage_button_clicked)
+        self.choose_register_button_food.clicked.connect(self.register_food_button_clicked)
+        self.choose_search_button_food.clicked.connect(self.search_food_button_clicked)
+        
         self.datamanager_videopage_button.clicked.connect(self.datamanager_videopage_button_clicked)
-        self.datamanager_facilitiespage_button.clicked.connect(self.datamanager_facilitiespage_button_clicked)
+        
+        self.datamanager_facilitiespage_button.clicked.connect(self.choose_datamanager_facilitiespage_button_clicked)
+        self.choose_register_employee_button.clicked.connect(self.register_employee_button_clicked)
+        self.choose_others_button.clicked.connect(self.register_others_button_clicked)
 
         self.schedule_foodpage_button.clicked.connect(self.schedule_foodpage_button_clicked)
         self.schedule_facilitiespage_button.clicked.connect(self.schedule_facilitiespage_button_clicked)
 
-        self.toolBox.currentChanged.connect(self.toolbox_changed)
+        self.toolBox.currentChanged.connect(self.toolbox_changed) ## 버튼 페이지 연결 
 
         #login logout 버튼 연결
         self.logout_button.clicked.connect(self.logout_button_clicked)
@@ -329,6 +366,15 @@ class WindowClass(QMainWindow, from_class) :
         #ros 
         self.service_client_node = rp.create_node('client_test')
 
+        self.layout = QVBoxLayout()
+        self.setupTableWidget(self.FeedingTable)
+        self.layout.addWidget(self.FeedingTable)
+        self.setupTableWidget(self.VentilationTable)
+        self.layout.addWidget(self.VentilationTable)
+        self.setLayout(self.layout) 
+        
+        self.stop_recording_button.hide()
+    
     def decryption(self,data,key,tag):
         # 복호화
         cipher = AES.new(key, AES.MODE_EAX, nonce=cipher.nonce)
@@ -668,40 +714,81 @@ class WindowClass(QMainWindow, from_class) :
         self.stackedWidget.setCurrentIndex(Pages.PAGE_MONITOR_CAMERA.value)
     
     def control_robotpage_button_clicked(self):
-        self.stackedWidget.setCurrentIndex(Pages.PAGE_CONTROL_ROBOT.value)
+        self.stackedWidget.setCurrentIndex(Pages.PAGE_CHOOSE_CONTROL_ROBOT.value)
 
+    def control_robotpage(self,robot_name):
+        self.stackedWidget.setCurrentIndex(Pages.PAGE_CONTROL_ROBOT.value)
+        self.robot_name_label.setText(robot_name)
+        
     def control_facilitiespage_button_clicked(self):
         self.stackedWidget.setCurrentIndex(Pages.PAGE_CONTROL_FACILITIES.value)
+        
+    def robotmanager_choose_button_clicked(self):
+        self.stackedWidget.setCurrentIndex(Pages.PAGE_CHOOSE_ROBOTMANAGER_TASK.value)   
 
-    def robotmanager_taskpage_button_clicked(self):
-        self.stackedWidget.setCurrentIndex(Pages.PAGE_DATAMANAGER_FOOD.value)
+    def robotmanager_taskpage_button_clicked(self,robot_name):
+        self.stackedWidget.setCurrentIndex(Pages.PAGE_ROBOTMANAGER_TASK.value)
+        self.food_robot_label.setText(robot_name)
         now = datetime.now()
         self.hour_edit.setText(str(now.hour))
         self.minutes_edit.setText(str(now.minute))
 
-
+    def choose_datamanager_animalpage_button_clicked(self):
+        self.stackedWidget.setCurrentIndex(Pages.PAGE_CHOOSE_DATAMANAGER_ANIMAL.value)
     
-    def datamanager_animalpage_button_clicked(self):
-        self.stackedWidget.setCurrentIndex(Pages.PAGE_DATAMANAGER_ANIMAL.value)
+    def register_animal_button_clicked(self):
+        self.stackedWidget.setCurrentIndex(Pages.PAGE_REGISTER_ANIMAL.value)
+    
+    def search_animal_button_clicked(self):
+        self.stackedWidget.setCurrentIndex(Pages.PAGE_SEARCH_ANIMAL.value)
+    
+    def choose_datamanager_foodpage_button_clicked(self):
+        self.stackedWidget.setCurrentIndex(Pages.PAGE_CHOOSE_DATAMANAGER_FOOD.value)
 
-    def datamanager_foodpage_button_clicked(self):
-        self.stackedWidget.setCurrentIndex(Pages.PAGE_DATAMANAGER_FOOD.value)
+    def register_food_button_clicked(self):
+        self.stackedWidget.setCurrentIndex(Pages.PAGE_REGISTER_FOOD.value)
+    
+    def search_food_button_clicked(self):
+        self.stackedWidget.setCurrentIndex(Pages.PAGE_SEARCH_FOOD.value)
 
     def datamanager_videopage_button_clicked(self):
         self.stackedWidget.setCurrentIndex(Pages.PAGE_DATAMANAGER_VIDEO.value)
 
-    def datamanager_facilitiespage_button_clicked(self):
-        self.stackedWidget.setCurrentIndex(Pages.PAGE_DATAMANAGER_FACILITIES.value)
+    def choose_datamanager_facilitiespage_button_clicked(self):
+        self.stackedWidget.setCurrentIndex(Pages.PAGE_CHOOSE_DATAMANAGER_FACILITIES.value)
 
-    def schedule_robotpage_button_clicked(self):
-        self.stackedWidget.setCurrentIndex(Pages.PAGE_SCHEDULE_ROBOT.value)
+    def register_employee_button_clicked(self):
+        self.stackedWidget.setCurrentIndex(Pages.PAGE_REGISTER_EMPLOYEE.value)
+    
+    def register_others_button_clicked(self):
+        self.stackedWidget.setCurrentIndex(Pages.PAGE_REGISTER_OTHERS.value)
 
     def schedule_foodpage_button_clicked(self):
         self.stackedWidget.setCurrentIndex(Pages.PAGE_SCHEDULE_FOOD.value)
 
     def schedule_facilitiespage_button_clicked(self):
         self.stackedWidget.setCurrentIndex(Pages.PAGE_SCHEDULE_FACILITIES.value)
+        
+    def setupTableWidget(self, tableWidget):
+        tableWidget.setRowCount(24)  # 행의 개수 (24행)
+        tableWidget.setColumnCount(2)  # 열의 개수 (2열)
+        tableWidget.horizontalHeader().setStretchLastSection(True)
 
+        # 첫 번째 열에 시간 설정 (00:00부터 23:00까지)
+        for hour in range(24):
+            time_item = QTableWidgetItem(f"{hour:02d}:00")
+            time_item.setFlags(time_item.flags() ^ Qt.ItemIsEditable)  # 시간을 수정할 수 없도록 설정
+            tableWidget.setItem(hour, 0, time_item)
+
+        # 두 번째 열에 체크박스 추가
+        for row in range(24):
+            checkbox_item = QTableWidgetItem()
+            checkbox_item.setFlags(checkbox_item.flags() | Qt.ItemIsUserCheckable)
+            checkbox_item.setCheckState(Qt.Unchecked)
+            tableWidget.setItem(row, 1, checkbox_item)
+
+        # 열 헤더 설정
+        tableWidget.setHorizontalHeaderLabels(["Time", "Assigned"])
         
         
 if __name__ == "__main__":
