@@ -101,7 +101,7 @@ class Task:
 
 
     
-class TcpServer(QThread):
+class RobotThread(QThread):
     update = QtCore.pyqtSignal()
 
     def __init__(self, sec =0, parent = None):
@@ -254,13 +254,13 @@ class WindowClass(QMainWindow, from_class) :
         
         #databases 연결
         self.data_manage = DBManager("192.168.1.101", "0000", 3306, "turtles", "TurtlesDB")
-        print(self.data_manage.getdata())
-        self.tcpserver_thread = TcpServer(parent=self)
+
+        self.robot_thread = RobotThread(parent=self)
         self.count = 0
         self.server_thread = None
         self.client_df = pd.DataFrame(columns=['IP', 'Port'])
 
-        self.tcpserverStart()
+        self.robotThreadStart()
 
         self.quit_button.hide()
         self.server_label.hide()
@@ -302,8 +302,8 @@ class WindowClass(QMainWindow, from_class) :
         self.login_button.clicked.connect(self.login_button_clicked)
 
     
-        #tcp server thread  
-        self.tcpserver_thread.update.connect(self.update_tcp_server_thread)
+        #robot thread  
+        self.robot_thread.update.connect(self.update_robot_thread)
 
         #food trailer servo 버튼 연결
         self.foodtank_servo_open_button.clicked.connect(self.foodtank_servo_open_button_clicked)
@@ -398,9 +398,7 @@ class WindowClass(QMainWindow, from_class) :
                 print("status: station check")
 
                 
-
-
-    def update_tcp_server_thread(self):
+    def update_robot_thread(self):
         self.assignRobotTask()
         self.robotStatusManager()
         
@@ -446,16 +444,16 @@ class WindowClass(QMainWindow, from_class) :
         #창을 종료할때 task_id 저장해주기
         self.yaml_file.saveYamlFile(self.task_id)
 
-        self.tcpserverStop()
+        self.robotThreadStop()
         if self.server_thread:
             self.server_thread.stop()
         event.accept()
 
-    def tcpserverStart(self):
-        self.tcpserver_thread.start()
+    def robotThreadStart(self):
+        self.robot_thread.start()
 
-    def tcpserverStop(self):
-        self.tcpserver_thread.stop()
+    def robotThreadStop(self):
+        self.robot_thread.stop()
         
     def start_tcp_server_thread(self):
         host = self.ip_input.text()
