@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5 import uic, QtCore
 from PyQt5.QtCore import QThread, pyqtSignal
-
+from PyQt5.QtCore import Qt
 import rclpy as rp
 # from turtles_service_msgs.srv import NavToPose
 import time
@@ -31,18 +31,26 @@ class Pages(Enum):
     PAGE_MONITOR_BARN = 2
     PAGE_MONITOR_FACILITIES = 3 
     PAGE_MONITOR_CAMERA = 4
-    PAGE_CONTROL_ROBOT = 5
-    PAGE_CONTROL_FACILITIES = 6
-    PAGE_ROBOTMANAGER_TASK = 7
-    PAGE_DATAMANAGER_ANIMAL = 8
-    PAGE_DATAMANAGER_FOOD = 9
-    PAGE_DATAMANAGER_VIDEO = 10
-    PAGE_DATAMANAGER_FACILITIES = 11
-    PAGE_SCHEDULE_ROBOT = 12
-    PAGE_SCHEDULE_FOOD = 13
-    PAGE_SCHEDULE_FACILITIES = 14
-    PAGE_LOG = 15
-    PAGE_SETTING = 16
+    PAGE_CHOOSE_CONTROL_ROBOT = 5
+    PAGE_CONTROL_ROBOT = 6
+    PAGE_CONTROL_FACILITIES = 7 
+    PAGE_CHOOSE_ROBOTMANAGER_TASK = 8
+    PAGE_ROBOTMANAGER_TASK = 9
+    PAGE_CHOOSE_DATAMANAGER_ANIMAL = 10
+    PAGE_REGISTER_ANIMAL = 11
+    PAGE_SEARCH_ANIMAL = 12
+    PAGE_CHOOSE_DATAMANAGER_FOOD = 13
+    PAGE_REGISTER_FOOD = 14
+    PAGE_SEARCH_FOOD = 15
+    PAGE_DATAMANAGER_VIDEO = 16
+    PAGE_CHOOSE_DATAMANAGER_FACILITIES = 17
+    PAGE_REGISTER_EMPLOYEE = 18
+    PAGE_REGISTER_OTHERS = 19
+    PAGE_SCHEDULE_FOOD = 20
+    PAGE_SCHEDULE_FACILITIES = 21
+    PAGE_LOG = 22
+    PAGE_SETTING = 23
+    
 
 class TaskScheduleType(Enum):
     TASK_SCHEDULED = 0
@@ -61,16 +69,12 @@ class RobotType(Enum):
 
 class Status(Enum):
     STATUS_STANDBY = 0
-    STATUS_ASSIGNED = 1
-    STATUS_STATION_CHECK = 2
-    STATUS_TANK_ASSIGN_CHECK = 3
-    STATUS_TANK_PATH_CHECK = 4
-    STATUS_MOVETO_TANK = 5
-    STATUS_RECEIVE_FOOD = 6
-    STATUS_MOVETO_BARN_ENTRANCE = 7
-    STATUS_MOVETO_ROOM = 8
-    STATUS_FEEDING = 9
-    STATUS_RETURN = 10
+    STATUS_NAV_ARUCO = 1
+    STATUS_FOOD_CHARGE = 2
+    STATUS_MANUAL_MOVE= 3
+    STATUS_FOOD_DISTRIBUTE = 4
+    STATUS_RETURN = 5
+
 
 
 class RobotStatus:
@@ -86,18 +90,36 @@ class RobotStatus:
     def setTaskID(self,task_id):
         self.task_id = task_id
 
+    def getTaskID(self):
+        return self.task_id
+
 class Task:
     def __init__(self,id,schedule_type, room_num,task_time):
         self.task_id = id 
         self.task_type = TaskType.TASK_FOOD.value   #0: 배식 1:청소 2: 정리
         self.task_schedule_type = schedule_type     #0: schedule, 1: registered
-        self.assigned_robot_num = 0             #배정된 로봇 이름 
-        self.task_result = 0 #0: not done , 1: done
-        self.task_time = task_time #'2024-01-01 00:00:00' # 업무 할당 시간
-        self.task_room_num = room_num # room은 1부터 시작 1,2,3,4
+        self.assigned_robot_num = 0                 #배정된 로봇 이름 
+        self.task_result = 0                        #0: not done , 1: done
+        self.task_time = task_time                  #'2024-01-01 00:00:00' # 업무 할당 시간
+        self.task_room_num = room_num               # room은 1부터 시작 1,2,3,4
+        self.task_current_progress = 0              # 1: 업무 할당됨, 2: 사료 탱크 도착 3: 사료 받기 완료 4: 축사앞 도착 완료 5: 먹이통 도착 완료 6: 먹이 주기 완료  
+        self.task_food_tank_num = 0                 
     
     def setTaskResult(self, task_result):
         self.task_result = task_result
+
+    def setFoodTank(self, num):
+        self.task_food_tank_num = num
+    
+    def updateTaskProgress(self):
+        self.task_current_progress = self.task_current_progress +1 
+
+    def getCurrentProgress(self):
+        return self.task_current_progress
+    
+    def getFoodTank(self):
+        return self.task_food_tank_num
+    
 
 
     
@@ -273,6 +295,17 @@ class WindowClass(QMainWindow, from_class) :
         self.quit_button.clicked.connect(self.stop_tcp_server_thread)
         self.client_table.horizontalHeader().setStretchLastSection(True)
         self.client_table.setColumnWidth(0, 280)
+        #테이블정리
+        
+        self.search_animal_table.resizeColumnsToContents()
+        self.search_animal_table.horizontalHeader().setStretchLastSection(True)
+        self.search_food_table.resizeColumnsToContents()
+        self.search_food_table.horizontalHeader().setStretchLastSection(True)
+        self.search_camera_table.resizeColumnsToContents()
+        self.search_camera_table.horizontalHeader().setStretchLastSection(True)
+        self.registered_employee_table.horizontalHeader().setStretchLastSection(True)
+        self.harmful_animal_table.horizontalHeader().setStretchLastSection(True)
+        self.log_table.horizontalHeader().setStretchLastSection(True)
         
         #login 화면으로 초기화면 셋팅
         self.stackedWidget.setCurrentIndex(Pages.PAGE_LOGIN.value)
@@ -283,22 +316,36 @@ class WindowClass(QMainWindow, from_class) :
         
         self.monitor_barnpage_button.clicked.connect(self.monitor_barnpage_button_clicked)
         self.monitor_facilitiespage_button.clicked.connect(self.monitor_facilitiespage_button_clicked)
-        self.monitor_camerapage_button.clicked.connect(self.monitor_camerapage_button_clicked)
+        self.monitor_camerapage_button.clicked.connect(self.monitor_camerapage_button_clicked) #
 
-        self.control_robotpage_button.clicked.connect(self.control_robotpage_button_clicked)
+        self.control_robotpage_button.clicked.connect(self.control_robotpage_button_clicked) 
+        self.control_robot_a_button.clicked.connect(lambda: self.control_robotpage("Food Robot A"))
+        self.control_robot_b_button.clicked.connect(lambda: self.control_robotpage("Food Robot B"))
+        
         self.control_facilitiespage_button.clicked.connect(self.control_facilitiespage_button_clicked)
         
-        self.robotmanager_taskpage_button.clicked.connect(self.robotmanager_taskpage_button_clicked)
+        self.robotmanager_taskpage_button.clicked.connect(self.robotmanager_choose_button_clicked)
+        self.manage_robot_a_button.clicked.connect(lambda: self.robotmanager_taskpage_button_clicked("Food Robot A"))
+        self.manage_robot_b_button.clicked.connect(lambda: self.robotmanager_taskpage_button_clicked("Food Robot B"))
 
-        self.datamanager_animalpage_button.clicked.connect(self.datamanager_animalpage_button_clicked)
-        self.datamanager_foodpage_button.clicked.connect(self.datamanager_foodpage_button_clicked)
+        self.datamanager_animalpage_button.clicked.connect(self.choose_datamanager_animalpage_button_clicked)
+        self.choose_register_button_animal.clicked.connect(self.register_animal_button_clicked)
+        self.choose_search_button_animal.clicked.connect(self.search_animal_button_clicked)
+        
+        self.datamanager_foodpage_button.clicked.connect(self.choose_datamanager_foodpage_button_clicked)
+        self.choose_register_button_food.clicked.connect(self.register_food_button_clicked)
+        self.choose_search_button_food.clicked.connect(self.search_food_button_clicked)
+        
         self.datamanager_videopage_button.clicked.connect(self.datamanager_videopage_button_clicked)
-        self.datamanager_facilitiespage_button.clicked.connect(self.datamanager_facilitiespage_button_clicked)
+        
+        self.datamanager_facilitiespage_button.clicked.connect(self.choose_datamanager_facilitiespage_button_clicked)
+        self.choose_register_employee_button.clicked.connect(self.register_employee_button_clicked)
+        self.choose_others_button.clicked.connect(self.register_others_button_clicked)
 
         self.schedule_foodpage_button.clicked.connect(self.schedule_foodpage_button_clicked)
         self.schedule_facilitiespage_button.clicked.connect(self.schedule_facilitiespage_button_clicked)
 
-        self.toolBox.currentChanged.connect(self.toolbox_changed)
+        self.toolBox.currentChanged.connect(self.toolbox_changed) ## 버튼 페이지 연결 
 
         #login logout 버튼 연결
         self.logout_button.clicked.connect(self.logout_button_clicked)
@@ -316,6 +363,17 @@ class WindowClass(QMainWindow, from_class) :
 
         #task add
         self.task_add_button.clicked.connect(self.task_add_button_clicked)
+        #ros 
+        self.service_client_node = rp.create_node('client_test')
+
+        self.layout = QVBoxLayout()
+        self.setupTableWidget(self.FeedingTable)
+        self.layout.addWidget(self.FeedingTable)
+        self.setupTableWidget(self.VentilationTable)
+        self.layout.addWidget(self.VentilationTable)
+        self.setLayout(self.layout) 
+        
+        self.stop_recording_button.hide()
     
     def decryption(self,data,key,tag):
         # 복호화
@@ -362,7 +420,10 @@ class WindowClass(QMainWindow, from_class) :
                 if robot.task_id == 0 : #할당이 안되어 있다
                     if robot.robot_type == self.task_list[busy_index].task_type:
                         robot.setTaskID(self.task_list[busy_index].task_id)
-                        robot.setStatus(Status.STATUS_ASSIGNED.value)
+                        print("robot_num", end="")
+                        print(robot.robot_num)
+                        print("status: assigned")
+                        self.task_list[busy_index].updateTaskProgress() 
                         # print("robot_num : ", end="")
                         # print(robot.robot_num)
                         # print("assigend")
@@ -379,40 +440,128 @@ class WindowClass(QMainWindow, from_class) :
         # else:
         #     print("현재 시간은 수정된 시간과 같습니다.")
 
+    def isServiceCalled(self, robot_task_id):
+        for task in self.task_list:
+            if task.task_id == robot_task_id:
+                if task.getCurrentProgress() == 1:
+                    return True
+        return False
+    
+    def isNavArucoFinished(self):
+        return True
+    
+    def isArucoFoodTank(self):
+        return True
+
+    def isArucoStation(self):
+        return True
+    
+    def isFoodChargeDone(self):
+        return True
+    
+    def isArucoBarnEntrance(self):
+        return True
+    
+    def isArucoDistanceSatisfied(self):
+        return True
+    
+    def isFoodDistributeDone(self):
+        return True
+    
+    def isTaskDone(self, robot_task_id):
+        for task in self.task_list:
+            if task.task_id == robot_task_id:
+                if task.getCurrentProgress() == 6:
+                    return True
+        return False
+
     def robotStatusManager(self):
 
         for robot in self.robot_list:
-            
             if robot.status == Status.STATUS_STANDBY.value:
+                if self.isServiceCalled(robot.getTaskID()):
+                    robot.setStatus(Status.STATUS_NAV_ARUCO.value)
+
+                elif self.isArucoFoodTank() == True:
+                    robot.setStatus(Status.STATUS_FOOD_CHARGE.value)
+
+                elif self.isArucoBarnEntrance() == True:
+                    robot.setStatus(Status.STATUS_MANUAL_MOVE.value)
+
+                elif self.isArucoDistanceSatisfied() == True:
+                    robot.setStatus(Status.STATUS_FOOD_DISTRIBUTE.value)
+                
+                elif self.isTaskDone() == True:
+                    robot.setStatus(Status.STATUS_RETURN.value)
+                
+
+            elif robot.status == Status.STATUS_NAV_ARUCO.value:
+                if self.isNavArucoFinished() == True:
+                    robot.setStatus(Status.STATUS_STANDBY.value)
+
+            elif robot.status == Status.STATUS_FOOD_CHARGE.value:
+                if self.isFoodChargeDone() == True:
+                    robot.setStatus(Status.STATUS_STANDBY.value)
+                    
+            elif robot.status == Status.STATUS_MANUAL_MOVE.value:
+                if self.isArucoDistanceSatisfied() == True:
+                    robot.setStatus(Status.STATUS_STANDBY.value)
+
+            elif robot.status == Status.STATUS_FOOD_DISTRIBUTE.value:
+                if self.isFoodDistributeDone() == True:
+                    robot.setStatus(Status.STATUS_STANDBY.value)
+
+            elif robot.status == Status.STATUS_RETURN.value:
+                if self.isArucoStation() == True:
+                    robot.setStatus(Status.STATUS_STANDBY.value)
+                    
+
+            
+    
+    def checkTaskProgress(self):
+        for task in self.task_list:
+            if task.getCurrentProgress() == 0:
                 return
-            elif robot.status == Status.STATUS_ASSIGNED.value:
-                print("robot_num", end="")
-                print(robot.robot_num)
-                print("status: assigned")
-                #print만 찍고 바로 다음 status로 넘겨줌
-                robot.status += 1
-            elif robot.status == Status.STATUS_STATION_CHECK.value:
-                #amcl로 위치 확인
+            elif task.getCurrentProgress() == 1:
+                self.sendToFoodTank(task.getFoodTank())
+            elif task.getCurrentProgress() == 2:
+                self.sendSignaltoFoodTank(task.getFoodTank())
+            elif task.getCurrentProgress() == 3:
+                self.sendToBarnEntrance()
+            elif task.getCurrentProgress() == 4:
+                pass
+            elif task.getCurrentProgress() == 5:
+                pass
 
-                #aruco 마커 확인
-               
-                print("robot_num", end="")
-                print(robot.robot_num)
-                print("status: station check")
 
+    def sendToBarnEntrance(self):
+        #service call 해서 축사 앞으로 보내기 
+        pass
+
+    def sendSignaltoFoodTank(self, tank_num):
+        #사료탱크에 신호줘서 사료 받기
+        pass
+
+    def sendToFoodTank(self, tank_num):
+        #service call 해서 tank_num에 맞게 ㄱㄱ
+        pass
                 
     def update_robot_thread(self):
         self.assignRobotTask()
         self.robotStatusManager()
+        self.checkTaskProgress()
         
-
+    def get_food_type(self):
+        food_tank_type = 0
+        return food_tank_type
+    
     def task_add_button_clicked(self):
         #task 클래스로 객체 만들어서 list에 넣어주기
         current_datetime = datetime.now()
         modified_datetime = current_datetime.replace(hour=int(self.hour_edit.text()), minute=int(self.minutes_edit.text()), second=0, microsecond=0)
         self.task_id += 1
         temp_task = Task(self.task_id,TaskScheduleType.TASK_REGISTERED.value, self.room_number_edit.text(),modified_datetime)
-        
+        temp_task.setFoodTank(self.get_food_type())
         self.task_list.append(temp_task)
 
     def foodtrailer_servo_open_button_clicked(self):
@@ -517,34 +666,11 @@ class WindowClass(QMainWindow, from_class) :
         else:
             self.client_label.show()
 
-        
-        
-    def service_call_clicked(self):
-        pass
-        # test_node = rp.create_node('client_test')
-        
-        # service_name = '/turtles'
-        # cli = test_node.create_client(Target, service_name)
-        # req = Target.Request()
-        # req.target = "station1"
-        
-
-        # print(req)
-
-        # while not cli.wait_for_service(timeout_sec=1.0):
-        #     print("Waiting for service")
-
-        # future = cli.call_async(req)
-
-        # while not future.done():
-        #     rp.spin_once(test_node)
-        #     print(future.done(), future.result())
-
+    
     def nav_to_station1_button_clicked(self):
-        test_node = rp.create_node('client_test')
         
         service_name = '/nav_service'
-        cli = test_node.create_client(NavToPose, service_name)
+        cli = self.service_client_node.create_client(NavToPose, service_name)
         req = NavToPose.Request()
         req.x = 0.007822726853191853
         req.y = -0.024536626413464546
@@ -558,115 +684,9 @@ class WindowClass(QMainWindow, from_class) :
         future = cli.call_async(req)
 
         while not future.done():
-            rp.spin_once(test_node)
+            rp.spin_once(self.service_client_node)
             print(future.done(), future.result())
 
-    def nav_to_station2_button_clicked(self):
-        test_node = rp.create_node('client_test')
-        
-        service_name = '/nav_service'
-        cli = test_node.create_client(NavToPose, service_name)
-        req = NavToPose.Request()
-        req.x = 0.004148332867771387
-        req.y = -0.8876231908798218
-        req.z = 0.058197021484375
-        
-        print(req)
-
-        while not cli.wait_for_service(timeout_sec=1.0):
-            print("Waiting for service")
-
-        future = cli.call_async(req)
-
-        while not future.done():
-            rp.spin_once(test_node)
-            print(future.done(), future.result())
-
-    def nav_to_foodtank1_button_clicked(self):
-        test_node = rp.create_node('client_test')
-        
-        service_name = '/nav_service'
-        cli = test_node.create_client(NavToPose, service_name)
-        req = NavToPose.Request()
-        req.x = 0.6322089433670044
-        req.y = 0.03546354919672012
-        req.z =  -0.001434326171875
-        
-        print(req)
-
-        while not cli.wait_for_service(timeout_sec=1.0):
-            print("Waiting for service")
-
-        future = cli.call_async(req)
-
-        while not future.done():
-            rp.spin_once(test_node)
-            print(future.done(), future.result())
-
-    def nav_to_foodtank2_button_clicked(self):
-        test_node = rp.create_node('client_test')
-        
-        service_name = '/nav_service'
-        cli = test_node.create_client(NavToPose, service_name)
-        req = NavToPose.Request()
-        req.x = 1.0566225051879883
-        req.y = 0.7861793637275696
-        req.z = 0.002471923828125
-        
-        print(req)
-
-        while not cli.wait_for_service(timeout_sec=1.0):
-            print("Waiting for service")
-
-        future = cli.call_async(req)
-
-        while not future.done():
-            rp.spin_once(test_node)
-            print(future.done(), future.result())
-
-    def nav_to_barn_entrance_button_clicked(self):
-        test_node = rp.create_node('client_test')
-        
-        service_name = '/nav_service'
-        cli = test_node.create_client(NavToPose, service_name)
-        req = NavToPose.Request()
-        req.x = 0.3123237192630768
-        req.y = 0.7631283402442932
-        req.z = -0.001434326171875
-
-        
-        print(req)
-
-        while not cli.wait_for_service(timeout_sec=1.0):
-            print("Waiting for service")
-
-        future = cli.call_async(req)
-
-        while not future.done():
-            rp.spin_once(test_node)
-            print(future.done(), future.result())
-
-    def nav_to_barn_exit_button_clicked(self):
-        test_node = rp.create_node('client_test')
-        
-        service_name = '/nav_service'
-        cli = test_node.create_client(NavToPose, service_name)
-        req = NavToPose.Request()
-        req.x = 2.916684865951538
-        req.y = -0.3893338143825531
-        req.z = 0.002471923828125
-
-        
-        print(req)
-
-        while not cli.wait_for_service(timeout_sec=1.0):
-            print("Waiting for service")
-
-        future = cli.call_async(req)
-
-        while not future.done():
-            rp.spin_once(test_node)
-            print(future.done(), future.result())
 
     def logout_button_clicked(self):
         self.stackedWidget.setCurrentIndex(Pages.PAGE_LOGIN.value)
@@ -679,7 +699,7 @@ class WindowClass(QMainWindow, from_class) :
         if self.toolBox.currentIndex() == 5:
             self.stackedWidget.setCurrentIndex(Pages.PAGE_LOG.value)
         elif self.toolBox.currentIndex() == 6:
-            self.stackedWidget.setCurrentIndex(20)
+            self.stackedWidget.setCurrentIndex(Pages.PAGE_SETTING.value)
 
     def home_page_button_clicked(self):
         self.stackedWidget.setCurrentIndex(Pages.PAGE_HOME.value)
@@ -694,40 +714,81 @@ class WindowClass(QMainWindow, from_class) :
         self.stackedWidget.setCurrentIndex(Pages.PAGE_MONITOR_CAMERA.value)
     
     def control_robotpage_button_clicked(self):
-        self.stackedWidget.setCurrentIndex(Pages.PAGE_CONTROL_ROBOT.value)
+        self.stackedWidget.setCurrentIndex(Pages.PAGE_CHOOSE_CONTROL_ROBOT.value)
 
+    def control_robotpage(self,robot_name):
+        self.stackedWidget.setCurrentIndex(Pages.PAGE_CONTROL_ROBOT.value)
+        self.robot_name_label.setText(robot_name)
+        
     def control_facilitiespage_button_clicked(self):
         self.stackedWidget.setCurrentIndex(Pages.PAGE_CONTROL_FACILITIES.value)
+        
+    def robotmanager_choose_button_clicked(self):
+        self.stackedWidget.setCurrentIndex(Pages.PAGE_CHOOSE_ROBOTMANAGER_TASK.value)   
 
-    def robotmanager_taskpage_button_clicked(self):
-        self.stackedWidget.setCurrentIndex(Pages.PAGE_DATAMANAGER_FOOD.value)
+    def robotmanager_taskpage_button_clicked(self,robot_name):
+        self.stackedWidget.setCurrentIndex(Pages.PAGE_ROBOTMANAGER_TASK.value)
+        self.food_robot_label.setText(robot_name)
         now = datetime.now()
         self.hour_edit.setText(str(now.hour))
         self.minutes_edit.setText(str(now.minute))
 
-
+    def choose_datamanager_animalpage_button_clicked(self):
+        self.stackedWidget.setCurrentIndex(Pages.PAGE_CHOOSE_DATAMANAGER_ANIMAL.value)
     
-    def datamanager_animalpage_button_clicked(self):
-        self.stackedWidget.setCurrentIndex(Pages.PAGE_DATAMANAGER_ANIMAL.value)
+    def register_animal_button_clicked(self):
+        self.stackedWidget.setCurrentIndex(Pages.PAGE_REGISTER_ANIMAL.value)
+    
+    def search_animal_button_clicked(self):
+        self.stackedWidget.setCurrentIndex(Pages.PAGE_SEARCH_ANIMAL.value)
+    
+    def choose_datamanager_foodpage_button_clicked(self):
+        self.stackedWidget.setCurrentIndex(Pages.PAGE_CHOOSE_DATAMANAGER_FOOD.value)
 
-    def datamanager_foodpage_button_clicked(self):
-        self.stackedWidget.setCurrentIndex(Pages.PAGE_DATAMANAGER_FOOD.value)
+    def register_food_button_clicked(self):
+        self.stackedWidget.setCurrentIndex(Pages.PAGE_REGISTER_FOOD.value)
+    
+    def search_food_button_clicked(self):
+        self.stackedWidget.setCurrentIndex(Pages.PAGE_SEARCH_FOOD.value)
 
     def datamanager_videopage_button_clicked(self):
         self.stackedWidget.setCurrentIndex(Pages.PAGE_DATAMANAGER_VIDEO.value)
 
-    def datamanager_facilitiespage_button_clicked(self):
-        self.stackedWidget.setCurrentIndex(Pages.PAGE_DATAMANAGER_FACILITIES.value)
+    def choose_datamanager_facilitiespage_button_clicked(self):
+        self.stackedWidget.setCurrentIndex(Pages.PAGE_CHOOSE_DATAMANAGER_FACILITIES.value)
 
-    def schedule_robotpage_button_clicked(self):
-        self.stackedWidget.setCurrentIndex(Pages.PAGE_SCHEDULE_ROBOT.value)
+    def register_employee_button_clicked(self):
+        self.stackedWidget.setCurrentIndex(Pages.PAGE_REGISTER_EMPLOYEE.value)
+    
+    def register_others_button_clicked(self):
+        self.stackedWidget.setCurrentIndex(Pages.PAGE_REGISTER_OTHERS.value)
 
     def schedule_foodpage_button_clicked(self):
         self.stackedWidget.setCurrentIndex(Pages.PAGE_SCHEDULE_FOOD.value)
 
     def schedule_facilitiespage_button_clicked(self):
         self.stackedWidget.setCurrentIndex(Pages.PAGE_SCHEDULE_FACILITIES.value)
+        
+    def setupTableWidget(self, tableWidget):
+        tableWidget.setRowCount(24)  # 행의 개수 (24행)
+        tableWidget.setColumnCount(2)  # 열의 개수 (2열)
+        tableWidget.horizontalHeader().setStretchLastSection(True)
 
+        # 첫 번째 열에 시간 설정 (00:00부터 23:00까지)
+        for hour in range(24):
+            time_item = QTableWidgetItem(f"{hour:02d}:00")
+            time_item.setFlags(time_item.flags() ^ Qt.ItemIsEditable)  # 시간을 수정할 수 없도록 설정
+            tableWidget.setItem(hour, 0, time_item)
+
+        # 두 번째 열에 체크박스 추가
+        for row in range(24):
+            checkbox_item = QTableWidgetItem()
+            checkbox_item.setFlags(checkbox_item.flags() | Qt.ItemIsUserCheckable)
+            checkbox_item.setCheckState(Qt.Unchecked)
+            tableWidget.setItem(row, 1, checkbox_item)
+
+        # 열 헤더 설정
+        tableWidget.setHorizontalHeaderLabels(["Time", "Assigned"])
         
         
 if __name__ == "__main__":
