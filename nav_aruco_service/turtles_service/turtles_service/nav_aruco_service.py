@@ -13,8 +13,8 @@ from nav2_msgs.action import NavigateToPose
 from geometry_msgs.msg import PoseStamped, Twist
 from tf_transformations import euler_from_quaternion, quaternion_from_euler
 
-TCP_IP = '192.168.0.20'  # 클라이언트 IP 주소
-TCP_PORT = 5002          # 서버 포트
+TCP_IP = '192.168.1.104'  # 서버 IP 주소
+TCP_PORT = 3000            # 서버 포트
 
 class Nav_Aruco_Service(Node):
 
@@ -48,32 +48,41 @@ class Nav_Aruco_Service(Node):
         self.tcp_thread.start()
 
     def receive_images_via_tcp(self):
-        server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        server_socket.bind((TCP_IP, TCP_PORT))
-        server_socket.listen(1)
-        self.get_logger().info('Waiting for connection...')
-        conn, addr = server_socket.accept()
-        self.get_logger().info(f'Connected by {addr}')
+        client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        client_socket.connect((TCP_IP, TCP_PORT))
+        self.get_logger().info('Connected to server')
 
         data = b""
         payload_size = struct.calcsize("L")
         
         while True:
-            while len(data) < payload_size:
-                packet = conn.recv(4096)
-                if not packet: break
-                data += packet
-            packed_msg_size = data[:payload_size]
-            data = data[payload_size:]
-            msg_size = struct.unpack("L", packed_msg_size)[0]
-            
-            while len(data) < msg_size:
-                data += conn.recv(4096)
-            frame_data = data[:msg_size]
-            data = data[msg_size:]
-            
-            frame = pickle.loads(frame_data)
-            self.image_queue.append(frame)
+            try:
+                while len(data) < payload_size:
+                    packet = client_socket.recv(4096)
+                    if not packet: 
+                        break
+                    data += packet
+                if len(data) < payload_size:
+                    continue
+                packed_msg_size = data[:payload_size]
+                data = data[payload_size:]
+                msg_size = struct.unpack("L", packed_msg_size)[0]
+                
+                while len(data) < msg_size:
+                    data += client_socket.recv(4096)
+                frame_data = data[:msg_size]
+                data = data[msg_size:]
+                
+                frame = pickle.loads(frame_data)
+                self.image_queue.append(frame)
+                cv2.imshow('Received Frame', frame)
+                if cv2.waitKey(1) & 0xFF == ord('q'):
+                    break
+            except Exception as e:
+                self.get_logger().error(f"Error receiving image: {e}")
+                break
+
+        client_socket.close()
 
     def service_callback(self, request: ArucoNavigateTo.Request, response: ArucoNavigateTo.Response):
 
