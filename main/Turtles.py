@@ -22,9 +22,6 @@ from datetime import datetime, timedelta
 from Crypto.Cipher import AES
 from Crypto.Random import get_random_bytes
 
-import cv2
-from ultralytics import YOLO
-
 
 
 class Pages(Enum):
@@ -280,7 +277,6 @@ class WindowClass(QMainWindow, from_class) :
         #databases 연결
         self.data_manage = DBManager("192.168.1.101", "0000", 3306, "turtles", "TurtlesDB")
         self.animal_list = self.data_manage.getAnimal()
-        self.rfid_list = self.data_manage.getAnimalRFID()
         self.camera_list = self.data_manage.getCameraPath()
         self.food_list = self.data_manage.getFood()
         self.schedule_list = self.data_manage.getFoodRobotSchedule()
