@@ -22,6 +22,9 @@ from datetime import datetime, timedelta
 from Crypto.Cipher import AES
 from Crypto.Random import get_random_bytes
 
+import cv2
+from ultralytics import YOLO
+
 
 
 class Pages(Enum):
