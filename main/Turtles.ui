@@ -496,7 +496,7 @@
      <enum>QFrame::NoFrame</enum>
     </property>
     <property name="currentIndex">
-     <number>22</number>
+     <number>4</number>
     </property>
     <widget class="QWidget" name="home_page">
      <widget class="QLabel" name="label">
@@ -1564,7 +1564,7 @@
         <string notr="true"/>
        </property>
        <property name="text">
-        <string>🐢</string>
+        <string/>
        </property>
        <property name="pixmap">
         <pixmap>../../../../../Pictures/Screenshots/grap1.png</pixmap>
@@ -1784,7 +1784,7 @@ color: rgb(192, 28, 40);</string>
         <string notr="true"/>
        </property>
        <property name="text">
-        <string>🐢</string>
+        <string/>
        </property>
        <property name="pixmap">
         <pixmap>../../../../../Pictures/Screenshots/grap1.png</pixmap>
@@ -2073,7 +2073,33 @@ color: rgb(192, 28, 40);</string>
         <string>Select Camera: </string>
        </property>
       </widget>
-      <widget class="QComboBox" name="select_camera_box"/>
+      <widget class="QComboBox" name="select_camera_box">
+       <item>
+        <property name="text">
+         <string>Entrance</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Cow Room1</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Cow Room2</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Calf Room1</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Calf Room2</string>
+        </property>
+       </item>
+      </widget>
      </widget>
     </widget>
     <widget class="QWidget" name="control_robot_page_choose_robot">
