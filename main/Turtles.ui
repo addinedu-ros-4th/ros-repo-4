@@ -489,14 +489,14 @@
       <x>230</x>
       <y>40</y>
       <width>1271</width>
-      <height>781</height>
+      <height>831</height>
      </rect>
     </property>
     <property name="frameShape">
      <enum>QFrame::NoFrame</enum>
     </property>
     <property name="currentIndex">
-     <number>4</number>
+     <number>15</number>
     </property>
     <widget class="QWidget" name="home_page">
      <widget class="QLabel" name="label">
@@ -519,7 +519,7 @@
       <property name="geometry">
        <rect>
         <x>470</x>
-        <y>470</y>
+        <y>550</y>
         <width>341</width>
         <height>111</height>
        </rect>
@@ -527,6 +527,8 @@
       <property name="font">
        <font>
         <pointsize>25</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
        </font>
       </property>
       <property name="text">
@@ -536,10 +538,10 @@
      <widget class="QSplitter" name="splitter_30">
       <property name="geometry">
        <rect>
-        <x>190</x>
-        <y>200</y>
-        <width>891</width>
-        <height>221</height>
+        <x>160</x>
+        <y>220</y>
+        <width>991</width>
+        <height>291</height>
        </rect>
       </property>
       <property name="orientation">
@@ -548,7 +550,7 @@
       <widget class="QLabel" name="turtle_3">
        <property name="font">
         <font>
-         <pointsize>100</pointsize>
+         <pointsize>120</pointsize>
          <weight>75</weight>
          <bold>true</bold>
         </font>
@@ -563,7 +565,7 @@
       <widget class="QLabel" name="turtle_4">
        <property name="font">
         <font>
-         <pointsize>100</pointsize>
+         <pointsize>120</pointsize>
          <weight>75</weight>
          <bold>true</bold>
         </font>
@@ -578,7 +580,7 @@
       <widget class="QLabel" name="turtle_5">
        <property name="font">
         <font>
-         <pointsize>100</pointsize>
+         <pointsize>120</pointsize>
          <weight>75</weight>
          <bold>true</bold>
         </font>
@@ -593,7 +595,7 @@
       <widget class="QLabel" name="turtle_6">
        <property name="font">
         <font>
-         <pointsize>100</pointsize>
+         <pointsize>120</pointsize>
          <weight>75</weight>
          <bold>true</bold>
         </font>
@@ -605,6 +607,30 @@
         <set>Qt::AlignCenter</set>
        </property>
       </widget>
+     </widget>
+     <widget class="QLabel" name="login_information_label">
+      <property name="geometry">
+       <rect>
+        <x>190</x>
+        <y>120</y>
+        <width>891</width>
+        <height>79</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Ubuntu</family>
+        <pointsize>30</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string> </string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
      </widget>
     </widget>
     <widget class="QWidget" name="login_page">
@@ -671,6 +697,13 @@
          <height>51</height>
         </rect>
        </property>
+       <property name="font">
+        <font>
+         <pointsize>25</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
       </widget>
       <widget class="QLineEdit" name="pw_input">
        <property name="geometry">
@@ -680,6 +713,13 @@
          <width>451</width>
          <height>51</height>
         </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>25</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
        </property>
       </widget>
       <widget class="QPushButton" name="login_button">
@@ -700,6 +740,28 @@
         <string> LOG IN</string>
        </property>
       </widget>
+     </widget>
+     <widget class="QLabel" name="login_result_label">
+      <property name="geometry">
+       <rect>
+        <x>190</x>
+        <y>480</y>
+        <width>871</width>
+        <height>79</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Ubuntu</family>
+        <pointsize>25</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
      </widget>
     </widget>
     <widget class="QWidget" name="monitor_barn_page">
@@ -1564,7 +1626,7 @@
         <string notr="true"/>
        </property>
        <property name="text">
-        <string/>
+        <string>🐢</string>
        </property>
        <property name="pixmap">
         <pixmap>../../../../../Pictures/Screenshots/grap1.png</pixmap>
@@ -1784,7 +1846,7 @@ color: rgb(192, 28, 40);</string>
         <string notr="true"/>
        </property>
        <property name="text">
-        <string/>
+        <string>🐢</string>
        </property>
        <property name="pixmap">
         <pixmap>../../../../../Pictures/Screenshots/grap1.png</pixmap>
@@ -2073,33 +2135,7 @@ color: rgb(192, 28, 40);</string>
         <string>Select Camera: </string>
        </property>
       </widget>
-      <widget class="QComboBox" name="select_camera_box">
-       <item>
-        <property name="text">
-         <string>Entrance</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Cow Room1</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Cow Room2</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Calf Room1</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Calf Room2</string>
-        </property>
-       </item>
-      </widget>
+      <widget class="QComboBox" name="select_camera_box"/>
      </widget>
     </widget>
     <widget class="QWidget" name="control_robot_page_choose_robot">
@@ -3251,10 +3287,10 @@ rgb(255, 210, 30)</string>
      <widget class="QGroupBox" name="groupBox_4">
       <property name="geometry">
        <rect>
-        <x>360</x>
+        <x>330</x>
         <y>130</y>
-        <width>541</width>
-        <height>451</height>
+        <width>601</width>
+        <height>521</height>
        </rect>
       </property>
       <property name="title">
@@ -3263,11 +3299,16 @@ rgb(255, 210, 30)</string>
       <widget class="QLineEdit" name="RFID_edit">
        <property name="geometry">
         <rect>
-         <x>250</x>
+         <x>300</x>
          <y>26</y>
          <width>180</width>
          <height>41</height>
         </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>13</pointsize>
+        </font>
        </property>
       </widget>
       <widget class="QSplitter" name="splitter_6">
@@ -3275,7 +3316,7 @@ rgb(255, 210, 30)</string>
         <rect>
          <x>50</x>
          <y>18</y>
-         <width>161</width>
+         <width>221</width>
          <height>421</height>
         </rect>
        </property>
@@ -3394,31 +3435,31 @@ rgb(255, 210, 30)</string>
       <widget class="QComboBox" name="select_feed_box">
        <property name="geometry">
         <rect>
-         <x>250</x>
+         <x>300</x>
          <y>268</y>
          <width>181</width>
          <height>41</height>
         </rect>
        </property>
-       <item>
-        <property name="text">
-         <string>Feed A</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Feed B</string>
-        </property>
-       </item>
+       <property name="font">
+        <font>
+         <pointsize>13</pointsize>
+        </font>
+       </property>
       </widget>
       <widget class="QComboBox" name="select_gender_box">
        <property name="geometry">
         <rect>
-         <x>250</x>
+         <x>300</x>
          <y>148</y>
          <width>181</width>
          <height>41</height>
         </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>13</pointsize>
+        </font>
        </property>
        <item>
         <property name="text">
@@ -3434,51 +3475,66 @@ rgb(255, 210, 30)</string>
       <widget class="QComboBox" name="select_room_box">
        <property name="geometry">
         <rect>
-         <x>250</x>
+         <x>300</x>
          <y>330</y>
          <width>181</width>
          <height>41</height>
         </rect>
        </property>
+       <property name="font">
+        <font>
+         <pointsize>13</pointsize>
+        </font>
+       </property>
        <item>
         <property name="text">
-         <string>Room 1</string>
+         <string>1</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>Room 2</string>
+         <string>2</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>Room 3</string>
+         <string>3</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>Room 4</string>
+         <string>4</string>
         </property>
        </item>
       </widget>
       <widget class="QLineEdit" name="ID_edit">
        <property name="geometry">
         <rect>
-         <x>250</x>
+         <x>300</x>
          <y>88</y>
          <width>180</width>
          <height>41</height>
         </rect>
        </property>
+       <property name="font">
+        <font>
+         <pointsize>13</pointsize>
+        </font>
+       </property>
       </widget>
       <widget class="QLineEdit" name="age_edit">
        <property name="geometry">
         <rect>
-         <x>250</x>
+         <x>300</x>
          <y>210</y>
          <width>181</width>
          <height>41</height>
         </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>13</pointsize>
+        </font>
        </property>
        <property name="alignment">
         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -3487,7 +3543,7 @@ rgb(255, 210, 30)</string>
       <widget class="QLabel" name="label_82">
        <property name="geometry">
         <rect>
-         <x>450</x>
+         <x>500</x>
          <y>390</y>
          <width>71</width>
          <height>41</height>
@@ -3510,11 +3566,16 @@ rgb(255, 210, 30)</string>
       <widget class="QLineEdit" name="weight_edit">
        <property name="geometry">
         <rect>
-         <x>250</x>
+         <x>300</x>
          <y>390</y>
          <width>181</width>
          <height>41</height>
         </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>13</pointsize>
+        </font>
        </property>
        <property name="alignment">
         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -3523,7 +3584,7 @@ rgb(255, 210, 30)</string>
       <widget class="QLabel" name="label_81">
        <property name="geometry">
         <rect>
-         <x>450</x>
+         <x>500</x>
          <y>210</y>
          <width>71</width>
          <height>41</height>
@@ -3543,12 +3604,56 @@ rgb(255, 210, 30)</string>
         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
        </property>
       </widget>
+      <widget class="QLineEdit" name="registered_date_animal">
+       <property name="geometry">
+        <rect>
+         <x>300</x>
+         <y>450</y>
+         <width>181</width>
+         <height>41</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>13</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Today's date</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_83">
+       <property name="geometry">
+        <rect>
+         <x>50</x>
+         <y>436</y>
+         <width>221</width>
+         <height>61</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>20</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>Registered Date :</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
      </widget>
      <widget class="QPushButton" name="register_button_animal">
       <property name="geometry">
        <rect>
-        <x>540</x>
-        <y>620</y>
+        <x>560</x>
+        <y>680</y>
         <width>181</width>
         <height>71</height>
        </rect>
@@ -3572,9 +3677,9 @@ rgb(255, 210, 30)</string>
      <widget class="QPushButton" name="search_button_animal">
       <property name="geometry">
        <rect>
-        <x>1070</x>
+        <x>1130</x>
         <y>90</y>
-        <width>171</width>
+        <width>121</width>
         <height>111</height>
        </rect>
       </property>
@@ -3597,8 +3702,8 @@ rgb(255, 210, 30)</string>
        <rect>
         <x>30</x>
         <y>50</y>
-        <width>1021</width>
-        <height>181</height>
+        <width>1081</width>
+        <height>231</height>
        </rect>
       </property>
       <property name="title">
@@ -3607,7 +3712,7 @@ rgb(255, 210, 30)</string>
       <widget class="QComboBox" name="search_weight_box">
        <property name="geometry">
         <rect>
-         <x>860</x>
+         <x>610</x>
          <y>100</y>
          <width>151</width>
          <height>41</height>
@@ -3617,9 +3722,9 @@ rgb(255, 210, 30)</string>
       <widget class="QSplitter" name="splitter_9">
        <property name="geometry">
         <rect>
-         <x>690</x>
+         <x>380</x>
          <y>30</y>
-         <width>151</width>
+         <width>221</width>
          <height>121</height>
         </rect>
        </property>
@@ -3635,7 +3740,7 @@ rgb(255, 210, 30)</string>
          </font>
         </property>
         <property name="text">
-         <string>Age :</string>
+         <string>Age (in months) :</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -3650,34 +3755,14 @@ rgb(255, 210, 30)</string>
          </font>
         </property>
         <property name="text">
-         <string>Weight :</string>
+         <string>Weight (kg) :</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
         </property>
        </widget>
       </widget>
-      <widget class="QComboBox" name="search_gender_box">
-       <property name="geometry">
-        <rect>
-         <x>530</x>
-         <y>40</y>
-         <width>151</width>
-         <height>41</height>
-        </rect>
-       </property>
-       <item>
-        <property name="text">
-         <string>Male</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Female</string>
-        </property>
-       </item>
-      </widget>
-      <widget class="QComboBox" name="select_if_box">
+      <widget class="QComboBox" name="search_id_box">
        <property name="geometry">
         <rect>
          <x>200</x>
@@ -3690,14 +3775,14 @@ rgb(255, 210, 30)</string>
       <widget class="QComboBox" name="search_age_box">
        <property name="geometry">
         <rect>
-         <x>860</x>
+         <x>610</x>
          <y>40</y>
          <width>151</width>
          <height>41</height>
         </rect>
        </property>
       </widget>
-      <widget class="QComboBox" name="searcj_food_brand_box">
+      <widget class="QComboBox" name="search_food_brand_box">
        <property name="geometry">
         <rect>
          <x>200</x>
@@ -3706,16 +3791,6 @@ rgb(255, 210, 30)</string>
          <height>41</height>
         </rect>
        </property>
-       <item>
-        <property name="text">
-         <string>Feed A</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Feed B</string>
-        </property>
-       </item>
       </widget>
       <widget class="QSplitter" name="splitter_5">
        <property name="geometry">
@@ -3760,42 +3835,78 @@ rgb(255, 210, 30)</string>
         </property>
        </widget>
       </widget>
-      <widget class="QComboBox" name="search_room_box">
+      <widget class="QLabel" name="label_116">
        <property name="geometry">
         <rect>
-         <x>530</x>
-         <y>100</y>
+         <x>10</x>
+         <y>150</y>
+         <width>171</width>
+         <height>58</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>20</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>RFID :</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+      <widget class="QComboBox" name="search_rfid_box">
+       <property name="geometry">
+        <rect>
+         <x>610</x>
+         <y>160</y>
          <width>151</width>
          <height>41</height>
         </rect>
        </property>
-       <item>
-        <property name="text">
-         <string>Room 1</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Room 2</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Room 3</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Room 4</string>
-        </property>
-       </item>
+      </widget>
+      <widget class="QLabel" name="label_117">
+       <property name="geometry">
+        <rect>
+         <x>380</x>
+         <y>150</y>
+         <width>221</width>
+         <height>58</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>20</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>Registered date :</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+      <widget class="QComboBox" name="search_animal_date_box">
+       <property name="geometry">
+        <rect>
+         <x>200</x>
+         <y>160</y>
+         <width>151</width>
+         <height>41</height>
+        </rect>
+       </property>
       </widget>
       <widget class="QSplitter" name="splitter_8">
        <property name="geometry">
         <rect>
-         <x>360</x>
-         <y>30</y>
-         <width>151</width>
+         <x>760</x>
+         <y>60</y>
+         <width>141</width>
          <height>121</height>
         </rect>
        </property>
@@ -3833,12 +3944,32 @@ rgb(255, 210, 30)</string>
         </property>
        </widget>
       </widget>
+      <widget class="QComboBox" name="search_room_box">
+       <property name="geometry">
+        <rect>
+         <x>920</x>
+         <y>130</y>
+         <width>151</width>
+         <height>41</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QComboBox" name="search_gender_box">
+       <property name="geometry">
+        <rect>
+         <x>920</x>
+         <y>70</y>
+         <width>151</width>
+         <height>41</height>
+        </rect>
+       </property>
+      </widget>
      </widget>
      <widget class="QTableWidget" name="search_animal_table">
       <property name="geometry">
        <rect>
         <x>30</x>
-        <y>280</y>
+        <y>320</y>
         <width>1211</width>
         <height>381</height>
        </rect>
@@ -3857,40 +3988,88 @@ rgb(255, 210, 30)</string>
        <property name="text">
         <string>Animal ID</string>
        </property>
+       <property name="font">
+        <font>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
       </column>
       <column>
        <property name="text">
         <string>Gender</string>
+       </property>
+       <property name="font">
+        <font>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
        </property>
       </column>
       <column>
        <property name="text">
         <string>Age</string>
        </property>
+       <property name="font">
+        <font>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
       </column>
       <column>
        <property name="text">
         <string>Food Brand</string>
+       </property>
+       <property name="font">
+        <font>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
        </property>
       </column>
       <column>
        <property name="text">
         <string>Room</string>
        </property>
+       <property name="font">
+        <font>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
       </column>
       <column>
        <property name="text">
         <string>Weight</string>
+       </property>
+       <property name="font">
+        <font>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
        </property>
       </column>
       <column>
        <property name="text">
         <string>RFID</string>
        </property>
+       <property name="font">
+        <font>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
       </column>
       <column>
        <property name="text">
         <string>Registered Date</string>
+       </property>
+       <property name="font">
+        <font>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
        </property>
       </column>
      </widget>
@@ -3964,31 +4143,21 @@ rgb(255, 210, 30)</string>
      <widget class="QGroupBox" name="groupBox_6">
       <property name="geometry">
        <rect>
-        <x>380</x>
-        <y>140</y>
-        <width>521</width>
-        <height>401</height>
+        <x>340</x>
+        <y>130</y>
+        <width>601</width>
+        <height>451</height>
        </rect>
       </property>
       <property name="title">
        <string/>
       </property>
-      <widget class="QLineEdit" name="barcode_id_edit">
-       <property name="geometry">
-        <rect>
-         <x>250</x>
-         <y>46</y>
-         <width>200</width>
-         <height>51</height>
-        </rect>
-       </property>
-      </widget>
       <widget class="QSplitter" name="splitter_10">
        <property name="geometry">
         <rect>
          <x>20</x>
          <y>28</y>
-         <width>191</width>
+         <width>251</width>
          <height>331</height>
         </rect>
        </property>
@@ -4062,30 +4231,45 @@ rgb(255, 210, 30)</string>
       <widget class="QLineEdit" name="brand_name_edit">
        <property name="geometry">
         <rect>
-         <x>250</x>
+         <x>310</x>
          <y>130</y>
          <width>200</width>
          <height>51</height>
         </rect>
        </property>
+       <property name="font">
+        <font>
+         <family>Ubuntu</family>
+         <pointsize>13</pointsize>
+        </font>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+       </property>
       </widget>
       <widget class="QLineEdit" name="feed_weight_edit">
        <property name="geometry">
         <rect>
-         <x>250</x>
+         <x>310</x>
          <y>220</y>
          <width>200</width>
          <height>51</height>
         </rect>
        </property>
+       <property name="font">
+        <font>
+         <family>Ubuntu</family>
+         <pointsize>13</pointsize>
+        </font>
+       </property>
        <property name="alignment">
-        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
        </property>
       </widget>
       <widget class="QLabel" name="label_110">
        <property name="geometry">
         <rect>
-         <x>460</x>
+         <x>520</x>
          <y>220</y>
          <width>71</width>
          <height>41</height>
@@ -4108,22 +4292,95 @@ rgb(255, 210, 30)</string>
       <widget class="QLineEdit" name="expiry_date_edit">
        <property name="geometry">
         <rect>
-         <x>250</x>
+         <x>310</x>
          <y>300</y>
          <width>200</width>
          <height>51</height>
         </rect>
        </property>
+       <property name="font">
+        <font>
+         <family>Ubuntu</family>
+         <pointsize>13</pointsize>
+        </font>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+      <widget class="QLineEdit" name="barcode_edit">
+       <property name="geometry">
+        <rect>
+         <x>310</x>
+         <y>50</y>
+         <width>200</width>
+         <height>51</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <family>Ubuntu</family>
+         <pointsize>13</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_109">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>350</y>
+         <width>251</width>
+         <height>80</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>20</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>Registered Date :</string>
+       </property>
        <property name="alignment">
         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+      <widget class="QLineEdit" name="registered_date_food">
+       <property name="geometry">
+        <rect>
+         <x>310</x>
+         <y>370</y>
+         <width>200</width>
+         <height>51</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <family>Ubuntu</family>
+         <pointsize>13</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Today's date</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
        </property>
       </widget>
      </widget>
      <widget class="QPushButton" name="register_button_food">
       <property name="geometry">
        <rect>
-        <x>570</x>
-        <y>570</y>
+        <x>540</x>
+        <y>610</y>
         <width>161</width>
         <height>81</height>
        </rect>
@@ -4171,9 +4428,9 @@ rgb(255, 210, 30)</string>
       <property name="geometry">
        <rect>
         <x>1060</x>
-        <y>100</y>
+        <y>110</y>
         <width>171</width>
-        <height>111</height>
+        <height>121</height>
        </rect>
       </property>
       <property name="font">
@@ -4194,7 +4451,7 @@ rgb(255, 210, 30)</string>
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>290</y>
+        <y>300</y>
         <width>1211</width>
         <height>381</height>
        </rect>
@@ -4213,20 +4470,60 @@ rgb(255, 210, 30)</string>
        <property name="text">
         <string>Barcode ID</string>
        </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>Registered date</string>
+       <property name="font">
+        <font>
+         <pointsize>13</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
        </property>
       </column>
       <column>
        <property name="text">
         <string>Brand name</string>
        </property>
+       <property name="font">
+        <font>
+         <pointsize>13</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>weight(kg)</string>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>13</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Registered date</string>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>13</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
       </column>
       <column>
        <property name="text">
         <string>Expiry date</string>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>13</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
        </property>
       </column>
      </widget>
@@ -4234,15 +4531,15 @@ rgb(255, 210, 30)</string>
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>60</y>
+        <y>50</y>
         <width>1021</width>
-        <height>181</height>
+        <height>231</height>
        </rect>
       </property>
       <property name="title">
        <string/>
       </property>
-      <widget class="QComboBox" name="search_registered_date_bpx">
+      <widget class="QComboBox" name="search_registered_date_box">
        <property name="geometry">
         <rect>
          <x>770</x>
@@ -4252,7 +4549,7 @@ rgb(255, 210, 30)</string>
         </rect>
        </property>
       </widget>
-      <widget class="QComboBox" name="search_brand_id_box">
+      <widget class="QComboBox" name="search_food_id_box">
        <property name="geometry">
         <rect>
          <x>280</x>
@@ -4271,16 +4568,6 @@ rgb(255, 210, 30)</string>
          <height>41</height>
         </rect>
        </property>
-       <item>
-        <property name="text">
-         <string>Feed A</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Feed B</string>
-        </property>
-       </item>
       </widget>
       <widget class="QSplitter" name="splitter_12">
        <property name="geometry">
@@ -4318,7 +4605,7 @@ rgb(255, 210, 30)</string>
          </font>
         </property>
         <property name="text">
-         <string>Brand Name:</string>
+         <string>Brand Name :</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -4378,6 +4665,39 @@ rgb(255, 210, 30)</string>
         </property>
        </widget>
       </widget>
+      <widget class="QLabel" name="label_118">
+       <property name="geometry">
+        <rect>
+         <x>80</x>
+         <y>150</y>
+         <width>171</width>
+         <height>58</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>20</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>Weight (Kg) :</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+      <widget class="QComboBox" name="search_food_weight_box">
+       <property name="geometry">
+        <rect>
+         <x>280</x>
+         <y>160</y>
+         <width>171</width>
+         <height>41</height>
+        </rect>
+       </property>
+      </widget>
      </widget>
     </widget>
     <widget class="QWidget" name="datamanager_video_page">
@@ -4412,16 +4732,6 @@ rgb(255, 210, 30)</string>
          <height>41</height>
         </rect>
        </property>
-       <item>
-        <property name="text">
-         <string>Food Robot A</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Food Robot B</string>
-        </property>
-       </item>
       </widget>
       <widget class="QComboBox" name="select_camera_type_box">
        <property name="geometry">
@@ -4432,26 +4742,6 @@ rgb(255, 210, 30)</string>
          <height>41</height>
         </rect>
        </property>
-       <item>
-        <property name="text">
-         <string>Info</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Warning</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Danger</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>User</string>
-        </property>
-       </item>
       </widget>
       <widget class="QSplitter" name="splitter_14">
        <property name="geometry">
@@ -4614,7 +4904,7 @@ rgb(255, 210, 30)</string>
        <rect>
         <x>20</x>
         <y>310</y>
-        <width>541</width>
+        <width>571</width>
         <height>411</height>
        </rect>
       </property>
@@ -4630,36 +4920,55 @@ rgb(255, 210, 30)</string>
       </row>
       <column>
        <property name="text">
-        <string>Robot</string>
+        <string>camera_num</string>
+       </property>
+       <property name="font">
+        <font>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
        </property>
       </column>
       <column>
        <property name="text">
-        <string>Captured date</string>
+        <string>info_type</string>
+       </property>
+       <property name="font">
+        <font>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
        </property>
       </column>
       <column>
        <property name="text">
-        <string>Type</string>
+        <string>captured_date</string>
+       </property>
+       <property name="font">
+        <font>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
        </property>
       </column>
       <column>
        <property name="text">
-        <string>Expiry date</string>
+        <string>path</string>
        </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>Animal Type</string>
+       <property name="font">
+        <font>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
        </property>
       </column>
      </widget>
      <widget class="QLabel" name="video_label">
       <property name="geometry">
        <rect>
-        <x>600</x>
+        <x>610</x>
         <y>310</y>
-        <width>641</width>
+        <width>631</width>
         <height>411</height>
        </rect>
       </property>
@@ -4853,7 +5162,7 @@ Others</string>
         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
        </property>
       </widget>
-      <widget class="QLineEdit" name="employee_registered_date_edit">
+      <widget class="QLineEdit" name="registered_date_employee">
        <property name="geometry">
         <rect>
          <x>270</x>
@@ -4914,8 +5223,8 @@ Others</string>
        <property name="font">
         <font>
          <pointsize>14</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
+         <weight>50</weight>
+         <bold>false</bold>
         </font>
        </property>
        <row>
@@ -4927,10 +5236,23 @@ Others</string>
         <property name="text">
          <string>Name</string>
         </property>
+        <property name="font">
+         <font>
+          <pointsize>13</pointsize>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
+        </property>
        </column>
        <column>
         <property name="text">
          <string>Registered date</string>
+        </property>
+        <property name="font">
+         <font>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
         </property>
        </column>
       </widget>
@@ -5213,10 +5535,24 @@ Others</string>
         <property name="text">
          <string>Index</string>
         </property>
+        <property name="font">
+         <font>
+          <pointsize>13</pointsize>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
+        </property>
        </column>
        <column>
         <property name="text">
          <string>Name</string>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>13</pointsize>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
         </property>
        </column>
       </widget>
@@ -5404,9 +5740,9 @@ Others</string>
       <property name="geometry">
        <rect>
         <x>50</x>
-        <y>30</y>
+        <y>10</y>
         <width>451</width>
-        <height>731</height>
+        <height>671</height>
        </rect>
       </property>
       <property name="font">
@@ -5479,7 +5815,114 @@ Others</string>
         </property>
        </item>
       </widget>
-      <widget class="QTableWidget" name="FeedingTable">
+      <widget class="QTableWidget" name="feeding_table">
+       <property name="geometry">
+        <rect>
+         <x>80</x>
+         <y>130</y>
+         <width>291</width>
+         <height>521</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>13</pointsize>
+         <weight>50</weight>
+         <bold>false</bold>
+        </font>
+       </property>
+       <column>
+        <property name="text">
+         <string>Time</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>Assigned</string>
+        </property>
+       </column>
+      </widget>
+     </widget>
+     <widget class="QGroupBox" name="groupBox_35">
+      <property name="geometry">
+       <rect>
+        <x>700</x>
+        <y>10</y>
+        <width>451</width>
+        <height>731</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>30</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="title">
+       <string>Checking Feeding Time</string>
+      </property>
+      <widget class="QLabel" name="label_200">
+       <property name="geometry">
+        <rect>
+         <x>90</x>
+         <y>60</y>
+         <width>91</width>
+         <height>61</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>20</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>Room :</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+      <widget class="QComboBox" name="search_room_box_4">
+       <property name="geometry">
+        <rect>
+         <x>210</x>
+         <y>70</y>
+         <width>151</width>
+         <height>41</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>15</pointsize>
+         <weight>50</weight>
+         <bold>false</bold>
+        </font>
+       </property>
+       <item>
+        <property name="text">
+         <string>Room 1</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Room 2</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Room 3</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Room 4</string>
+        </property>
+       </item>
+      </widget>
+      <widget class="QTableWidget" name="feeding_table_check">
        <property name="geometry">
         <rect>
          <x>80</x>
@@ -5510,10 +5953,10 @@ Others</string>
      <widget class="QPushButton" name="save_facilities_button_2">
       <property name="geometry">
        <rect>
-        <x>530</x>
-        <y>690</y>
-        <width>241</width>
-        <height>71</height>
+        <x>170</x>
+        <y>700</y>
+        <width>171</width>
+        <height>61</height>
        </rect>
       </property>
       <property name="font">
@@ -5538,7 +5981,7 @@ Others</string>
         <x>30</x>
         <y>30</y>
         <width>481</width>
-        <height>731</height>
+        <height>671</height>
        </rect>
       </property>
       <property name="font">
@@ -5551,13 +5994,13 @@ Others</string>
       <property name="title">
        <string>Setting Ventilation Time</string>
       </property>
-      <widget class="QTableWidget" name="VentilationTable">
+      <widget class="QTableWidget" name="ventilation_table">
        <property name="geometry">
         <rect>
          <x>90</x>
          <y>70</y>
          <width>301</width>
-         <height>641</height>
+         <height>581</height>
         </rect>
        </property>
        <property name="font">
@@ -5582,10 +6025,10 @@ Others</string>
      <widget class="QPushButton" name="save_facilities_button_3">
       <property name="geometry">
        <rect>
-        <x>530</x>
-        <y>690</y>
+        <x>170</x>
+        <y>720</y>
         <width>181</width>
-        <height>71</height>
+        <height>61</height>
        </rect>
       </property>
       <property name="font">
@@ -5601,6 +6044,53 @@ Others</string>
       <property name="text">
        <string>Save</string>
       </property>
+     </widget>
+     <widget class="QGroupBox" name="groupBox_36">
+      <property name="geometry">
+       <rect>
+        <x>650</x>
+        <y>30</y>
+        <width>511</width>
+        <height>741</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>30</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="title">
+       <string>Checking Ventilation Time</string>
+      </property>
+      <widget class="QTableWidget" name="ventilation_table_check">
+       <property name="geometry">
+        <rect>
+         <x>100</x>
+         <y>70</y>
+         <width>301</width>
+         <height>651</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>13</pointsize>
+         <weight>50</weight>
+         <bold>false</bold>
+        </font>
+       </property>
+       <column>
+        <property name="text">
+         <string>Time</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>Assigned</string>
+        </property>
+       </column>
+      </widget>
      </widget>
     </widget>
     <widget class="QWidget" name="log_page">
@@ -6063,7 +6553,7 @@ Others</string>
         </font>
        </property>
        <property name="currentIndex">
-        <number>2</number>
+        <number>7</number>
        </property>
        <widget class="QWidget" name="monitor_page">
         <property name="geometry">
