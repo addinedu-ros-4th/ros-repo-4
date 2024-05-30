@@ -496,7 +496,7 @@
      <enum>QFrame::NoFrame</enum>
     </property>
     <property name="currentIndex">
-     <number>15</number>
+     <number>4</number>
     </property>
     <widget class="QWidget" name="home_page">
      <widget class="QLabel" name="label">
@@ -626,7 +626,7 @@
        </font>
       </property>
       <property name="text">
-       <string> </string>
+       <string/>
       </property>
       <property name="alignment">
        <set>Qt::AlignCenter</set>
@@ -1626,7 +1626,7 @@
         <string notr="true"/>
        </property>
        <property name="text">
-        <string>🐢</string>
+        <string/>
        </property>
        <property name="pixmap">
         <pixmap>../../../../../Pictures/Screenshots/grap1.png</pixmap>
@@ -1846,7 +1846,7 @@ color: rgb(192, 28, 40);</string>
         <string notr="true"/>
        </property>
        <property name="text">
-        <string>🐢</string>
+        <string/>
        </property>
        <property name="pixmap">
         <pixmap>../../../../../Pictures/Screenshots/grap1.png</pixmap>
@@ -2135,7 +2135,33 @@ color: rgb(192, 28, 40);</string>
         <string>Select Camera: </string>
        </property>
       </widget>
-      <widget class="QComboBox" name="select_camera_box"/>
+      <widget class="QComboBox" name="select_camera_box">
+       <item>
+        <property name="text">
+         <string>Entrance</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Cow Room1</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Cow Room2</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Calf Room1</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Calf Room2</string>
+        </property>
+       </item>
+      </widget>
      </widget>
     </widget>
     <widget class="QWidget" name="control_robot_page_choose_robot">
@@ -4707,7 +4733,7 @@ rgb(255, 210, 30)</string>
         <x>20</x>
         <y>40</y>
         <width>1221</width>
-        <height>241</height>
+        <height>171</height>
        </rect>
       </property>
       <property name="title">
@@ -4764,7 +4790,7 @@ rgb(255, 210, 30)</string>
          </font>
         </property>
         <property name="text">
-         <string>Camera :</string>
+         <string>Camera Number :</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -4819,39 +4845,6 @@ rgb(255, 210, 30)</string>
         <set>Qt::AlignCenter</set>
        </property>
       </widget>
-      <widget class="QLabel" name="label_120">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>160</y>
-         <width>181</width>
-         <height>58</height>
-        </rect>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>20</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="text">
-        <string>Path :</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-       </property>
-      </widget>
-      <widget class="QLineEdit" name="path_edit">
-       <property name="geometry">
-        <rect>
-         <x>220</x>
-         <y>170</y>
-         <width>721</width>
-         <height>41</height>
-        </rect>
-       </property>
-      </widget>
       <widget class="QLabel" name="label_115">
        <property name="geometry">
         <rect>
@@ -4878,10 +4871,10 @@ rgb(255, 210, 30)</string>
       <widget class="QPushButton" name="search_button_video">
        <property name="geometry">
         <rect>
-         <x>1020</x>
+         <x>890</x>
          <y>40</y>
-         <width>171</width>
-         <height>161</height>
+         <width>291</width>
+         <height>111</height>
         </rect>
        </property>
        <property name="font">
@@ -4920,7 +4913,7 @@ rgb(255, 210, 30)</string>
       </row>
       <column>
        <property name="text">
-        <string>camera_num</string>
+        <string>cam_num</string>
        </property>
        <property name="font">
         <font>
@@ -4966,10 +4959,10 @@ rgb(255, 210, 30)</string>
      <widget class="QLabel" name="video_label">
       <property name="geometry">
        <rect>
-        <x>610</x>
-        <y>310</y>
-        <width>631</width>
-        <height>411</height>
+        <x>640</x>
+        <y>220</y>
+        <width>601</width>
+        <height>501</height>
        </rect>
       </property>
       <property name="frameShape">
@@ -5052,7 +5045,7 @@ Others</string>
       <property name="geometry">
        <rect>
         <x>650</x>
-        <y>60</y>
+        <y>10</y>
         <width>591</width>
         <height>601</height>
        </rect>
@@ -5180,9 +5173,9 @@ Others</string>
       <property name="geometry">
        <rect>
         <x>40</x>
-        <y>60</y>
+        <y>10</y>
         <width>581</width>
-        <height>601</height>
+        <height>761</height>
        </rect>
       </property>
       <property name="font">
@@ -5217,7 +5210,7 @@ Others</string>
          <x>50</x>
          <y>380</y>
          <width>481</width>
-         <height>191</height>
+         <height>361</height>
         </rect>
        </property>
        <property name="font">
@@ -5496,7 +5489,7 @@ Others</string>
        <rect>
         <x>30</x>
         <y>450</y>
-        <width>961</width>
+        <width>1211</width>
         <height>321</height>
        </rect>
       </property>
@@ -5515,8 +5508,8 @@ Others</string>
         <rect>
          <x>50</x>
          <y>60</y>
-         <width>641</width>
-         <height>181</height>
+         <width>471</width>
+         <height>241</height>
         </rect>
        </property>
        <property name="font">
@@ -5556,30 +5549,13 @@ Others</string>
         </property>
        </column>
       </widget>
-      <widget class="QLineEdit" name="harmful_animal_name_edit">
+      <widget class="QGroupBox" name="groupBox_11">
        <property name="geometry">
         <rect>
-         <x>150</x>
-         <y>260</y>
-         <width>181</width>
-         <height>40</height>
-        </rect>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>15</pointsize>
-         <weight>50</weight>
-         <bold>false</bold>
-        </font>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_194">
-       <property name="geometry">
-        <rect>
-         <x>50</x>
-         <y>260</y>
-         <width>88</width>
-         <height>41</height>
+         <x>540</x>
+         <y>60</y>
+         <width>311</width>
+         <height>231</height>
         </rect>
        </property>
        <property name="font">
@@ -5589,65 +5565,123 @@ Others</string>
          <bold>true</bold>
         </font>
        </property>
-       <property name="text">
-        <string>Name :</string>
+       <property name="title">
+        <string>Add Harmful Animal</string>
        </property>
-       <property name="textFormat">
-        <enum>Qt::AutoText</enum>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-       </property>
+       <widget class="QPushButton" name="add_harmful_animal_button">
+        <property name="geometry">
+         <rect>
+          <x>100</x>
+          <y>170</y>
+          <width>131</width>
+          <height>41</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>15</pointsize>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="styleSheet">
+         <string notr="true"/>
+        </property>
+        <property name="text">
+         <string>Add</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_195">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>58</y>
+          <width>85</width>
+          <height>41</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>20</pointsize>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="text">
+         <string>Index :</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+       </widget>
+       <widget class="QLineEdit" name="harmful_animal_name_edit">
+        <property name="geometry">
+         <rect>
+          <x>110</x>
+          <y>110</y>
+          <width>181</width>
+          <height>40</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>15</pointsize>
+          <weight>50</weight>
+          <bold>false</bold>
+         </font>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_194">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>110</y>
+          <width>88</width>
+          <height>41</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>20</pointsize>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="text">
+         <string>Name :</string>
+        </property>
+        <property name="textFormat">
+         <enum>Qt::AutoText</enum>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+       </widget>
+       <widget class="QComboBox" name="harmful_animal_index_box">
+        <property name="geometry">
+         <rect>
+          <x>110</x>
+          <y>60</y>
+          <width>181</width>
+          <height>40</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>15</pointsize>
+          <weight>50</weight>
+          <bold>false</bold>
+         </font>
+        </property>
+       </widget>
       </widget>
-      <widget class="QComboBox" name="harmful_animal_index_box">
+      <widget class="QGroupBox" name="groupBox_12">
        <property name="geometry">
         <rect>
-         <x>450</x>
-         <y>260</y>
-         <width>181</width>
-         <height>40</height>
-        </rect>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>15</pointsize>
-         <weight>50</weight>
-         <bold>false</bold>
-        </font>
-       </property>
-       <item>
-        <property name="text">
-         <string>1</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>2</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>3</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>4</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>5</string>
-        </property>
-       </item>
-      </widget>
-      <widget class="QLabel" name="label_195">
-       <property name="geometry">
-        <rect>
-         <x>350</x>
-         <y>258</y>
-         <width>85</width>
-         <height>41</height>
+         <x>880</x>
+         <y>60</y>
+         <width>311</width>
+         <height>231</height>
         </rect>
        </property>
        <property name="font">
@@ -5657,66 +5691,126 @@ Others</string>
          <bold>true</bold>
         </font>
        </property>
-       <property name="text">
-        <string>Index :</string>
+       <property name="title">
+        <string>Delete Harmful Animal</string>
        </property>
-       <property name="alignment">
-        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-       </property>
-      </widget>
-      <widget class="QPushButton" name="delete_harmful_animal_button">
-       <property name="geometry">
-        <rect>
-         <x>810</x>
-         <y>260</y>
-         <width>131</width>
-         <height>41</height>
-        </rect>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>15</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="styleSheet">
-        <string notr="true"/>
-       </property>
-       <property name="text">
-        <string>Delete</string>
-       </property>
-      </widget>
-      <widget class="QPushButton" name="add_harmful_animal_button">
-       <property name="geometry">
-        <rect>
-         <x>670</x>
-         <y>260</y>
-         <width>131</width>
-         <height>41</height>
-        </rect>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>15</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="styleSheet">
-        <string notr="true"/>
-       </property>
-       <property name="text">
-        <string>Add</string>
-       </property>
+       <widget class="QLabel" name="label_203">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>58</y>
+          <width>85</width>
+          <height>41</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>20</pointsize>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="text">
+         <string>Index :</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+       </widget>
+       <widget class="QComboBox" name="select_harmful_animal_index">
+        <property name="geometry">
+         <rect>
+          <x>110</x>
+          <y>60</y>
+          <width>181</width>
+          <height>40</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>15</pointsize>
+          <weight>50</weight>
+          <bold>false</bold>
+         </font>
+        </property>
+       </widget>
+       <widget class="QLineEdit" name="select_harmful_animal_name">
+        <property name="geometry">
+         <rect>
+          <x>110</x>
+          <y>110</y>
+          <width>181</width>
+          <height>40</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>15</pointsize>
+          <weight>50</weight>
+          <bold>false</bold>
+         </font>
+        </property>
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_204">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>110</y>
+          <width>88</width>
+          <height>41</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>20</pointsize>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="text">
+         <string>Name :</string>
+        </property>
+        <property name="textFormat">
+         <enum>Qt::AutoText</enum>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="delete_harmful_animal_button">
+        <property name="geometry">
+         <rect>
+          <x>100</x>
+          <y>170</y>
+          <width>131</width>
+          <height>41</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>15</pointsize>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="styleSheet">
+         <string notr="true"/>
+        </property>
+        <property name="text">
+         <string>Delete</string>
+        </property>
+       </widget>
       </widget>
      </widget>
      <widget class="QPushButton" name="save_facilities_button">
       <property name="geometry">
        <rect>
-        <x>1020</x>
-        <y>700</y>
-        <width>191</width>
+        <x>1030</x>
+        <y>360</y>
+        <width>211</width>
         <height>71</height>
        </rect>
       </property>
