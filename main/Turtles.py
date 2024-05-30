@@ -17,15 +17,17 @@ from enum import Enum
 from YamlFileManager import YamlFileManager
 from DBManager import DBManager
 from datetime import datetime, timedelta
+import torch
+import torchvision.transforms as transforms
 
-#encryption
-from Crypto.Cipher import AES
-from Crypto.Random import get_random_bytes
+# #encryption
+# from Crypto.Cipher import AES
+# from Crypto.Random import get_random_bytes
 
 import cv2
 from ultralytics import YOLO
 import atexit
-
+import numpy as np
 
     
 class Pages(Enum):
@@ -133,7 +135,6 @@ class Camera(QThread):
         self.running = True
 
     def run(self):
-        count =0
         while self.running == True:
             self.update.emit()
             time.sleep(0.1)
@@ -300,13 +301,15 @@ class WindowClass(QMainWindow, from_class) :
                 print("camera index", end="")
                 print(idx)
                 print("is not opened")
+
+        print(self.available_index)
         
         self.camera = Camera(self)
         self.camera.daemon = True
 
         self.pixmap = QPixmap()
 
-        self.camera.update.connect(self.updateCamera)
+        self.camera.update.connect(self.updateCameraView)
 
         self.select_camera_box.currentIndexChanged.connect(self.combochanged)
         self.cam_num = 0
@@ -326,7 +329,14 @@ class WindowClass(QMainWindow, from_class) :
         
         self.robot_list.append(food_robot1)
         # self.robot_list.append(food_robot2)
-        
+
+        # yolo 
+        self.yolo_detect_class = []
+        self.yolo_detect_class_coordinate = []
+        # Load the YOLOv8 model
+        self.model = YOLO('yolov8n.pt')
+
+
         #databases 연결
         self.data_manage = DBManager("192.168.1.101", "0000", 3306, "turtles", "TurtlesDB")
         self.animal_datalist = self.data_manage.getAnimal()
@@ -415,6 +425,7 @@ class WindowClass(QMainWindow, from_class) :
 
         #task add
         self.task_add_button.clicked.connect(self.task_add_button_clicked)
+
         #ros 
         self.service_client_node = rp.create_node('client_test')
 
@@ -426,15 +437,138 @@ class WindowClass(QMainWindow, from_class) :
         self.setLayout(self.layout) 
         
         self.stop_recording_button.hide()
+
+        if torch.cuda.is_available():
+        # GPU를 사용하도록 설정
+            self.device = torch.device("cuda")
+            print("GPU를 사용합니다.")
+        else:
+        # CPU를 사용하도록 설정
+            self.device = torch.device("cpu")
+            print("GPU를 사용할 수 없습니다. CPU를 사용합니다.")
     
 
+    def convert_to_torchtensor(self, num_data):
+        transform = transforms.ToTensor()
+        tensor_data = transform(num_data)
+        return tensor_data  
+    
+    def move_to_device(self, data):
+        # GPU로 이동
+        tensor_data = data.to(self.device)
+        return tensor_data
+    
+    
+    def updateDetectedListWithYolo(self, frame_for_yolo):
+
+        self.yolo_detect_class.clear()
+        self.yolo_detect_class_coordinate.clear()
+
+        frame_for_yolo = self.convert_to_torchtensor(frame_for_yolo)
+        frame_for_yolo = self.move_to_device(frame_for_yolo)
+
+        results = self.model.predict(source=frame_for_yolo, classes=19, conf = 0.2)
+        names = self.model.names
+        
+        for r in results:
+            for idx,cls_name in enumerate(r.boxes.cls):
+                tmp_name = names[int(cls_name.item())]
+                self.yolo_detect_class.append(tmp_name)
+                self.yolo_detect_class_coordinate.append(r.boxes.xyxy.cpu())
+
+        print(self.yolo_detect_class)
+
+
+    def drawRedBox(self,img_form):
+        result = img_form.copy()
+
+        for val in self.yolo_detect_class_coordinate:
+            for idx, coord in enumerate(val):
+                x1 = coord[0]
+                y1 = coord[1]
+                x2 = coord[2]
+                y2 = coord[3]
+                cv2.rectangle(result, (int(x1.item()), int(y1.item())), (int(x2.item()), int(y2.item())), (255, 0, 0), 2)
+                
+                font = cv2.FONT_HERSHEY_SIMPLEX
+                font_scale = 0.5
+                font_thickness = 1
+                font_color = (255, 255, 255)  # 흰색
+                
+                text_size, _ = cv2.getTextSize(self.yolo_detect_class[idx], font, font_scale, font_thickness)
+                text_x = int((x1 + x2) / 2 - text_size[0] / 2)
+                text_y = int(y2 + text_size[1] + 5)  # 객체 아래에 위치
+                cv2.putText(result, self.yolo_detect_class[idx], (text_x, text_y), font, font_scale, font_color, font_thickness)
+                
+        return result 
+        
+    def checkRemainedFood(self,img_form):
+        result = img_form.copy()
+        
+        #HSV 색상으로 변환
+        hsv_image = cv2.cvtColor(result, cv2.COLOR_BGR2HSV)
+
+        # 노란색 범위 정의
+        lower_yellow = np.array([20, 100, 100])
+        upper_yellow = np.array([30, 255, 255])
+        
+        # 초록색 범위 정의
+        lower_green = np.array([35, 100, 100])
+        upper_green = np.array([85, 255, 255])
+
+        # 각각의 색상 범위 내의 픽셀 분리
+        mask_yellow = cv2.inRange(hsv_image, lower_yellow, upper_yellow)
+        mask_green = cv2.inRange(hsv_image, lower_green, upper_green)
+
+        # 두 마스크 결합
+        combined_mask = cv2.bitwise_or(mask_yellow, mask_green)
+
+        # # 마스크 생성
+        # mask = cv2.inRange(hsv_image, lower_limit, upper_limit)
+
+        # 마스크를 이미지로 변환
+        masked_image = cv2.bitwise_and(result, result, mask=combined_mask)
+
+
+        # 각 이미지가 차지하는 픽셀 수 계산
+        cropped_pixel_count = np.count_nonzero(result)
+        masked_pixel_count = np.count_nonzero(masked_image)
+
+        # print("pixel count")
+        # print(cropped_pixel_count)
+        # print(masked_pixel_count)
+        
+        remained_feed = (masked_pixel_count / cropped_pixel_count) * 100
+        
+        # print("remain :")
+        # print(remained_feed)
+
+        result_str = "remain food rate : {:.1f}".format(remained_feed)
+
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        font_scale = 0.5
+        font_thickness = 1
+        font_color = (255, 255, 255)  # 흰색
+                         
+        text_size, _ = cv2.getTextSize(result_str, font, font_scale, font_thickness)
+        #label의 width와 height 가져오기 
+        w = self.monitor_camera_label.width()
+        h = self.monitor_camera_label.height()
+        text_x = int(w /2) -100
+        text_y = int(h /2) -170
+        cv2.putText(result, result_str, (text_x, text_y), font, font_scale, font_color, font_thickness)
+
+        print(result_str)
+
+        # 마스크 확인해 보고 싶다면        
+        # result = masked_image
+
+        return result 
 
     def combochanged(self):
         self.cam_num = self.select_camera_box.currentIndex()
-        # print("cam_num")
-        # print(self.cam_num)
 
-    def updateCamera(self):
+    def updateCameraView(self):
 
         retval_list = []
         image_list = []
@@ -452,7 +586,12 @@ class WindowClass(QMainWindow, from_class) :
             if retval_list[self.cam_num]:
                 self.image = cv2.cvtColor(image_list[self.cam_num],cv2.COLOR_BGR2RGB)
 
+                # if self.cam_num != 0:    # Entrance 카메라를 제외하고 나머지는 cow yolo 인식 처리 하기 
+                self.updateDetectedListWithYolo(self.image)
+                self.image = self.drawRedBox(self.image)
+                self.image = self.checkRemainedFood(self.image)
 
+                #이미지 화면에 띄우기
                 h,w,c = self.image.shape
                 qimage = QImage(self.image.data, w, h, w*c, QImage.Format_RGB888)
 
