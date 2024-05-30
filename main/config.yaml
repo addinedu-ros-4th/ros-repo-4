@@ -4,5 +4,5 @@ client:
   module3: 3
   module4: 4
 robot:
-  last_task_id: 13
+  last_task_id: 27
   total_robot_num: 1

@@ -5,6 +5,8 @@ from PyQt5 import uic, QtCore
 from PyQt5.QtCore import QThread, pyqtSignal
 from PyQt5.QtCore import Qt
 import rclpy as rp
+from rclpy.node import Node
+from geometry_msgs.msg import Twist
 # from turtles_service_msgs.srv import NavToPose
 import time
 import socket
@@ -22,7 +24,7 @@ from datetime import datetime, timedelta
 from Crypto.Cipher import AES
 from Crypto.Random import get_random_bytes
 
-
+rp.init()
 
 class Pages(Enum):
     #page 상수 정의
@@ -53,8 +55,8 @@ class Pages(Enum):
     
 
 class TaskScheduleType(Enum):
-    TASK_SCHEDULED = 0
-    TASK_REGISTERED = 1
+    TASK_SCHEDULED = 0  # schedule 화면에서 저장된 업무
+    TASK_REGISTERED = 1 # Robot Manager Task 화면에서 등록한 업무 
 
 class TaskType(Enum):
     TASK_FOOD = 1
@@ -119,9 +121,31 @@ class Task:
     
     def getFoodTank(self):
         return self.task_food_tank_num
-    
 
+class Teleop(Node):
+    def __init__(self):
+        super().__init__('move_up')
+        self.publisher = self.create_publisher(Twist, '/base_controller/cmd_vel_unstamped', 10)
+        self.twist = Twist()
+        
 
+    def publish_twist(self):
+        self.publisher.publish(self.twist)
+
+class RosThread(QThread):
+
+    new_connection = pyqtSignal(object)
+
+    def __init__(self):
+        super().__init__()
+        self.teleop_node = Teleop()
+        self.new_connection.emit(self.teleop_node)
+
+    def run(self):
+        self.teleop_node.publish_twist()
+        self.msleep(100) #추가 안하면 UI에 딜레이 발생
+        rp.spin(self.teleop_node)
+            
     
 class RobotThread(QThread):
     update = QtCore.pyqtSignal()
@@ -260,7 +284,7 @@ class WindowClass(QMainWindow, from_class) :
         super().__init__()
         self.setupUi(self)
         self.setWindowTitle("Turtles : Herding Heroes")
-        rp.init()
+        self.teleop_node = Teleop()
 
         #robot task 리스트
         self.task_list = []
@@ -275,12 +299,12 @@ class WindowClass(QMainWindow, from_class) :
         # self.robot_list.append(food_robot2)
         
         #databases 연결
-        self.data_manage = DBManager("192.168.1.101", "0000", 3306, "turtles", "TurtlesDB")
-        self.animal_list = self.data_manage.getAnimal()
-        self.camera_list = self.data_manage.getCameraPath()
-        self.food_list = self.data_manage.getFood()
-        self.schedule_list = self.data_manage.getFoodRobotSchedule()
-        self.userdata_list = self.data_manage.getUserData()
+        # self.data_manage = DBManager("192.168.1.101", "0000", 3306, "turtles", "TurtlesDB")
+        # self.animal_list = self.data_manage.getAnimal()
+        # self.camera_list = self.data_manage.getCameraPath()
+        # self.food_list = self.data_manage.getFood()
+        # self.schedule_list = self.data_manage.getFoodRobotSchedule()
+        # self.userdata_list = self.data_manage.getUserData()
         self.robot_thread = RobotThread(parent=self)
         self.count = 0
         self.server_thread = None
@@ -354,6 +378,11 @@ class WindowClass(QMainWindow, from_class) :
         #robot thread  
         self.robot_thread.update.connect(self.update_robot_thread)
 
+        # teleop_button connect
+        self.up_button.clicked.connect(self.foodrobot_up_button_clicked)
+        self.down_button.clicked.connect(self.foodrobot_down_button_clicked)
+        self.left_button.clicked.connect(self.foodrobot_left_button_clicked)
+        self.right_button.clicked.connect(self.foodrobot_right_button_clicked)
         #food trailer servo 버튼 연결
         self.foodtank_servo_open_button.clicked.connect(self.foodtank_servo_open_button_clicked)
         self.foodtank_servo_close_button.clicked.connect(self.foodtank_servo_close_button_clicked)
@@ -390,7 +419,7 @@ class WindowClass(QMainWindow, from_class) :
         #로봇이 이미 모두 할당 되었으면 배정할 필요 x
         assign_robot = 0
         for robot in self.robot_list:
-            if robot.task_id != 0 : #할당이 안되어 있다 
+            if robot.task_id != 0 : #할당 되어 있다 
                 assign_robot += 1
             
         
@@ -443,11 +472,14 @@ class WindowClass(QMainWindow, from_class) :
         for task in self.task_list:
             if task.task_id == robot_task_id:
                 if task.getCurrentProgress() == 1:
+                    print("service call")
                     return True
         return False
     
     def isNavArucoFinished(self):
-        return True
+        # if task.getCurrentProgress() == 1:
+        #     print("nav")
+            return True
     
     def isArucoFoodTank(self):
         return True
@@ -478,7 +510,7 @@ class WindowClass(QMainWindow, from_class) :
 
         for robot in self.robot_list:
             if robot.status == Status.STATUS_STANDBY.value:
-                if self.isServiceCalled(robot.getTaskID()):
+                if self.isServiceCalled(robot.getTaskID()) == True:
                     robot.setStatus(Status.STATUS_NAV_ARUCO.value)
 
                 elif self.isArucoFoodTank() == True:
@@ -549,6 +581,7 @@ class WindowClass(QMainWindow, from_class) :
         self.assignRobotTask()
         self.robotStatusManager()
         self.checkTaskProgress()
+
         
     def get_food_type(self):
         food_tank_type = 0
@@ -562,6 +595,26 @@ class WindowClass(QMainWindow, from_class) :
         temp_task = Task(self.task_id,TaskScheduleType.TASK_REGISTERED.value, self.room_number_edit.text(),modified_datetime)
         temp_task.setFoodTank(self.get_food_type())
         self.task_list.append(temp_task)
+
+    def foodrobot_up_button_clicked(self):
+        self.teleop_node.twist.linear.x = 3.0
+        self.teleop_node.twist.angular.z = 0.0
+        self.teleop_node.publish_twist()
+    
+    def foodrobot_down_button_clicked(self):
+        self.teleop_node.twist.linear.x = -3.0
+        self.teleop_node.twist.angular.z = 0.0
+        self.teleop_node.publish_twist()
+
+    def foodrobot_left_button_clicked(self):
+        self.teleop_node.twist.linear.x = 0.0
+        self.teleop_node.twist.angular.z = 3.0
+        self.teleop_node.publish_twist()
+
+    def foodrobot_right_button_clicked(self):
+        self.teleop_node.twist.linear.x = 0.0
+        self.teleop_node.twist.angular.z = -3.0
+        self.teleop_node.publish_twist()    
 
     def foodtrailer_servo_open_button_clicked(self):
         self.send_to_rasp("FT1,1")
@@ -596,6 +649,7 @@ class WindowClass(QMainWindow, from_class) :
         self.yaml_file.saveYamlFile(self.task_id)
 
         self.robotThreadStop()
+
         if self.server_thread:
             self.server_thread.stop()
         event.accept()
@@ -605,7 +659,7 @@ class WindowClass(QMainWindow, from_class) :
 
     def robotThreadStop(self):
         self.robot_thread.stop()
-        
+
     def start_tcp_server_thread(self):
         host = self.ip_input.text()
         port = int(self.port_input.text())
@@ -792,7 +846,9 @@ class WindowClass(QMainWindow, from_class) :
         
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    ros_thread = RosThread()
+    ros_thread.start()
     myWindows = WindowClass()
     myWindows.show()
-
+    
     sys.exit(app.exec_())
