@@ -4870,9 +4870,9 @@ rgb(255, 210, 30)</string>
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>220</y>
-        <width>601</width>
-        <height>501</height>
+        <y>310</y>
+        <width>571</width>
+        <height>411</height>
        </rect>
       </property>
       <property name="font">

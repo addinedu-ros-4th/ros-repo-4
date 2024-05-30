@@ -23,8 +23,12 @@ import numpy as np
 from Crypto.Cipher import AES
 from Crypto.Random import get_random_bytes
 
+import cv2
+from ultralytics import YOLO
+import atexit
 
 
+    
 class Pages(Enum):
     #page 상수 정의
     PAGE_HOME = 0
@@ -121,8 +125,22 @@ class Task:
     def getFoodTank(self):
         return self.task_food_tank_num
     
+class Camera(QThread):
+    update = QtCore.pyqtSignal()
 
+    def __init__(self, sec =0, parent = None):
+        super().__init__()
+        self.main = parent
+        self.running = True
 
+    def run(self):
+        count =0
+        while self.running == True:
+            self.update.emit()
+            time.sleep(0.1)
+
+    def stop(self):
+        self.running = False
     
 class RobotThread(QThread):
     update = QtCore.pyqtSignal()
@@ -261,6 +279,41 @@ class WindowClass(QMainWindow, from_class) :
         super().__init__()
         self.setupUi(self)
         self.setWindowTitle("Turtles : Herding Heroes")
+
+        #Camera check
+        self.available_index = []
+        self.camera_list = []
+
+        for index in range(15): 
+            camera = cv2.VideoCapture(index)
+            if camera.isOpened():
+                self.available_index.append(index)
+                camera.release()
+        if len(self.available_index)> 0:
+            for val in self.available_index:
+                temp_cap = cv2.VideoCapture(val)
+                self.camera_list.append(temp_cap)
+
+        for idx,camera in enumerate(self.camera_list):
+            if camera.isOpened():
+                camera.set(cv2.CAP_PROP_FPS, 30)
+            else:
+                print("camera index", end="")
+                print(idx)
+                print("is not opened")
+        
+        self.camera = Camera(self)
+        self.camera.daemon = True
+
+        self.pixmap = QPixmap()
+
+        self.camera.update.connect(self.updateCamera)
+
+        self.select_camera_box.currentIndexChanged.connect(self.combochanged)
+        self.cam_num = 0
+        self.cameraStart()
+
+        #rclpy initialize
         rp.init()
 
         #robot task 리스트
@@ -279,14 +332,11 @@ class WindowClass(QMainWindow, from_class) :
         self.data_manage = DBManager("192.168.1.101", "0000", 3306, "turtles", "TurtlesDB")
         self.animal_df = self.data_manage.getAnimal()
         self.camera_df = self.data_manage.getCameraPath()
-        self.employee_df= self.data_manage.getEmployeeData()
         self.food_df = self.data_manage.getFood()
-        self.schedule_df = self.data_manage.getFoodRobotSchedule()
+        self.schedule_df= self.data_manage.getFoodRobotSchedule()
         self.userdata_df = self.data_manage.getUserData()
-        self.harmful_animal_df=self.data_manage.getHarmfulAnimal()
-        
-        
-        
+        self.employee_df = self.data_manage.getEmployeeData()
+        self.harmful_animal_df = self.data_manage.getHarmfulAnimal()
         self.robot_thread = RobotThread(parent=self)
         self.count = 0
         self.server_thread = None
@@ -579,6 +629,53 @@ class WindowClass(QMainWindow, from_class) :
                 table.setItem(i, j, QTableWidgetItem(str(df.iat[i, j])))
         
            
+
+
+    def combochanged(self):
+        self.cam_num = self.select_camera_box.currentIndex()
+        # print("cam_num")
+        # print(self.cam_num)
+
+    def updateCamera(self):
+
+        retval_list = []
+        image_list = []
+
+        for idx,cam in enumerate(self.camera_list):
+            if cam.isOpened():
+                retval, image = cam.read()
+                
+                retval_list.append(retval)
+                image_list.append(image)
+
+
+        if self.cam_num < len(image_list):
+
+            if retval_list[self.cam_num]:
+                self.image = cv2.cvtColor(image_list[self.cam_num],cv2.COLOR_BGR2RGB)
+
+
+                h,w,c = self.image.shape
+                qimage = QImage(self.image.data, w, h, w*c, QImage.Format_RGB888)
+
+                self.pixmap = self.pixmap.fromImage(qimage)
+                self.pixmap = self.pixmap.scaled(self.monitor_camera_label.width(), self.monitor_camera_label.height())
+
+                self.monitor_camera_label.setPixmap(self.pixmap)
+            else:
+                print(f"Camera cannot be opened")
+
+    def cameraStart(self):
+        self.camera.running = True
+        self.camera.start()
+        
+
+    def cameraStop(self):
+        self.camera.running = False
+        for cam in self.camera_list:
+            cam.release
+
+
     def decryption(self,data,key,tag):
         # 복호화
         cipher = AES.new(key, AES.MODE_EAX, nonce=cipher.nonce)
@@ -803,7 +900,9 @@ class WindowClass(QMainWindow, from_class) :
         self.robotThreadStop()
         if self.server_thread:
             self.server_thread.stop()
+        self.cameraStop()
         event.accept()
+        
 
     def robotThreadStart(self):
         self.robot_thread.start()
@@ -998,5 +1097,4 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     myWindows = WindowClass()
     myWindows.show()
-
     sys.exit(app.exec_())
