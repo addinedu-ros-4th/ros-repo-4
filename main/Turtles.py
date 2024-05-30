@@ -346,6 +346,7 @@ class WindowClass(QMainWindow, from_class) :
         self.userdata_df = self.data_manage.getUserData()
         self.employee_df = self.data_manage.getEmployeeData()
         self.harmful_animal_df = self.data_manage.getHarmfulAnimal()
+        self.facility_setting_df = self.data_manage.getFacilitySetting()
         self.robot_thread = RobotThread(parent=self)
         self.count = 0
         self.server_thread = None
@@ -387,6 +388,7 @@ class WindowClass(QMainWindow, from_class) :
         
         self.datamanager_foodpage_button.clicked.connect(self.choose_datamanager_foodpage_button_clicked)
         self.choose_register_button_food.clicked.connect(self.register_food_button_clicked)
+        
         self.choose_search_button_food.clicked.connect(self.search_food_button_clicked)
         
         self.datamanager_videopage_button.clicked.connect(self.datamanager_videopage_button_clicked)
@@ -421,22 +423,22 @@ class WindowClass(QMainWindow, from_class) :
         self.service_client_node = rp.create_node('client_test')
 
         self.layout = QVBoxLayout()
-        self.setupTableWidget(self.feeding_table); self.setupTableWidget(self.feeding_table_check)
-        self.layout.addWidget(self.feeding_table); self.layout.addWidget(self.feeding_table_check)
-        self.setupTableWidget(self.ventilation_table); self.setupTableWidget(self.ventilation_table_check)
-        self.layout.addWidget(self.ventilation_table); self.layout.addWidget(self.ventilation_table_check)
+        #self.setupTableWidget(self.feeding_table) 
+        self.layout.addWidget(self.feeding_table)
+        self.setupTableWidget(self.ventilation_table, "facility_scheduled_time")
+        self.layout.addWidget(self.ventilation_table)
         self.setLayout(self.layout) 
         
         self.stop_recording_button.hide()
 
-        if torch.cuda.is_available():
-        # GPU를 사용하도록 설정
-            self.device = torch.device("cuda")
-            print("GPU를 사용합니다.")
-        else:
-        # CPU를 사용하도록 설정
-            self.device = torch.device("cpu")
-            print("GPU를 사용할 수 없습니다. CPU를 사용합니다.")
+        # if torch.cuda.is_available():
+        # # GPU를 사용하도록 설정
+        #     self.device = torch.device("cuda")
+        #     print("GPU를 사용합니다.")
+        # else:
+        # # CPU를 사용하도록 설정
+        #     self.device = torch.device("cpu")
+        #     print("GPU를 사용할 수 없습니다. CPU를 사용합니다.")
             
         current_date = QDate.currentDate().toString('yyyy-MM-dd')
         #등록일에 현재 날짜 설정
@@ -456,12 +458,14 @@ class WindowClass(QMainWindow, from_class) :
         self.load_data_to_table(self.search_camera_table, self.camera_df)
         self.load_data_to_table(self.registered_employee_table, self.employee_df)
         self.load_data_to_table(self.harmful_animal_table, self.harmful_animal_df)
+        self.load_data_to_table(self.facility_table,self.facility_setting_df)
         
         self.auto_resize_columns(self.search_animal_table)
         self.auto_resize_columns(self.search_food_table)
         self.auto_resize_columns(self.search_camera_table)
         self.auto_resize_columns(self.registered_employee_table)
         self.auto_resize_columns(self.harmful_animal_table)
+        self.auto_resize_columns(self.facility_table)
         
         
         # animal_df 컬럼 데이터를 ComboBox에 추가
@@ -477,17 +481,17 @@ class WindowClass(QMainWindow, from_class) :
         # food_df 컬럼 데이터를 ComboBox에 추가
         self.load_combobox(self.food_df, 'barcode_id', self.search_food_id_box)
         self.load_combobox(self.food_df, 'brand_name', self.search_brand_name_box)
+        self.load_combobox_except_all(self.food_df, 'brand_name', self.select_feed_box)
         self.load_combobox(self.food_df, 'weight (kg)', self.search_food_weight_box)
         self.load_combobox(self.food_df, 'registered_date', self.search_registered_date_box)
         self.load_combobox(self.food_df, 'expiry_date', self.search_expiry_date_box)
+        
         
         #camera_df 컬럼 데이터 
         self.load_combobox(self.camera_df, 'cam_num', self.select_camera_box_video)
         self.load_combobox(self.camera_df, 'info_type', self.select_camera_type_box)
         self.load_combobox(self.camera_df, 'captured_date', self.captured_date_start)
         self.load_combobox(self.camera_df, 'captured_date', self.captured_date_end)
-        
-        self.load_combobox_harm(self.harmful_animal_df,'index_num',self.select_harmful_animal_index)
         
         self.search_button_animal.clicked.connect(self.animal_search)
         self.search_button_food.clicked.connect(self.food_search)
@@ -498,18 +502,75 @@ class WindowClass(QMainWindow, from_class) :
         self.add_harmful_animal_button.clicked.connect(self.register_new_harmful_animal)
         #self.delete_harmful_animal_button.clicked.connect(self.delete_harmful_animal)
         self.refresh_combo_box()
-        self.select_harmful_animal_index.currentIndexChanged.connect(self.show_selected_animal_name)
+        self.register_button_food.clicked.connect(self.register_new_food)
+        self.register_button_animal.clicked.connect(self.register_new_animal)
+        self.update_button.clicked.connect(self.update_facility_setting)
+        
+        self.checked_times = []  
+        self.food_checked_times = []
+        
+        self.set_facility_schedule_button.clicked.connect(lambda: self.setFacilitySchedule('facility_scheduled_time'))
+        
+    
+    def update_facility_setting(self):
+        # 업데이트할 새 설정 (예시로 값 지정)
+        new_settings = {
+            'water_tank_warning_level': self.water_tank_warning_level_box.currentText(),
+            'water_tank_charging_level': self.water_tank_charging_level_box.currentText(),
+            'water_container_warning_level':self.water_container_warning_level_box.currentText(),
+            'food_tank_warning_level': self.food_tank_warning_level_box.currentText(),
+            'food_tank_charging_level': self.food_tank_charging_level_box.currentText() 
+        }
+        self.data_manage.updateFacilitySetting(new_settings)        
+        self.facility_setting_df=self.data_manage.getFacilitySetting()
+        self.load_data_to_table(self.facility_table,self.facility_setting_df)
+            # 버튼 클릭 시, 테이블명을 인수로 전달
+        
+        
+          
+        
+        
+    def register_new_animal(self):
+        rfid_uid=self.RFID_edit.text()
+        animal_id=self.ID_edit.text()
+        gender =self.select_gender_box.currentText()
+        age=self.age_edit.text()
+        food_brand=self.select_feed_box.currentText()
+        room =self.select_room_box.currentText()
+        weight=self.weight_edit.text()
+        registered_date=self.registered_date_animal.text()
+        self.data_manage.register_animal(animal_id, gender, age, food_brand, room , weight, registered_date, rfid_uid)
+        self.annimal_df=self.data_manage.getAnimal()
+        self.label_33.setText("새로운 동물 등록이 완료되었습니다.")
+
+                
+    def register_new_food(self):
+        barcode_id = self.barcode_edit.text()
+        brand_name = self.brand_name_edit.text()
+        weight = self.feed_weight_edit.text()
+        expiry_date = self.expiry_date_edit.text()
+        registered_date = self.registered_date_food.text() 
+        self.data_manage.register_food(barcode_id, brand_name, weight, expiry_date, registered_date)
+        self.food_df=self.data_manage.getFood()
+        self.label_35.setText("새로운 사료 등록이 완료되었습니다.")
+        self.food_df.rename(columns={'weight': 'weight (kg)'}, inplace=True)
+        self.load_data_to_table(self.search_food_table, self.food_df)
+        # food_df 컬럼 데이터를 ComboBox에 추가
+        self.load_combobox(self.food_df, 'barcode_id', self.search_food_id_box)
+        self.load_combobox(self.food_df, 'brand_name', self.search_brand_name_box)
+        self.load_combobox(self.food_df, 'weight (kg)', self.search_food_weight_box)
+        self.load_combobox(self.food_df, 'registered_date', self.search_registered_date_box)
+        self.load_combobox(self.food_df, 'expiry_date', self.search_expiry_date_box)
         
 
-    def show_selected_animal_name(self, index):
-        selected_index = self.select_harmful_animal_index.itemText(index)
-        if selected_index:
-            # 해당 인덱스에 해당하는 animal_name을 찾아 라인에딧에 설정
-            selected_animal_name = self.harmful_animal_df.loc[self.harmful_animal_df['index_num'] == int(selected_index), 'animal_name'].values
-            if selected_animal_name:
-                self.select_harmful_animal_name.setText(selected_animal_name[0])
-            else:
-                self.select_harmful_animal_name.clear()
+    # def show_selected_animal_name(self, index):
+    #     selected_index = self.select_harmful_animal_index.itemText(index)
+    #     if selected_index:
+    #         selected_animal_name = self.harmful_animal_df.loc[self.harmful_animal_df['index_num'] == int(selected_index), 'animal_name'].values
+    #         if selected_animal_name:
+    #             self.select_harmful_animal_name.setText(selected_animal_name[0])
+    #         else:
+    #             self.select_harmful_animal_name.clear()
                         
     def register_new_harmful_animal(self):
         animal_name= self.harmful_animal_name_edit.text()
@@ -525,7 +586,7 @@ class WindowClass(QMainWindow, from_class) :
     #     self.data_manage.delete_harmful_animal(index_num,animal_name)
     #     self.harmful_animal_df=self.data_manage.getHarmfulAnimal()
     #     self.load_data_to_table(self.harmful_animal_table, self.harmful_animal_df)
-    #     self.refresh_combo_box()
+    #     
 
                 
     def refresh_combo_box(self):
@@ -595,15 +656,10 @@ class WindowClass(QMainWindow, from_class) :
         }
         start_date_str = self.captured_date_start.currentText()
         end_date_str = self.captured_date_end.currentText()
-
         filtered_df = self.camera_df.copy()
-
-        # 다른 필터 적용
         for key, value in filters.items():
             if value != 'all':
                 filtered_df = filtered_df[filtered_df[key].astype(str) == value]
-
-        # 날짜 필터 적용
         if start_date_str != 'all':
             start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
             filtered_df = filtered_df[filtered_df['captured_date'] >= start_date]
@@ -618,11 +674,13 @@ class WindowClass(QMainWindow, from_class) :
    
         
     def load_combobox(self, df, column_name, combobox):
+        combobox.clear()
         unique_values = np.sort(df[column_name].unique())
         combobox.addItem('all')
         combobox.addItems(map(str, unique_values))
 
-    def load_combobox_harm(self, df, column_name, combobox):
+    def load_combobox_except_all(self, df, column_name, combobox):
+        combobox.clear()
         unique_values = np.sort(df[column_name].unique())
         combobox.addItems(map(str, unique_values))    
         
@@ -1182,15 +1240,38 @@ class WindowClass(QMainWindow, from_class) :
         self.stackedWidget.setCurrentIndex(Pages.PAGE_CHOOSE_DATAMANAGER_ANIMAL.value)
     
     def register_animal_button_clicked(self):
+        self.label_33.setText("등록할 RFID를 리더기 위에 얹어주세요.")
+        self.load_combobox_except_all(self.food_df, 'brand_name', self.select_feed_box)
+        self.RFID_edit.setText("")
+        self.ID_edit.setText("")
+        self.age_edit.setText("")
+        self.weight_edit.setText("")
         self.stackedWidget.setCurrentIndex(Pages.PAGE_REGISTER_ANIMAL.value)
     
     def search_animal_button_clicked(self):
+        self.animal_df=self.data_manage.getAnimal()
+        self.animal_df.rename(columns={'age': 'age (in months)', 'weight': 'weight (kg)'}, inplace=True)
+        self.load_data_to_table(self.search_animal_table, self.animal_df)
+        # food_df 컬럼 데이터를 ComboBox에 추가
+        self.load_combobox(self.animal_df, 'animal_id', self.search_id_box)
+        self.load_combobox(self.animal_df, 'gender', self.search_gender_box)
+        self.load_combobox(self.animal_df, 'age (in months)', self.search_age_box)
+        self.load_combobox(self.animal_df, 'food_brand', self.search_food_brand_box)
+        self.load_combobox(self.animal_df, 'room', self.search_room_box)
+        self.load_combobox(self.animal_df, 'weight (kg)', self.search_weight_box)
+        self.load_combobox(self.animal_df, 'registered_date', self.search_rfid_box)
+        self.load_combobox(self.animal_df, 'rfid_uid', self.search_animal_date_box)
         self.stackedWidget.setCurrentIndex(Pages.PAGE_SEARCH_ANIMAL.value)
     
     def choose_datamanager_foodpage_button_clicked(self):
         self.stackedWidget.setCurrentIndex(Pages.PAGE_CHOOSE_DATAMANAGER_FOOD.value)
 
     def register_food_button_clicked(self):
+        self.label_35.setText("사료 포대의 바코드를 인식해주세요")
+        self.barcode_edit.setText("")
+        self.brand_name_edit.setText("")
+        self.feed_weight_edit.setText("")
+        self.expiry_date_edit.setText("")
         self.stackedWidget.setCurrentIndex(Pages.PAGE_REGISTER_FOOD.value)
     
     def search_food_button_clicked(self):
@@ -1214,23 +1295,46 @@ class WindowClass(QMainWindow, from_class) :
     def schedule_facilitiespage_button_clicked(self):
         self.stackedWidget.setCurrentIndex(Pages.PAGE_SCHEDULE_FACILITIES.value)
         
-    def setupTableWidget(self, tableWidget):
+    def setupTableWidget(self, tableWidget, table_name):
+        scheduled_times = self.data_manage.getScheduledTimes(table_name)
+        self.checked_times = scheduled_times  # 이미 체크된 시간들 저장
         tableWidget.setRowCount(24)  # 행의 개수 (24행)
         tableWidget.setColumnCount(2)  # 열의 개수 (2열)
         tableWidget.horizontalHeader().setStretchLastSection(True)
 
-        for hour in range(24):# 첫 번째 열에 시간 설정 (00:00부터 23:00까지)
+        for hour in range(24):  # 첫 번째 열에 시간 설정 (00:00부터 23:00까지)
             time_item = QTableWidgetItem(f"{hour:02d}:00")
-            time_item.setFlags(time_item.flags() ^ Qt.ItemIsEditable)  
+            time_item.setFlags(time_item.flags() ^ Qt.ItemIsEditable)
             tableWidget.setItem(hour, 0, time_item)
- 
-        for row in range(24):# 두 번째 열에 체크박스 추가
-            checkbox_item = QTableWidgetItem()
-            checkbox_item.setFlags(checkbox_item.flags() | Qt.ItemIsUserCheckable)
-            checkbox_item.setCheckState(Qt.Unchecked)
-            tableWidget.setItem(row, 1, checkbox_item)
-        tableWidget.setHorizontalHeaderLabels(["Time", "Assigned"])
+
+        for row in range(24):  # 두 번째 열에 체크박스 추가
+            time = f"{row:02d}:00"
+            checkbox = QCheckBox()
+            if time in scheduled_times:
+                checkbox.setCheckState(Qt.Checked)
+            checkbox.stateChanged.connect(lambda state, r=row: self.handleCheckboxChange(state, r, tableWidget))
+            tableWidget.setCellWidget(row, 1, checkbox)
         
+        tableWidget.setHorizontalHeaderLabels(["Time", "Assigned"])
+
+    def handleCheckboxChange(self, state, row, tableWidget):
+        time_item = tableWidget.item(row, 0)
+        if time_item:
+            time = time_item.text()
+            if state == Qt.Checked:
+                if time not in self.checked_times:
+                    self.checked_times.append(time)
+            else:
+                if time in self.checked_times:
+                    self.checked_times.remove(time)
+ 
+            
+
+    def setFacilitySchedule(self, table_name):
+        if self.checked_times:
+            self.data_manage.clearScheduledTimes(table_name)
+            self.data_manage.addScheduledTimes(table_name, self.checked_times)
+            self.checked_times = []        
         
 if __name__ == "__main__":
     app = QApplication(sys.argv)
