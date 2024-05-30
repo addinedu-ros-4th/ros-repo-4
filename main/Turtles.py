@@ -2,8 +2,8 @@ import sys
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5 import uic, QtCore
-from PyQt5.QtCore import QThread, pyqtSignal
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import QThread, pyqtSignal,Qt,QDate
+from PyQt5 import QtWidgets, QtCore
 import rclpy as rp
 from rclpy.node import Node
 from geometry_msgs.msg import Twist
@@ -19,6 +19,9 @@ from enum import Enum
 from YamlFileManager import YamlFileManager
 from DBManager import DBManager
 from datetime import datetime, timedelta
+import torch
+import torchvision.transforms as transforms
+import numpy as np 
 
 #encryption
 from Crypto.Cipher import AES
@@ -26,6 +29,11 @@ from Crypto.Random import get_random_bytes
 
 rp.init()
 
+import cv2
+from ultralytics import YOLO
+import atexit
+
+    
 class Pages(Enum):
     #page 상수 정의
     PAGE_HOME = 0
@@ -136,16 +144,32 @@ class RosThread(QThread):
 
     new_connection = pyqtSignal(object)
 
-    def __init__(self):
+    def __init__(self,ros_node):
         super().__init__()
-        self.teleop_node = Teleop()
-        self.new_connection.emit(self.teleop_node)
+        self.node = ros_node
+        self.new_connection.emit(self.node)
 
     def run(self):
-        self.teleop_node.publish_twist()
+        self.node.publish_twist()
         self.msleep(100) #추가 안하면 UI에 딜레이 발생
-        rp.spin(self.teleop_node)
+        rp.spin(self.node)
             
+    
+class Camera(QThread):
+    update = QtCore.pyqtSignal()
+
+    def __init__(self, sec =0, parent = None):
+        super().__init__()
+        self.main = parent
+        self.running = True
+
+    def run(self):
+        while self.running == True:
+            self.update.emit()
+            time.sleep(0.1)
+
+    def stop(self):
+        self.running = False
     
 class RobotThread(QThread):
     update = QtCore.pyqtSignal()
@@ -284,7 +308,40 @@ class WindowClass(QMainWindow, from_class) :
         super().__init__()
         self.setupUi(self)
         self.setWindowTitle("Turtles : Herding Heroes")
-        self.teleop_node = Teleop()
+
+        # Camera check
+        self.available_index = []
+        self.camera_list = []
+
+        for index in range(15): 
+            camera = cv2.VideoCapture(index)
+            if camera.isOpened():
+                self.available_index.append(index)
+                camera.release()
+        if len(self.available_index)> 0:
+            for val in self.available_index:
+                temp_cap = cv2.VideoCapture(val)
+                self.camera_list.append(temp_cap)
+
+        for idx,camera in enumerate(self.camera_list):
+            if camera.isOpened():
+                camera.set(cv2.CAP_PROP_FPS, 30)
+            else:
+                print("camera index", end="")
+                print(idx)
+                print("is not opened")
+
+        print(self.available_index)
+        
+        self.camera = Camera(self)
+        self.camera.daemon = True
+        self.pixmap = QPixmap()
+
+        self.camera.update.connect(self.updateCameraView)
+
+        self.select_camera_box.currentIndexChanged.connect(self.combochanged)
+        self.cam_num = 0
+        self.cameraStart()
 
         #robot task 리스트
         self.task_list = []
@@ -297,14 +354,23 @@ class WindowClass(QMainWindow, from_class) :
         
         self.robot_list.append(food_robot1)
         # self.robot_list.append(food_robot2)
-        
+
+        # yolo 
+        self.yolo_detect_class = []
+        self.yolo_detect_class_coordinate = []
+        # Load the YOLOv8 model
+        self.model = YOLO('yolov8n.pt')
+
+
         #databases 연결
-        # self.data_manage = DBManager("192.168.1.101", "0000", 3306, "turtles", "TurtlesDB")
-        # self.animal_list = self.data_manage.getAnimal()
-        # self.camera_list = self.data_manage.getCameraPath()
-        # self.food_list = self.data_manage.getFood()
-        # self.schedule_list = self.data_manage.getFoodRobotSchedule()
-        # self.userdata_list = self.data_manage.getUserData()
+        self.data_manage = DBManager("192.168.1.101", "0000", 3306, "turtles", "TurtlesDB")
+        self.animal_df = self.data_manage.getAnimal()
+        self.camera_df = self.data_manage.getCameraPath()
+        self.food_df = self.data_manage.getFood()
+        self.schedule_df= self.data_manage.getFoodRobotSchedule()
+        self.userdata_df = self.data_manage.getUserData()
+        self.employee_df = self.data_manage.getEmployeeData()
+        self.harmful_animal_df = self.data_manage.getHarmfulAnimal()
         self.robot_thread = RobotThread(parent=self)
         self.count = 0
         self.server_thread = None
@@ -318,18 +384,7 @@ class WindowClass(QMainWindow, from_class) :
         self.quit_button.clicked.connect(self.stop_tcp_server_thread)
         self.client_table.horizontalHeader().setStretchLastSection(True)
         self.client_table.setColumnWidth(0, 280)
-        #테이블정리
-        
-        self.search_animal_table.resizeColumnsToContents()
-        self.search_animal_table.horizontalHeader().setStretchLastSection(True)
-        self.search_food_table.resizeColumnsToContents()
-        self.search_food_table.horizontalHeader().setStretchLastSection(True)
-        self.search_camera_table.resizeColumnsToContents()
-        self.search_camera_table.horizontalHeader().setStretchLastSection(True)
-        self.registered_employee_table.horizontalHeader().setStretchLastSection(True)
-        self.harmful_animal_table.horizontalHeader().setStretchLastSection(True)
-        self.log_table.horizontalHeader().setStretchLastSection(True)
-        
+         
         #login 화면으로 초기화면 셋팅
         self.stackedWidget.setCurrentIndex(Pages.PAGE_LOGIN.value)
         self.toolBox.setCurrentIndex(7)
@@ -391,18 +446,405 @@ class WindowClass(QMainWindow, from_class) :
 
         #task add
         self.task_add_button.clicked.connect(self.task_add_button_clicked)
+
         #ros 
         self.service_client_node = rp.create_node('client_test')
 
         self.layout = QVBoxLayout()
-        self.setupTableWidget(self.FeedingTable)
-        self.layout.addWidget(self.FeedingTable)
-        self.setupTableWidget(self.VentilationTable)
-        self.layout.addWidget(self.VentilationTable)
+        self.setupTableWidget(self.feeding_table); self.setupTableWidget(self.feeding_table_check)
+        self.layout.addWidget(self.feeding_table); self.layout.addWidget(self.feeding_table_check)
+        self.setupTableWidget(self.ventilation_table); self.setupTableWidget(self.ventilation_table_check)
+        self.layout.addWidget(self.ventilation_table); self.layout.addWidget(self.ventilation_table_check)
         self.setLayout(self.layout) 
         
         self.stop_recording_button.hide()
+
+        if torch.cuda.is_available():
+        # GPU를 사용하도록 설정
+            self.device = torch.device("cuda")
+            print("GPU를 사용합니다.")
+        else:
+        # CPU를 사용하도록 설정
+            self.device = torch.device("cpu")
+            print("GPU를 사용할 수 없습니다. CPU를 사용합니다.")
+            
+        current_date = QDate.currentDate().toString('yyyy-MM-dd')
+        #등록일에 현재 날짜 설정
+        self.registered_date_animal.setText(current_date); self.registered_date_animal.setReadOnly(True)
+        self.registered_date_food.setText(current_date); self.registered_date_food.setReadOnly(True)
+        self.registered_date_employee.setText(current_date); self.registered_date_employee.setReadOnly(True)
+        self.login_information_label.setText("")
+        
+        #테이블에 db 정보 불러오기 
+        self.animal_df.rename(columns={'age': 'age (in months)', 'weight': 'weight (kg)'}, inplace=True)
+        self.load_data_to_table(self.search_animal_table, self.animal_df)
+        
+        self.food_df.rename(columns={'weight': 'weight (kg)'}, inplace=True)
+        self.load_data_to_table(self.search_food_table, self.food_df)
+        
+        self.camera_df.rename(columns={'camera_num': 'cam_num'}, inplace=True)
+        self.load_data_to_table(self.search_camera_table, self.camera_df)
+        self.load_data_to_table(self.registered_employee_table, self.employee_df)
+        self.load_data_to_table(self.harmful_animal_table, self.harmful_animal_df)
+        
+        self.auto_resize_columns(self.search_animal_table)
+        self.auto_resize_columns(self.search_food_table)
+        self.auto_resize_columns(self.search_camera_table)
+        self.auto_resize_columns(self.registered_employee_table)
+        self.auto_resize_columns(self.harmful_animal_table)
+        
+        
+        # animal_df 컬럼 데이터를 ComboBox에 추가
+        self.load_combobox(self.animal_df, 'animal_id', self.search_id_box)
+        self.load_combobox(self.animal_df, 'gender', self.search_gender_box)
+        self.load_combobox(self.animal_df, 'age (in months)', self.search_age_box)
+        self.load_combobox(self.animal_df, 'food_brand', self.search_food_brand_box)
+        self.load_combobox(self.animal_df, 'room', self.search_room_box)
+        self.load_combobox(self.animal_df, 'weight (kg)', self.search_weight_box)
+        self.load_combobox(self.animal_df, 'registered_date', self.search_rfid_box)
+        self.load_combobox(self.animal_df, 'rfid_uid', self.search_animal_date_box)
+        
+        # food_df 컬럼 데이터를 ComboBox에 추가
+        self.load_combobox(self.food_df, 'barcode_id', self.search_food_id_box)
+        self.load_combobox(self.food_df, 'brand_name', self.search_brand_name_box)
+        self.load_combobox(self.food_df, 'weight (kg)', self.search_food_weight_box)
+        self.load_combobox(self.food_df, 'registered_date', self.search_registered_date_box)
+        self.load_combobox(self.food_df, 'expiry_date', self.search_expiry_date_box)
+        
+        #camera_df 컬럼 데이터 
+        self.load_combobox(self.camera_df, 'cam_num', self.select_camera_box_video)
+        self.load_combobox(self.camera_df, 'info_type', self.select_camera_type_box)
+        self.load_combobox(self.camera_df, 'captured_date', self.captured_date_start)
+        self.load_combobox(self.camera_df, 'captured_date', self.captured_date_end)
+        
+        self.load_combobox_harm(self.harmful_animal_df,'index_num',self.select_harmful_animal_index)
+        
+        self.search_button_animal.clicked.connect(self.animal_search)
+        self.search_button_food.clicked.connect(self.food_search)
+        # 시작 날짜 콤보박스 변경 시 종료 날짜 콤보박스 업데이트
+        self.captured_date_start.currentIndexChanged.connect(self.update_captured_date_end)
+        self.search_button_video.clicked.connect(self.camera_search)
+        self.employee_register_button.clicked.connect(self.register_new_employee)
+        self.add_harmful_animal_button.clicked.connect(self.register_new_harmful_animal)
+        #self.delete_harmful_animal_button.clicked.connect(self.delete_harmful_animal)
+        self.refresh_combo_box()
+        self.select_harmful_animal_index.currentIndexChanged.connect(self.show_selected_animal_name)
+        
+
+    def show_selected_animal_name(self, index):
+        selected_index = self.select_harmful_animal_index.itemText(index)
+        if selected_index:
+            # 해당 인덱스에 해당하는 animal_name을 찾아 라인에딧에 설정
+            selected_animal_name = self.harmful_animal_df.loc[self.harmful_animal_df['index_num'] == int(selected_index), 'animal_name'].values
+            if selected_animal_name:
+                self.select_harmful_animal_name.setText(selected_animal_name[0])
+            else:
+                self.select_harmful_animal_name.clear()
+                        
+    def register_new_harmful_animal(self):
+        animal_name= self.harmful_animal_name_edit.text()
+        index_num = self.harmful_animal_index_box.currentText()
+        self.data_manage.register_harmful_animal(index_num,animal_name)
+        self.harmful_animal_df=self.data_manage.getHarmfulAnimal()
+        self.load_data_to_table(self.harmful_animal_table, self.harmful_animal_df)
+        self.refresh_combo_box()
     
+    # def delete_harmful_animal(self):
+    #     index_num= self.select_harmful_animal_index.currentText()  
+    #     animal_name = self.select_harmful_animal_name.text()      
+    #     self.data_manage.delete_harmful_animal(index_num,animal_name)
+    #     self.harmful_animal_df=self.data_manage.getHarmfulAnimal()
+    #     self.load_data_to_table(self.harmful_animal_table, self.harmful_animal_df)
+    #     self.refresh_combo_box()
+
+                
+    def refresh_combo_box(self):
+        # harmful_animal_df 데이터프레임에서 index_num 열의 모든 값 추출
+        used_numbers = self.harmful_animal_df['index_num'].tolist()
+        all_numbers = list(range(1, 11))
+        unused_numbers = [num for num in all_numbers if num not in used_numbers]
+        self.harmful_animal_index_box.clear()
+        for num in unused_numbers:
+            self.harmful_animal_index_box.addItem(str(num))    
+                
+    def register_new_employee(self):
+        employee_name = self.employee_name_edit.text()
+        registered_date = self.registered_date_employee.text()        
+        self.data_manage.register_employee(employee_name, registered_date)
+        self.employee_df= self.data_manage.getEmployeeData()
+        self.load_data_to_table(self.registered_employee_table, self.employee_df)
+        
+    def update_captured_date_end(self):
+        selected_start_date = self.captured_date_start.currentText()
+        self.captured_date_end.clear()
+        
+        if selected_start_date != 'all':
+            self.captured_date_end.addItem('all')
+            selected_start_date = datetime.strptime(selected_start_date, '%Y-%m-%d').date()
+            filtered_dates = self.camera_df[self.camera_df['captured_date'] >= selected_start_date]['captured_date'].unique()
+            sorted_filtered_dates = sorted(filtered_dates)
+            self.captured_date_end.addItems(map(str, sorted_filtered_dates))
+        else:
+            self.captured_date_end.addItem('all')
+    
+    def animal_search(self):
+        filters = { 
+         'animal_id': self.search_id_box.currentText(),
+         'gender': self.search_gender_box.currentText(),
+         'age (in months)': self.search_age_box.currentText(),
+         'food_brand': self.search_food_brand_box.currentText(),
+         'room': self.search_room_box.currentText(),
+         'weight (kg)': self.search_weight_box.currentText(),
+         'registered_date': self.search_rfid_box.currentText(),
+         'rfid_uid': self.search_animal_date_box.currentText()
+        }
+        filtered_df = self.animal_df.copy()
+        for key, value in filters.items():
+            if value != 'all':
+                filtered_df = filtered_df[filtered_df[key].astype(str) == value]
+        self.load_data_to_table(self.search_animal_table, filtered_df)           
+
+    def food_search(self):
+        filters = {
+            'barcode_id': self.search_food_id_box.currentText(),
+            'brand_name': self.search_brand_name_box.currentText(),
+            'weight (kg)': self.search_food_weight_box.currentText(),
+            'registered_date': self.search_registered_date_box.currentText(),
+            'expiry_date': self.search_expiry_date_box.currentText()
+        }
+        filtered_df = self.food_df.copy()
+        for key, value in filters.items():
+            if value != 'all':
+                filtered_df = filtered_df[filtered_df[key].astype(str) == value]
+        self.load_data_to_table(self.search_food_table, filtered_df)
+    
+    def camera_search(self):
+        filters = { 
+            'cam_num': self.select_camera_box_video.currentText(),
+            'info_type': self.select_camera_type_box.currentText(),
+        }
+        start_date_str = self.captured_date_start.currentText()
+        end_date_str = self.captured_date_end.currentText()
+
+        filtered_df = self.camera_df.copy()
+
+        # 다른 필터 적용
+        for key, value in filters.items():
+            if value != 'all':
+                filtered_df = filtered_df[filtered_df[key].astype(str) == value]
+
+        # 날짜 필터 적용
+        if start_date_str != 'all':
+            start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+            filtered_df = filtered_df[filtered_df['captured_date'] >= start_date]
+        if end_date_str != 'all':
+            end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+            filtered_df = filtered_df[filtered_df['captured_date'] <= end_date]
+
+        # 결과를 테이블에 로드
+        self.load_data_to_table(self.search_camera_table, filtered_df)
+ 
+    
+   
+        
+    def load_combobox(self, df, column_name, combobox):
+        unique_values = np.sort(df[column_name].unique())
+        combobox.addItem('all')
+        combobox.addItems(map(str, unique_values))
+
+    def load_combobox_harm(self, df, column_name, combobox):
+        unique_values = np.sort(df[column_name].unique())
+        combobox.addItems(map(str, unique_values))    
+        
+        
+
+    def auto_resize_columns(self, table):
+        table.resizeColumnsToContents()
+        header = table.horizontalHeader()
+        for col in range(table.columnCount()):
+            header_text_width = table.fontMetrics().horizontalAdvance(table.horizontalHeaderItem(col).text())
+            table.setColumnWidth(col, max(table.columnWidth(col), header_text_width + 20))  # 약간의 여유 공간 추가
+        table.horizontalHeader().setStretchLastSection(True)
+        header.setFixedHeight(25)  
+                                     
+    def load_data_to_table(self, table, df):
+        # 행과 열 설정
+        table.setRowCount(df.shape[0])
+        table.setColumnCount(df.shape[1])
+        # 컬럼 헤더 설정
+        table.setHorizontalHeaderLabels(df.columns)
+        # 데이터 삽입
+        for i in range(df.shape[0]):
+            for j in range(df.shape[1]):
+                table.setItem(i, j, QTableWidgetItem(str(df.iat[i, j])))
+        
+           
+
+    def convert_to_torchtensor(self, num_data):
+        transform = transforms.ToTensor()
+        tensor_data = transform(num_data)
+        return tensor_data  
+    
+    def move_to_device(self, data):
+        # GPU로 이동
+        tensor_data = data.to(self.device)
+        return tensor_data
+    
+    
+    def updateDetectedListWithYolo(self, frame_for_yolo):
+
+        self.yolo_detect_class.clear()
+        self.yolo_detect_class_coordinate.clear()
+
+        frame_for_yolo = self.convert_to_torchtensor(frame_for_yolo)
+        frame_for_yolo = self.move_to_device(frame_for_yolo)
+
+        results = self.model.predict(source=frame_for_yolo, classes=19, conf = 0.2)
+        names = self.model.names
+        
+        for r in results:
+            for idx,cls_name in enumerate(r.boxes.cls):
+                tmp_name = names[int(cls_name.item())]
+                self.yolo_detect_class.append(tmp_name)
+                self.yolo_detect_class_coordinate.append(r.boxes.xyxy.cpu())
+
+        print(self.yolo_detect_class)
+
+
+    def drawRedBox(self,img_form):
+        result = img_form.copy()
+
+        for val in self.yolo_detect_class_coordinate:
+            for idx, coord in enumerate(val):
+                x1 = coord[0]
+                y1 = coord[1]
+                x2 = coord[2]
+                y2 = coord[3]
+                cv2.rectangle(result, (int(x1.item()), int(y1.item())), (int(x2.item()), int(y2.item())), (255, 0, 0), 2)
+                
+                font = cv2.FONT_HERSHEY_SIMPLEX
+                font_scale = 0.5
+                font_thickness = 1
+                font_color = (255, 255, 255)  # 흰색
+                
+                text_size, _ = cv2.getTextSize(self.yolo_detect_class[idx], font, font_scale, font_thickness)
+                text_x = int((x1 + x2) / 2 - text_size[0] / 2)
+                text_y = int(y2 + text_size[1] + 5)  # 객체 아래에 위치
+                cv2.putText(result, self.yolo_detect_class[idx], (text_x, text_y), font, font_scale, font_color, font_thickness)
+                
+        return result 
+        
+    def checkRemainedFood(self,img_form):
+        result = img_form.copy()
+        
+        #HSV 색상으로 변환
+        hsv_image = cv2.cvtColor(result, cv2.COLOR_BGR2HSV)
+
+        # 노란색 범위 정의
+        lower_yellow = np.array([20, 100, 100])
+        upper_yellow = np.array([30, 255, 255])
+        
+        # 초록색 범위 정의
+        lower_green = np.array([35, 100, 100])
+        upper_green = np.array([85, 255, 255])
+
+        # 각각의 색상 범위 내의 픽셀 분리
+        mask_yellow = cv2.inRange(hsv_image, lower_yellow, upper_yellow)
+        mask_green = cv2.inRange(hsv_image, lower_green, upper_green)
+
+        # 두 마스크 결합
+        combined_mask = cv2.bitwise_or(mask_yellow, mask_green)
+
+        # # 마스크 생성
+        # mask = cv2.inRange(hsv_image, lower_limit, upper_limit)
+
+        # 마스크를 이미지로 변환
+        masked_image = cv2.bitwise_and(result, result, mask=combined_mask)
+
+
+        # 각 이미지가 차지하는 픽셀 수 계산
+        cropped_pixel_count = np.count_nonzero(result)
+        masked_pixel_count = np.count_nonzero(masked_image)
+
+        # print("pixel count")
+        # print(cropped_pixel_count)
+        # print(masked_pixel_count)
+        
+        remained_feed = (masked_pixel_count / cropped_pixel_count) * 100
+        
+        # print("remain :")
+        # print(remained_feed)
+
+        result_str = "remain food rate : {:.1f}".format(remained_feed)
+
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        font_scale = 0.5
+        font_thickness = 1
+        font_color = (255, 255, 255)  # 흰색
+                         
+        text_size, _ = cv2.getTextSize(result_str, font, font_scale, font_thickness)
+        #label의 width와 height 가져오기 
+        w = self.monitor_camera_label.width()
+        h = self.monitor_camera_label.height()
+        text_x = int(w /2) -100
+        text_y = int(h /2) -170
+        cv2.putText(result, result_str, (text_x, text_y), font, font_scale, font_color, font_thickness)
+
+        print(result_str)
+
+        # 마스크 확인해 보고 싶다면        
+        # result = masked_image
+
+        return result 
+
+    def combochanged(self):
+        self.cam_num = self.select_camera_box.currentIndex()
+
+    def updateCameraView(self):
+
+        retval_list = []
+        image_list = []
+
+        for idx,cam in enumerate(self.camera_list):
+            if cam.isOpened():
+                retval, image = cam.read()
+                
+                retval_list.append(retval)
+                image_list.append(image)
+
+
+        if self.cam_num < len(image_list):
+
+            if retval_list[self.cam_num]:
+                self.image = cv2.cvtColor(image_list[self.cam_num],cv2.COLOR_BGR2RGB)
+
+                # if self.cam_num != 0:    # Entrance 카메라를 제외하고 나머지는 cow yolo 인식 처리 하기 
+                self.updateDetectedListWithYolo(self.image)
+                self.image = self.drawRedBox(self.image)
+                self.image = self.checkRemainedFood(self.image)
+
+                #이미지 화면에 띄우기
+                h,w,c = self.image.shape
+                qimage = QImage(self.image.data, w, h, w*c, QImage.Format_RGB888)
+
+                self.pixmap = self.pixmap.fromImage(qimage)
+                self.pixmap = self.pixmap.scaled(self.monitor_camera_label.width(), self.monitor_camera_label.height())
+
+                self.monitor_camera_label.setPixmap(self.pixmap)
+            else:
+                print(f"Camera cannot be opened")
+
+    def cameraStart(self):
+        self.camera.running = True
+        self.camera.start()
+        
+
+    def cameraStop(self):
+        self.camera.running = False
+        for cam in self.camera_list:
+            cam.release
+
+
     def decryption(self,data,key,tag):
         # 복호화
         cipher = AES.new(key, AES.MODE_EAX, nonce=cipher.nonce)
@@ -597,24 +1039,24 @@ class WindowClass(QMainWindow, from_class) :
         self.task_list.append(temp_task)
 
     def foodrobot_up_button_clicked(self):
-        self.teleop_node.twist.linear.x = 3.0
-        self.teleop_node.twist.angular.z = 0.0
-        self.teleop_node.publish_twist()
+        teleop_node.twist.linear.x = 3.0
+        teleop_node.twist.angular.z = 0.0
+        teleop_node.publish_twist()
     
     def foodrobot_down_button_clicked(self):
-        self.teleop_node.twist.linear.x = -3.0
-        self.teleop_node.twist.angular.z = 0.0
-        self.teleop_node.publish_twist()
+        teleop_node.twist.linear.x = -3.0
+        teleop_node.twist.angular.z = 0.0
+        teleop_node.publish_twist()
 
     def foodrobot_left_button_clicked(self):
-        self.teleop_node.twist.linear.x = 0.0
-        self.teleop_node.twist.angular.z = 3.0
-        self.teleop_node.publish_twist()
+        teleop_node.twist.linear.x = 0.0
+        teleop_node.twist.angular.z = 3.0
+        teleop_node.publish_twist()
 
     def foodrobot_right_button_clicked(self):
-        self.teleop_node.twist.linear.x = 0.0
-        self.teleop_node.twist.angular.z = -3.0
-        self.teleop_node.publish_twist()    
+        teleop_node.twist.linear.x = 0.0
+        teleop_node.twist.angular.z = -3.0
+        teleop_node.publish_twist()    
 
     def foodtrailer_servo_open_button_clicked(self):
         self.send_to_rasp("FT1,1")
@@ -652,7 +1094,9 @@ class WindowClass(QMainWindow, from_class) :
 
         if self.server_thread:
             self.server_thread.stop()
+        self.cameraStop()
         event.accept()
+        
 
     def robotThreadStart(self):
         self.robot_thread.start()
@@ -702,17 +1146,12 @@ class WindowClass(QMainWindow, from_class) :
         self.display_client_list()    
         
     def display_client_list(self):
-        # 열의 수를 2로 고정(IP와 Port를 위한 열)
         self.client_table.setColumnCount(2)
-        
-        # 행의 수를 DataFrame의 길이(클라이언트 수)로 설정
         self.client_table.setRowCount(len(self.client_df))
-        
         # DataFrame을 순회하며 각 클라이언트의 IP와 Port 정보를 테이블에 추가
         for row, (index, row_data) in enumerate(self.client_df.iterrows()):
             self.client_table.setItem(row, 0, QTableWidgetItem(row_data['IP']))  # 첫 번째 열에 IP 설정
-            self.client_table.setItem(row, 1, QTableWidgetItem(str(row_data['Port'])))  # 두 번째 열에 Port 설정
-            
+            self.client_table.setItem(row, 1, QTableWidgetItem(str(row_data['Port'])))  # 두 번째 열에 Port 설정   
         # DataFrame이 비어 있으면 클라이언트 라벨을 숨기고, 그렇지 않으면 보여줌
         if self.client_df.empty:
             self.client_label.hide()
@@ -743,11 +1182,19 @@ class WindowClass(QMainWindow, from_class) :
 
     def logout_button_clicked(self):
         self.stackedWidget.setCurrentIndex(Pages.PAGE_LOGIN.value)
+        self.input_id =""; self.input_pw =""
+        self.id_input.setText(""); self.pw_input.setText("")
     
     def login_button_clicked(self):
-        self.stackedWidget.setCurrentIndex(Pages.PAGE_HOME.value)
-
-
+        self.input_id = int(self.id_input.text())
+        self.input_pw = int(self.pw_input.text())
+        user_row = self.userdata_df[self.userdata_df['id'] == self.input_id]
+        if not user_row.empty and user_row.iloc[0]['password'] == self.input_pw:
+            self.stackedWidget.setCurrentIndex(Pages.PAGE_HOME.value)
+            self.login_information_label.setText(f"ID: {self.input_id}님 접속중")
+        else:
+            self.login_result_label.setText('로그인에 실패하였습니다')
+            
     def toolbox_changed(self):
         if self.toolBox.currentIndex() == 5:
             self.stackedWidget.setCurrentIndex(Pages.PAGE_LOG.value)
@@ -827,28 +1274,24 @@ class WindowClass(QMainWindow, from_class) :
         tableWidget.setColumnCount(2)  # 열의 개수 (2열)
         tableWidget.horizontalHeader().setStretchLastSection(True)
 
-        # 첫 번째 열에 시간 설정 (00:00부터 23:00까지)
-        for hour in range(24):
+        for hour in range(24):# 첫 번째 열에 시간 설정 (00:00부터 23:00까지)
             time_item = QTableWidgetItem(f"{hour:02d}:00")
-            time_item.setFlags(time_item.flags() ^ Qt.ItemIsEditable)  # 시간을 수정할 수 없도록 설정
+            time_item.setFlags(time_item.flags() ^ Qt.ItemIsEditable)  
             tableWidget.setItem(hour, 0, time_item)
-
-        # 두 번째 열에 체크박스 추가
-        for row in range(24):
+ 
+        for row in range(24):# 두 번째 열에 체크박스 추가
             checkbox_item = QTableWidgetItem()
             checkbox_item.setFlags(checkbox_item.flags() | Qt.ItemIsUserCheckable)
             checkbox_item.setCheckState(Qt.Unchecked)
             tableWidget.setItem(row, 1, checkbox_item)
-
-        # 열 헤더 설정
         tableWidget.setHorizontalHeaderLabels(["Time", "Assigned"])
         
         
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    ros_thread = RosThread()
+    teleop_node = Teleop()
+    ros_thread = RosThread(teleop_node)
     ros_thread.start()
     myWindows = WindowClass()
     myWindows.show()
-    
     sys.exit(app.exec_())
