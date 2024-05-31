@@ -148,11 +148,25 @@ class DBManager:
             cursor.execute(sql, (level, facility_name))
         
         self.local.commit()
+    
+    def clearFoodScheduledTimes(self,room_number ):
+        cursor = self.local.cursor()
+        cursor.execute(f"DELETE FROM food_scheduled_time where room = {room_number}")
+        self.local.commit()
         
     def clearScheduledTimes(self, table_name):
         cursor = self.local.cursor()
         cursor.execute(f"DELETE FROM {table_name}")
         self.local.commit()
+    
+    def addFacilityScheduledTimes(self, time):
+        # 데이터베이스에 새로운 유해동물 추가
+        cursor = self.local.cursor()
+        query = "INSERT INTO HarmfulAnimal (time) VALUES (%s)"
+        values = (time)
+        cursor.execute(query, values)
+        self.local.commit()
+
 
     def addScheduledTimes(self, table_name, times):
         cursor = self.local.cursor()
@@ -178,15 +192,39 @@ class DBManager:
         # Join the parts with ':'
         return ':'.join(parts[:2])  # Return only the hour and minute parts
 
+    def get_reserved_times(self, room):
+        cursor = self.local.cursor()
+        query = "SELECT time FROM food_scheduled_time WHERE room = %s"
+        result = cursor.execute(query, (room,))
+        return cursor.fetchall()
 
+    def get_reserved_times_facility(self):
+        cursor = self.local.cursor()
+        query = "SELECT time FROM facility_scheduled_time "
+        cursor.execute(query)
+        result = cursor.fetchall()
+        return result
         
+    
+
+    def insert_food_schedule(self, room, time):
+        cursor = self.local.cursor()
+        query = "INSERT INTO food_scheduled_time (room, time) VALUES (%s, %s)"
+        cursor.execute(query, (room, time))
+        self.local.commit()
+
+    def insert_facility_schedule(self, time):
+        cursor = self.local.cursor()
+        query = "INSERT INTO facility_scheduled_time (time) VALUES (%s)"
+        cursor.execute(query, (time))
+        self.local.commit()    
         
     def dbclose(self):
         self.local.close()
 
 def main():
-
     pass
+    
 
 if __name__ == "__main__":
     main()

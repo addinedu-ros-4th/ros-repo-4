@@ -453,9 +453,9 @@ class WindowClass(QMainWindow, from_class) :
         self.service_client_node = rp.create_node('client_test')
 
         self.layout = QVBoxLayout()
-        #self.setupTableWidget(self.feeding_table) 
+        self.setTableWidget(self.feeding_table) 
         self.layout.addWidget(self.feeding_table)
-        self.setupTableWidget(self.ventilation_table, "facility_scheduled_time")
+        self.setTableWidget(self.ventilation_table)
         self.layout.addWidget(self.ventilation_table)
         self.setLayout(self.layout) 
         
@@ -536,10 +536,112 @@ class WindowClass(QMainWindow, from_class) :
         self.register_button_animal.clicked.connect(self.register_new_animal)
         self.update_button.clicked.connect(self.update_facility_setting)
         
-        self.checked_times = []  
-        self.food_checked_times = []
+
         
-        self.set_facility_schedule_button.clicked.connect(lambda: self.setFacilitySchedule('facility_scheduled_time'))
+        self.set_food_button.clicked.connect(self.on_set_food_button_click)
+        self.populate_table()
+        self.set_room_box.currentIndexChanged.connect(self.populate_table)
+        self.checked_times = [] 
+        self.set_facility_schedule_button.clicked.connect(self.setFacilitySchedule)
+        self.display_existing_schedule()
+
+                
+    def setFacilitySchedule(self):
+        # 현재까지 체크된 체크박스와 해당 체크박스가 위치한 행에 있는 시간들을 모아둘 리스트 초기화
+        checked_times = []
+
+        # 체크된 체크박스를 확인하고, 해당 행에 있는 시간을 checked_times에 추가
+        for row in range(self.ventilation_table.rowCount()):
+            item = self.ventilation_table.item(row, 1)  # 해당 셀의 아이템 가져오기
+            if item is not None and item.checkState() == Qt.Checked:  # 아이템이 있고 체크되어 있는 경우
+                time_item = self.ventilation_table.item(row, 0)  # 해당 행의 시간 아이템 가져오기
+                if time_item is not None:  # 시간 아이템이 있는 경우
+                    checked_times.append(time_item.text())  # 시간을 checked_times 리스트에 추가
+
+        # 중복된 값을 제거하여 데이터베이스에 저장
+        checked_times = list(set(checked_times))
+        self.data_manage.clearScheduledTimes('facility_scheduled_time')
+        self.data_manage.addScheduledTimes('facility_scheduled_time', checked_times)
+    
+    
+    def display_existing_schedule(self):
+        self.clear_facility_table()
+        reserved_times = self.data_manage.get_reserved_times_facility()
+        for time in reserved_times:
+            time_str = str(time[0])  # 시간 데이터를 문자열로 변환
+            hour_minute = time_str.split(":")[:2]  # 시와 분 부분 추출
+            hour_minute_str = ":".join([f"{int(part):02d}" for part in hour_minute])  # 시와 분을 두 자리로 표현하여 문자열로 조합
+
+            # 해당 시간을 포함하는 셀을 찾습니다.
+            items = self.ventilation_table.findItems(hour_minute_str, Qt.MatchExactly)
+            if items:
+                item = items[0]
+                row = item.row()
+                checkbox_item = self.ventilation_table.item(row, 1)  # 같은 행에 있는 체크박스 가져오기
+                checkbox_item.setCheckState(Qt.Checked)
+            else:
+                print("Checkbox for time", hour_minute_str, "not found.")
+     
+
+    def clear_facility_table(self):
+        # 테이블 위젯의 모든 체크박스를 초기화합니다.
+        for row in range(self.ventilation_table.rowCount()):
+            checkbox_item = self.ventilation_table.item(row, 1)
+            checkbox_item.setCheckState(Qt.Unchecked)    
+
+    def populate_table(self):
+        selected_room = self.set_room_box.currentText()
+        self.clear_food_table()
+
+        reserved_times = self.data_manage.get_reserved_times(selected_room)
+        for time in reserved_times:
+            time_str = str(time[0])  # 시간 데이터를 문자열로 변환
+            hour_minute = time_str.split(":")[:2]  # 시와 분 부분 추출
+            hour_minute_str = ":".join([f"{int(part):02d}" for part in hour_minute])  # 시와 분을 두 자리로 표현하여 문자열로 조합
+
+            # 해당 시간을 포함하는 셀을 찾습니다.
+            items = self.feeding_table.findItems(hour_minute_str, Qt.MatchExactly)
+            if items:
+                item = items[0]
+                row = item.row()
+                checkbox_item = self.feeding_table.item(row, 1)  # 같은 행에 있는 체크박스 가져오기
+                checkbox_item.setCheckState(Qt.Checked)
+            else:
+                print("Checkbox for time", hour_minute_str, "not found.")
+
+    def clear_food_table(self):
+        # 테이블 위젯의 모든 체크박스를 초기화합니다.
+        for row in range(self.feeding_table.rowCount()):
+            checkbox_item = self.feeding_table.item(row, 1)
+            checkbox_item.setCheckState(Qt.Unchecked)
+
+    def setTableWidget(self,tableWidget):
+        tableWidget.setRowCount(24)
+        tableWidget.setColumnCount(2)
+        tableWidget.horizontalHeader().setStretchLastSection(True)
+
+        for hour in range(24):
+            time_item = QTableWidgetItem(f"{hour:02d}:00")
+            time_item.setFlags(time_item.flags() ^ Qt.ItemIsEditable)
+            tableWidget.setItem(hour, 0, time_item)
+
+        for row in range(24):
+            checkbox_item = QTableWidgetItem()
+            checkbox_item.setFlags(checkbox_item.flags() | Qt.ItemIsUserCheckable)
+            checkbox_item.setCheckState(Qt.Unchecked)
+            tableWidget.setItem(row, 1, checkbox_item)
+
+        tableWidget.setHorizontalHeaderLabels(["Time", "Assigned"])
+
+    def on_set_food_button_click(self):
+        selected_room = self.set_room_box.currentText()
+        self.data_manage.clearFoodScheduledTimes(selected_room)
+        for row in range(self.feeding_table.rowCount()):
+            checkbox_item = self.feeding_table.item(row, 1)
+            if checkbox_item.checkState() == Qt.Checked:
+                room_item = self.feeding_table.item(row, 0)
+                room_number = room_item.text()
+                self.data_manage.insert_food_schedule(selected_room, room_number)
         
     
     def update_facility_setting(self):
