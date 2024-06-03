@@ -3,3 +3,6 @@
          
 2. yolov8 사용을 위해 ultralytics 설치       
   ``` pip install ultralytics ```      
+
+3. 암호화 복호화 라이브러리 설치 
+  ``` pip install pycryptodome```
