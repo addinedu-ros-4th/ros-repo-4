@@ -2,39 +2,41 @@ import socket
 import cv2
 import pickle
 import struct
-from _thread import start_new_thread
+import time
 
-HOST = '192.168.0.20'  # 서버 IP 주소
-PORT = 5002
-client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client_socket.connect((HOST, PORT))
+TCP_IP = '192.168.1.104'  # 서버 IP 주소
+TCP_PORT = 3001          # 서버 포트
 
-def recv_data(client_socket):
-    while True:
-        try:
-            data = client_socket.recv(1024)
-            if not data:
-                break
-            print("receive : ", repr(data.decode()))
-        except Exception as e:
-            print("Error receiving data:", e)
-            break
+def send_images():
+    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    client_socket.connect((TCP_IP, TCP_PORT))
+    print('Connected to server')
 
-start_new_thread(recv_data, (client_socket,))
-print('>> Connect Server')
+    cap = cv2.VideoCapture(0)
+    encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 70]  # 압축 품질 조정 (기본값: 90 -> 70)
 
-cap = cv2.VideoCapture(0)
-
-try:
-    while True:
+    while cap.isOpened():
         ret, frame = cap.read()
         if not ret:
             break
-        data = pickle.dumps(frame)
-        message_size = struct.pack("L", len(data))  # 데이터 길이를 패킹
+
+        # 이미지 해상도 줄이기 (기본 해상도에서 절반으로 줄임)
+        frame = cv2.resize(frame, (640, 480))
+
+        # 이미지를 압축하여 전송
+        result, frame = cv2.imencode('.jpg', frame, encode_param)
+        data = pickle.dumps(frame, 0)
+        message_size = struct.pack("L", len(data))
+
         client_socket.sendall(message_size + data)
-except Exception as e:
-    print("Error sending data:", e)
-finally:
+        print('Image sent to server')
+
+        # 전송 주기 조정 (0.1초 대기)
+        time.sleep(0.1)
+
     cap.release()
     client_socket.close()
+
+if __name__ == "__main__":
+    send_images()
+
