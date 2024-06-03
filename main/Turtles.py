@@ -333,6 +333,8 @@ class WindowClass(QMainWindow, from_class) :
         # yolo 
         self.yolo_detect_class = []
         self.yolo_detect_class_coordinate = []
+        self.yolo_harmful_animal_detect_class = []
+        self.yolo_harmful_animal_detect_class_coordinate = []
         # Load the YOLOv8 model
         self.model = YOLO('yolov8n.pt')
 
@@ -680,6 +682,26 @@ class WindowClass(QMainWindow, from_class) :
 
         print(self.yolo_detect_class)
 
+    
+    def updateHarmfulAnimalDetectedListWithYolo(self, frame_for_yolo):
+
+        self.yolo_harmful_animal_detect_class.clear()
+        self.yolo_harmful_animal_detect_class_coordinate.clear()
+
+        frame_for_yolo = self.convert_to_torchtensor(frame_for_yolo)
+        frame_for_yolo = self.move_to_device(frame_for_yolo)
+
+        results = self.model.predict(source=frame_for_yolo, classes=[16, 21], conf = 0.2)
+        names = self.model.names
+        
+        for r in results:
+            for idx,cls_name in enumerate(r.boxes.cls):
+                tmp_name = names[int(cls_name.item())]
+                self.yolo_harmful_animal_detect_class.append(tmp_name)
+                self.yolo_harmful_animal_detect_class_coordinate.append(r.boxes.xyxy.cpu())
+
+        print(self.yolo_harmful_animal_detect_class)
+
 
     def drawRedBox(self,img_form):
         result = img_form.copy()
@@ -690,6 +712,14 @@ class WindowClass(QMainWindow, from_class) :
                 y1 = coord[1]
                 x2 = coord[2]
                 y2 = coord[3]
+
+                roi = result[int(y1):int(y2), int(x1):int(x2)]
+                # result[int(y1):int(y2), int(x1):int(x2)] = self.checkAnimalTemepature(roi)
+                self.checkAnimalTemepature(roi)
+
+                #소만 crop한 이미지
+                # cv2.imshow('ROI', roi)
+
                 cv2.rectangle(result, (int(x1.item()), int(y1.item())), (int(x2.item()), int(y2.item())), (255, 0, 0), 2)
                 
                 font = cv2.FONT_HERSHEY_SIMPLEX
@@ -703,6 +733,38 @@ class WindowClass(QMainWindow, from_class) :
                 cv2.putText(result, self.yolo_detect_class[idx], (text_x, text_y), font, font_scale, font_color, font_thickness)
                 
         return result 
+    
+    def drawBlueBox(self,img_form,detect_class, coordinate):
+        result = img_form.copy()
+
+        for val in coordinate:
+            for idx, coord in enumerate(val):
+                x1 = coord[0]
+                y1 = coord[1]
+                x2 = coord[2]
+                y2 = coord[3]
+
+                roi = result[int(y1):int(y2), int(x1):int(x2)]
+                # result[int(y1):int(y2), int(x1):int(x2)] = self.checkAnimalTemepature(roi)
+                self.checkAnimalTemepature(roi)
+
+                #소만 crop한 이미지
+                # cv2.imshow('ROI', roi)
+
+                cv2.rectangle(result, (int(x1.item()), int(y1.item())), (int(x2.item()), int(y2.item())), (0, 0, 255), 2)
+                
+                font = cv2.FONT_HERSHEY_SIMPLEX
+                font_scale = 0.5
+                font_thickness = 1
+                font_color = (255, 255, 255)  # 흰색
+                
+                text_size, _ = cv2.getTextSize(detect_class[idx], font, font_scale, font_thickness)
+                text_x = int((x1 + x2) / 2 - text_size[0] / 2)
+                text_y = int(y2 + text_size[1] + 5)  # 객체 아래에 위치
+                cv2.putText(result, detect_class[idx], (text_x, text_y), font, font_scale, font_color, font_thickness)
+                
+        return result 
+    
         
     def checkRemainedFood(self,img_form):
         result = img_form.copy()
@@ -732,19 +794,15 @@ class WindowClass(QMainWindow, from_class) :
         masked_image = cv2.bitwise_and(result, result, mask=combined_mask)
 
 
+        #마스크 이미지 띄우기
+        # cv2.imshow('masked', masked_image)
+
         # 각 이미지가 차지하는 픽셀 수 계산
         cropped_pixel_count = np.count_nonzero(result)
         masked_pixel_count = np.count_nonzero(masked_image)
 
-        # print("pixel count")
-        # print(cropped_pixel_count)
-        # print(masked_pixel_count)
-        
         remained_feed = (masked_pixel_count / cropped_pixel_count) * 100
         
-        # print("remain :")
-        # print(remained_feed)
-
         result_str = "remain food rate : {:.1f}".format(remained_feed)
 
         font = cv2.FONT_HERSHEY_SIMPLEX
@@ -766,6 +824,84 @@ class WindowClass(QMainWindow, from_class) :
         # result = masked_image
 
         return result 
+    
+    def checkAnimalTemepature(self,cropped_img):
+        result = cropped_img.copy()
+        
+        #HSV 색상으로 변환
+        rgb_image = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
+
+        hsv_image = cv2.cvtColor(result, cv2.COLOR_RGB2HSV)
+
+        # 빨간색과 분홍색의 HSV 범위 정의
+        lower_red_pink1 = np.array([0, 50, 50])
+        upper_red_pink1 = np.array([10, 255, 255])
+        lower_red_pink2 = np.array([160, 50, 50])
+        upper_red_pink2 = np.array([180, 255, 255])
+        
+        # 두 범위의 마스크 생성
+        mask1 = cv2.inRange(hsv_image, lower_red_pink1, upper_red_pink1)
+        mask2 = cv2.inRange(hsv_image, lower_red_pink2, upper_red_pink2)
+        
+        # 두 마스크를 합쳐서 최종 마스크 생성
+        mask = cv2.bitwise_or(mask1, mask2)
+        
+        # 원본 이미지와 마스크를 사용하여 빨간색과 분홍색 부분 추출
+        red_pink_only = cv2.bitwise_and(result, result, mask=mask)
+
+        # 파란색과 하늘색의 HSV 범위 정의
+        lower_blue_cyan1 = np.array([90, 50, 50])
+        upper_blue_cyan1 = np.array([130, 255, 255])
+        lower_blue_cyan2 = np.array([70, 50, 50])
+        upper_blue_cyan2 = np.array([90, 255, 255])
+        
+        # 두 범위의 마스크 생성
+        mask1 = cv2.inRange(hsv_image, lower_blue_cyan1, upper_blue_cyan1)
+        mask2 = cv2.inRange(hsv_image, lower_blue_cyan2, upper_blue_cyan2)
+        
+        # 두 마스크를 합쳐서 최종 마스크 생성
+        mask = cv2.bitwise_or(mask1, mask2)
+        
+        # 원본 이미지와 마스크를 사용하여 파란색과 하늘색 부분 추출
+        blue_cyan_only = cv2.bitwise_and(result, result, mask=mask)
+
+        # cv2.imshow('red', red_pink_only)
+        # cv2.imshow('blue', blue_cyan_only)
+
+        # 각 이미지가 차지하는 픽셀 수 계산
+        cropped_pixel_count = np.count_nonzero(result)
+        red_masked_pixel_count = np.count_nonzero(red_pink_only)
+        blue_masked_pixel_count = np.count_nonzero(blue_cyan_only)
+
+        # print("pixel count")
+        # print(cropped_pixel_count)
+        # print(masked_pixel_count)
+        
+        red_area = (red_masked_pixel_count / cropped_pixel_count) * 100
+        blue_area = (blue_masked_pixel_count / cropped_pixel_count) * 100
+        
+
+        result_str = "red area : {:.1f}, blue area : {:.1f}".format(red_area,blue_area)
+
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        font_scale = 0.1
+        font_thickness = 1
+        font_color = (255, 255, 255)  # 흰색
+                         
+        #label의 width와 height 가져오기 
+        w = self.monitor_camera_label.width()
+        h = self.monitor_camera_label.height()
+        text_x = int(h /2) 
+        text_y = int(w /2)
+        cv2.putText(result, result_str, (text_x, text_y), font, font_scale, font_color, font_thickness)
+
+        print(result_str)
+
+        # 마스크 확인해 보고 싶다면        
+        # result = masked_image
+
+        return result 
+    
 
     def combochanged(self):
         self.cam_num = self.select_camera_box.currentIndex()
@@ -789,10 +925,13 @@ class WindowClass(QMainWindow, from_class) :
                 self.image = cv2.cvtColor(image_list[self.cam_num],cv2.COLOR_BGR2RGB)
 
                 # if self.cam_num != 0:    # Entrance 카메라를 제외하고 나머지는 cow yolo 인식 처리 하기 
-                self.updateDetectedListWithYolo(self.image)
-                self.image = self.drawRedBox(self.image)
-                self.image = self.checkRemainedFood(self.image)
+                #     self.updateDetectedListWithYolo(self.image)
+                #     self.image = self.drawRedBox(self.image)
+                #     self.image = self.checkRemainedFood(self.image)
 
+                self.updateHarmfulAnimalDetectedListWithYolo(self.image)
+                self.image = self.drawBlueBox(self.image,self.yolo_harmful_animal_detect_class, self.yolo_harmful_animal_detect_class_coordinate)
+                
                 #이미지 화면에 띄우기
                 h,w,c = self.image.shape
                 qimage = QImage(self.image.data, w, h, w*c, QImage.Format_RGB888)
