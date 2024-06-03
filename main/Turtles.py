@@ -427,7 +427,9 @@ class WindowClass(QMainWindow, from_class) :
         self.schedule_foodpage_button.clicked.connect(self.schedule_foodpage_button_clicked)
         self.schedule_facilitiespage_button.clicked.connect(self.schedule_facilitiespage_button_clicked)
 
-        self.toolBox.currentChanged.connect(self.toolbox_changed) ## 버튼 페이지 연결 
+        #self.toolBox.currentChanged.connect(self.toolbox_changed) ## 버튼 페이지 연결 
+        self.setting_button.clicked.connect(self.setting_page_button_clicked)
+        self.log_button.clicked.connect(self.log_page_button_clicked)
 
         #login logout 버튼 연결
         self.logout_button.clicked.connect(self.logout_button_clicked)
@@ -546,7 +548,79 @@ class WindowClass(QMainWindow, from_class) :
         self.checked_times = [] 
         self.set_facility_schedule_button.clicked.connect(self.setFacilitySchedule)
         self.display_existing_schedule()
+        
+        self.is_logged_in = False  # 로그인 상태 변수
+        self.buttons = [
+            self.monitor_barnpage_button, self.monitor_camerapage_button, self.monitor_facilitiespage_button,
+            self.control_facilitiespage_button, self.control_robotpage_button, self.robotmanager_taskpage_button,
+            self.datamanager_animalpage_button, self.datamanager_facilitiespage_button, self.datamanager_foodpage_button,
+            self.datamanager_videopage_button, self.schedule_facilitiespage_button, self.schedule_foodpage_button,
+            self.home_page_button, self.notification_page_button, self.shortcut_page_button, self.log_button, self.setting_button
+        ]
+        for button in self.buttons:
+            button.clicked.connect(self.handle_button_click)
+        self.update_buttons()
+        self.permission=''
+        self.UserEdit.hide()
+        self.shortcut_page_button.clicked.connect(self.show_shortcut_dialog)
+        self.current_active_button = None
+        self.notifications = []  # 알림 저장 리스트
+        self.notification_page_button.clicked.connect(self.show_notification_dialog)
+        self.setting_button.setEnabled(False)
+        
+    def show_notification_dialog(self):
+        dialog = QDialog(self)
+        dialog.setWindowTitle('Notifications')
+        dialog.resize(400, 500)  # 팝업 크기 조정
+        
+        layout = QVBoxLayout()
+        
+        notification_text = QTextEdit()
+        notification_text.setReadOnly(True)
+        
+        if len(self.notifications) != 0:
+            notification_text.setText('\n'.join(self.notifications))
+        else:
+            notification_text.setText('No notifications.')
+        
+        layout.addWidget(notification_text)
+        
+        dialog.setLayout(layout)
+        dialog.exec_()
+        
+    def handle_button_click(self):
+        clicked_button = self.sender()
+        if self.current_active_button:
+            self.current_active_button.setStyleSheet("font-size: 20px; font-weight: bold;")  # 이전 버튼의 색상 초기화
+        
+        clicked_button.setStyleSheet("font-size: 20px;font-weight: bold; background-color: darkgray")  # 현재 버튼의 색상 설정
+        self.current_active_button = clicked_button
+        
+    def show_shortcut_dialog(self):
+        dialog = QDialog(self)
+        dialog.setWindowTitle('Shortcut')
+        dialog.resize(300, 300)  # 팝업 크기 조정
+        
+        layout = QHBoxLayout()
+        
+        register_animal_button = QPushButton('Register Animal')
+        register_food_button = QPushButton('Register Food')
 
+        # 버튼 크기 조정
+        register_animal_button.setFixedSize(120, 80)
+        register_food_button.setFixedSize(120, 80)      
+          
+        register_animal_button.clicked.connect(lambda: self.goto_page(Pages.PAGE_REGISTER_ANIMAL.value, dialog))
+        register_food_button.clicked.connect(lambda: self.goto_page(Pages.PAGE_REGISTER_FOOD.value, dialog))
+        layout.addWidget(register_animal_button)
+        layout.addWidget(register_food_button)
+        
+        dialog.setLayout(layout)
+        dialog.exec_()
+    
+    def goto_page(self, page_index, dialog):
+        self.stackedWidget.setCurrentIndex(page_index)
+        dialog.accept()
                 
     def setFacilitySchedule(self):
         # 현재까지 체크된 체크박스와 해당 체크박스가 위치한 행에 있는 시간들을 모아둘 리스트 초기화
@@ -584,7 +658,6 @@ class WindowClass(QMainWindow, from_class) :
             else:
                 print("Checkbox for time", hour_minute_str, "not found.")
      
-
     def clear_facility_table(self):
         # 테이블 위젯의 모든 체크박스를 초기화합니다.
         for row in range(self.ventilation_table.rowCount()):
@@ -696,15 +769,6 @@ class WindowClass(QMainWindow, from_class) :
         self.load_combobox(self.food_df, 'registered_date', self.search_registered_date_box)
         self.load_combobox(self.food_df, 'expiry_date', self.search_expiry_date_box)
         
-
-    # def show_selected_animal_name(self, index):
-    #     selected_index = self.select_harmful_animal_index.itemText(index)
-    #     if selected_index:
-    #         selected_animal_name = self.harmful_animal_df.loc[self.harmful_animal_df['index_num'] == int(selected_index), 'animal_name'].values
-    #         if selected_animal_name:
-    #             self.select_harmful_animal_name.setText(selected_animal_name[0])
-    #         else:
-    #             self.select_harmful_animal_name.clear()
                         
     def register_new_harmful_animal(self):
         animal_name= self.harmful_animal_name_edit.text()
@@ -714,14 +778,6 @@ class WindowClass(QMainWindow, from_class) :
         self.load_data_to_table(self.harmful_animal_table, self.harmful_animal_df)
         self.refresh_combo_box()
     
-    # def delete_harmful_animal(self):
-    #     index_num= self.select_harmful_animal_index.currentText()  
-    #     animal_name = self.select_harmful_animal_name.text()      
-    #     self.data_manage.delete_harmful_animal(index_num,animal_name)
-    #     self.harmful_animal_df=self.data_manage.getHarmfulAnimal()
-    #     self.load_data_to_table(self.harmful_animal_table, self.harmful_animal_df)
-    #     
-
                 
     def refresh_combo_box(self):
         # harmful_animal_df 데이터프레임에서 index_num 열의 모든 값 추출
@@ -1483,28 +1539,65 @@ class WindowClass(QMainWindow, from_class) :
         self.stackedWidget.setCurrentIndex(Pages.PAGE_LOGIN.value)
         self.input_id =""; self.input_pw =""
         self.id_input.setText(""); self.pw_input.setText("")
+        self.UserEdit.hide()
+        self.is_logged_in = False
+        self.update_buttons() 
+        
     
     def login_button_clicked(self):
         self.input_id = int(self.id_input.text())
         self.input_pw = int(self.pw_input.text())
         user_row = self.userdata_df[self.userdata_df['id'] == self.input_id]
         if not user_row.empty and user_row.iloc[0]['password'] == self.input_pw:
-            self.stackedWidget.setCurrentIndex(Pages.PAGE_HOME.value)
-            self.login_information_label.setText(f"ID: {self.input_id}님 접속중")
+            self.login_success(user_row)
         else:
-            self.login_result_label.setText('로그인에 실패하였습니다')
+            self.login_failed()
+
+    def login_success(self, user_row):
+        permission = user_row.iloc[0]['permission']
+        username = user_row.iloc[0]['username']
+        self.stackedWidget.setCurrentIndex(Pages.PAGE_HOME.value)
+        self.login_information_label.setText(f"[Permission: {permission}] {username} is logged in")
+        self.UserEdit.show()
+        self.UserEdit.setText(f"User: {username} ({permission})")
+        self.is_logged_in = True
+        self.update_buttons()  # 버튼 업데이트
+        
+        # Admin 권한이면 설정 버튼 활성화
+        if permission == 'Admin':
+            self.setting_button.setEnabled(True)
+        else:
+            self.setting_button.setEnabled(False)
+
+    def login_failed(self):
+        self.is_logged_in = False
+        self.login_result_label.setText('login failed')
+        self.update_buttons()  # 버튼 업데이트
             
-    def toolbox_changed(self):
-        if self.toolBox.currentIndex() == 5:
-            self.stackedWidget.setCurrentIndex(Pages.PAGE_LOG.value)
-        elif self.toolBox.currentIndex() == 6:
-            self.stackedWidget.setCurrentIndex(Pages.PAGE_SETTING.value)
+    def update_buttons(self):
+        for button in self.buttons:
+            button.setEnabled(self.is_logged_in)
+
+            
+    # def toolbox_changed(self):
+    #     if self.toolBox.currentIndex() == 5 and self.is_logged_in == True:
+    #         self.stackedWidget.setCurrentIndex(Pages.PAGE_LOG.value)
+    #     elif self.toolBox.currentIndex() == 6 and self.is_logged_in == True:
+    #         self.stackedWidget.setCurrentIndex(Pages.PAGE_SETTING.value)
+    
+    def log_page_button_clicked(self):
+        self.stackedWidget.setCurrentIndex(Pages.PAGE_LOG.value)
+            
+    def setting_page_button_clicked(self):
+        self.stackedWidget.setCurrentIndex(Pages.PAGE_SETTING.value)
 
     def home_page_button_clicked(self):
         self.stackedWidget.setCurrentIndex(Pages.PAGE_HOME.value)
 
     def monitor_barnpage_button_clicked(self):
         self.stackedWidget.setCurrentIndex(Pages.PAGE_MONITOR_BARN.value) 
+        animal_count = len(self.animal_df)
+        self.animalcount_display_label.setText(str(animal_count))
     
     def monitor_facilitiespage_button_clicked(self):
         self.stackedWidget.setCurrentIndex(Pages.PAGE_MONITOR_FACILITIES.value)
@@ -1590,47 +1683,8 @@ class WindowClass(QMainWindow, from_class) :
 
     def schedule_facilitiespage_button_clicked(self):
         self.stackedWidget.setCurrentIndex(Pages.PAGE_SCHEDULE_FACILITIES.value)
-        
-    def setupTableWidget(self, tableWidget, table_name):
-        scheduled_times = self.data_manage.getScheduledTimes(table_name)
-        self.checked_times = scheduled_times  # 이미 체크된 시간들 저장
-        tableWidget.setRowCount(24)  # 행의 개수 (24행)
-        tableWidget.setColumnCount(2)  # 열의 개수 (2열)
-        tableWidget.horizontalHeader().setStretchLastSection(True)
 
-        for hour in range(24):  # 첫 번째 열에 시간 설정 (00:00부터 23:00까지)
-            time_item = QTableWidgetItem(f"{hour:02d}:00")
-            time_item.setFlags(time_item.flags() ^ Qt.ItemIsEditable)
-            tableWidget.setItem(hour, 0, time_item)
-
-        for row in range(24):  # 두 번째 열에 체크박스 추가
-            time = f"{row:02d}:00"
-            checkbox = QCheckBox()
-            if time in scheduled_times:
-                checkbox.setCheckState(Qt.Checked)
-            checkbox.stateChanged.connect(lambda state, r=row: self.handleCheckboxChange(state, r, tableWidget))
-            tableWidget.setCellWidget(row, 1, checkbox)
-        
-        tableWidget.setHorizontalHeaderLabels(["Time", "Assigned"])
-
-    def handleCheckboxChange(self, state, row, tableWidget):
-        time_item = tableWidget.item(row, 0)
-        if time_item:
-            time = time_item.text()
-            if state == Qt.Checked:
-                if time not in self.checked_times:
-                    self.checked_times.append(time)
-            else:
-                if time in self.checked_times:
-                    self.checked_times.remove(time)
- 
-            
-
-    def setFacilitySchedule(self, table_name):
-        if self.checked_times:
-            self.data_manage.clearScheduledTimes(table_name)
-            self.data_manage.addScheduledTimes(table_name, self.checked_times)
-            self.checked_times = []        
+   
         
 if __name__ == "__main__":
     app = QApplication(sys.argv)
