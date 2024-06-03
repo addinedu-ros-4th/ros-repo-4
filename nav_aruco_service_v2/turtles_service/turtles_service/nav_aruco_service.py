@@ -18,8 +18,8 @@ class NavArucoService(Node):
         super().__init__('nav_aruco_service')
         self.detected_count = 0  # 탐지 횟수를 추적하는 변수 추가
         self.detection_active = False  # 탐지 활성화 플래그 추가
-        self.aruco_dict = cv2.aruco.Dictionary_get(cv2.aruco.DICT_6X6_250)
-        self.aruco_params = cv2.aruco.DetectorParameters_create()
+        self.aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_6X6_250)
+        self.aruco_params = cv2.aruco.DetectorParameters()
 
         self.image_queue = []
         self.image_queue_lock = threading.Lock()

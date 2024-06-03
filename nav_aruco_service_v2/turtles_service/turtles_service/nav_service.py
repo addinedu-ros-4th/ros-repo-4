@@ -15,6 +15,7 @@ class NavService(Node):
         self.current_goal_position = None
 
     def service_callback(self, request: ArucoNavigateTo.Request, response: ArucoNavigateTo.Response):
+        print("keep come insed?")
         if self.target_reached:
             response.success = False
             response.message = "Already navigating to pose"
