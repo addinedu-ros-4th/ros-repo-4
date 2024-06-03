@@ -52,18 +52,32 @@ class DBManager:
         cursor.execute(query, values)
         self.local.commit()
     
-
     def getFood(self):
         cursor = self.local.cursor()
         sql = "SELECT * FROM Food;"
         cursor.execute(sql)
         columns = [column[0] for column in cursor.description]
         result = cursor.fetchall()
-        food_df= pd.DataFrame(result, columns=columns)
-        
-
+        food_df= pd.DataFrame(result, columns=columns)        
         return food_df
 
+    def register_food(self, barcode_id, brand_name, weight, expiry_date, registered_date):
+        # 데이터베이스에 새로운 음식 추가
+        cursor = self.local.cursor()
+        query = "INSERT INTO Food (barcode_id, brand_name, weight, expiry_date, registered_date) VALUES (%s, %s, %s, %s, %s)"
+        values = (barcode_id, brand_name, weight, expiry_date, registered_date)
+        cursor.execute(query, values)
+        self.local.commit()
+        
+    def register_animal(self, animal_id, gender, age, food_brand, room , weight, registered_date, rfid_uid):
+        # 데이터베이스에 새로운 동물 추가
+        cursor = self.local.cursor()
+        query = "INSERT INTO Animal (animal_id, gender, age, food_brand, room , weight, registered_date, rfid_uid) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
+        values = (animal_id, gender, age, food_brand, room , weight, registered_date, rfid_uid)
+        cursor.execute(query, values)
+        self.local.commit()        
+    
+    
     def getFoodRobotSchedule(self):
         cursor = self.local.cursor()
         sql = "SELECT * FROM FoodRobotSchedule;"
@@ -112,13 +126,105 @@ class DBManager:
         #for val in result:
             #result_list.append(list(val))
         return users_df
+
+    def getFacilitySetting(self):
+        cursor = self.local.cursor()
+        sql = "SELECT * FROM FacilitySetting;"
+        cursor.execute(sql)
+        columns = [column[0] for column in cursor.description]
+        result = cursor.fetchall()
+        facility_setting_df= pd.DataFrame(result, columns=columns)
+        return facility_setting_df
+        
+        
+    def updateFacilitySetting(self, settings):
+        cursor = self.local.cursor()
+        for facility_name, level in settings.items():
+            sql = '''
+                UPDATE FacilitySetting
+                SET level = %s
+                WHERE facility_name = %s
+            '''
+            cursor.execute(sql, (level, facility_name))
+        
+        self.local.commit()
     
+    def clearFoodScheduledTimes(self,room_number ):
+        cursor = self.local.cursor()
+        cursor.execute(f"DELETE FROM food_scheduled_time where room = {room_number}")
+        self.local.commit()
+        
+    def clearScheduledTimes(self, table_name):
+        cursor = self.local.cursor()
+        cursor.execute(f"DELETE FROM {table_name}")
+        self.local.commit()
+    
+    def addFacilityScheduledTimes(self, time):
+        # 데이터베이스에 새로운 유해동물 추가
+        cursor = self.local.cursor()
+        query = "INSERT INTO HarmfulAnimal (time) VALUES (%s)"
+        values = (time)
+        cursor.execute(query, values)
+        self.local.commit()
+
+
+    def addScheduledTimes(self, table_name, times):
+        cursor = self.local.cursor()
+        sql = f"INSERT INTO {table_name} (time) VALUES (%s)"
+        cursor.executemany(sql, [(time,) for time in times])
+        self.local.commit()
+        
+    def getScheduledTimes(self, table_name):
+        cursor = self.local.cursor()
+        cursor.execute(f"SELECT time FROM {table_name}")
+        result = cursor.fetchall()
+        # Convert TIME to "HH:MM" format with leading zeros if necessary
+        return [self.formatTime(row[0]) for row in result]
+
+    def formatTime(self, time):
+        # Convert time to string and split it by ':'
+        time_str = str(time)
+        parts = time_str.split(':')
+        # Check if the hour part has only one digit
+        if len(parts[0]) == 1:
+            # Prepend '0' to the hour part
+            parts[0] = '0' + parts[0]
+        # Join the parts with ':'
+        return ':'.join(parts[:2])  # Return only the hour and minute parts
+
+    def get_reserved_times(self, room):
+        cursor = self.local.cursor()
+        query = "SELECT time FROM food_scheduled_time WHERE room = %s"
+        result = cursor.execute(query, (room,))
+        return cursor.fetchall()
+
+    def get_reserved_times_facility(self):
+        cursor = self.local.cursor()
+        query = "SELECT time FROM facility_scheduled_time "
+        cursor.execute(query)
+        result = cursor.fetchall()
+        return result
+        
+    
+
+    def insert_food_schedule(self, room, time):
+        cursor = self.local.cursor()
+        query = "INSERT INTO food_scheduled_time (room, time) VALUES (%s, %s)"
+        cursor.execute(query, (room, time))
+        self.local.commit()
+
+    def insert_facility_schedule(self, time):
+        cursor = self.local.cursor()
+        query = "INSERT INTO facility_scheduled_time (time) VALUES (%s)"
+        cursor.execute(query, (time))
+        self.local.commit()    
+        
     def dbclose(self):
         self.local.close()
 
 def main():
-
     pass
+    
 
 if __name__ == "__main__":
     main()
