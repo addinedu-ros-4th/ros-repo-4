@@ -4,14 +4,14 @@ import pickle
 import struct
 import cv2
 
-TCP_IP = '192.168.1.104'  # 서버 IP 주소
+TCP_IP = '192.168.1.101'  # 서버 IP 주소
 TCP_PORT = 3001          # 서버 포트
 
 clients = []
 
 # 아르코 마커 설정
 aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_6X6_250)
-aruco_params = cv2.aruco.DetectorParameters_create()
+aruco_params = cv2.aruco.DetectorParameters()
 
 def handle_client(client_socket, address):
     print(f'Connected by {address}')
