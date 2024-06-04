@@ -1,8 +1,8 @@
 from ultralytics import YOLO
 
-model = YOLO('/home/dyjung/git_ws/ros-repo-4/test/pose_estimate/last.pt')
+model = YOLO('/home/dyjung/git_ws/ros-repo-4/test/pose_estimate/best.pt')
 
-results = model('/home/dyjung/Downloads/cow_stand_photo.jpg', stream=True)
+results = model(source=0,show=True)
 
 print(results)
 
