@@ -19,7 +19,7 @@ class NavArucoService(Node):
         super().__init__('nav_aruco_service')
         self.detected_count = 0  # 탐지 횟수를 추적하는 변수 추가
         self.detection_active = False  # 탐지 활성화 플래그 추가
-        self.aruco_dict = cv2.aruco.Dictionary_get(cv2.aruco.DICT_6X6_250)
+        self.aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_6X6_250)
         self.aruco_params = cv2.aruco.DetectorParameters_create()
 
         self.image_queue = []
@@ -103,7 +103,7 @@ class NavArucoService(Node):
 
             if frame is not None:
                 gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-                corners, ids, _ = cv2.aruco.getPredefinedDictionary(gray, self.aruco_dict, parameters=self.aruco_params)
+                corners, ids, _ = cv2.aruco.detectMarkers(gray, self.aruco_dict, parameters=self.aruco_params)
 
                 if self.detection_active and ids is not None and len(ids) > 0 and self.detected_count < 3:
                     self.get_logger().info(f'Detected Aruco markers: {ids.flatten()}')
