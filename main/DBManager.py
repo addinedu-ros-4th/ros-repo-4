@@ -12,6 +12,35 @@ class DBManager:
             password = password,
             database = databases 
         )
+    def getSchedulenums(self):
+        cursor = self.local.cursor()
+        sql = "SELECT COUNT(DISTINCT time) AS total_unique_times FROM food_scheduled_time;"
+        cursor.execute(sql)
+        schedule_result = cursor.fetchone()  # fetchone으로 하나의 행을 가져옵니다.
+        total_unique_times = schedule_result[0]  # 튜플의 첫 번째 요소로 접근하여 total_unique_times 값을 가져옵니다.
+        return total_unique_times
+
+        
+    def getFoodIntake(self):
+        cursor = self.local.cursor()
+        sql = "SELECT * FROM FoodIntake;"
+        cursor.execute(sql)
+        result = cursor.fetchall()
+        columns = [column[0] for column in cursor.description]
+        intake_df = pd.DataFrame(result, columns=columns)
+
+        return intake_df      
+
+    def getAnimalPose(self):
+        cursor = self.local.cursor()
+        sql = "SELECT * FROM animalPosture;"
+        cursor.execute(sql)
+        result = cursor.fetchall()
+        columns = [column[0] for column in cursor.description]
+        pose_df = pd.DataFrame(result, columns=columns)
+
+        return pose_df        
+      
         
     def getAnimal(self): 
         cursor = self.local.cursor()
@@ -148,11 +177,25 @@ class DBManager:
             cursor.execute(sql, (level, facility_name))
         
         self.local.commit()
+    
+    def clearFoodScheduledTimes(self,room_number ):
+        cursor = self.local.cursor()
+        cursor.execute(f"DELETE FROM food_scheduled_time where room = {room_number}")
+        self.local.commit()
         
     def clearScheduledTimes(self, table_name):
         cursor = self.local.cursor()
         cursor.execute(f"DELETE FROM {table_name}")
         self.local.commit()
+    
+    def addFacilityScheduledTimes(self, time):
+        # 데이터베이스에 새로운 유해동물 추가
+        cursor = self.local.cursor()
+        query = "INSERT INTO HarmfulAnimal (time) VALUES (%s)"
+        values = (time)
+        cursor.execute(query, values)
+        self.local.commit()
+
 
     def addScheduledTimes(self, table_name, times):
         cursor = self.local.cursor()
@@ -178,15 +221,41 @@ class DBManager:
         # Join the parts with ':'
         return ':'.join(parts[:2])  # Return only the hour and minute parts
 
+    def get_reserved_times(self, room):
+        cursor = self.local.cursor()
+        query = "SELECT time FROM food_scheduled_time WHERE room = %s"
+        result = cursor.execute(query, (room,))
+        return cursor.fetchall()
 
+    def get_reserved_times_facility(self):
+        cursor = self.local.cursor()
+        query = "SELECT time FROM facility_scheduled_time "
+        cursor.execute(query)
+        result = cursor.fetchall()
+        return result
         
+    
+    def insert_food_schedule(self, room, time):
+        cursor = self.local.cursor()
+        query = "INSERT INTO food_scheduled_time (room, time) VALUES (%s, %s)"
+        cursor.execute(query, (room, time))
+        self.local.commit()
+
+    def insert_facility_schedule(self, time):
+        cursor = self.local.cursor()
+        query = "INSERT INTO facility_scheduled_time (time) VALUES (%s)"
+        cursor.execute(query, (time))
+        self.local.commit()    
         
     def dbclose(self):
         self.local.close()
 
 def main():
-
+    db = DBManager('localhost', "0000", 3306, "sy", "TurtlesDB")
+    pose = db.getSchedulenums()
+    print(pose)
     pass
+    
 
 if __name__ == "__main__":
     main()
