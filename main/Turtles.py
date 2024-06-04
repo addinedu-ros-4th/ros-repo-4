@@ -393,7 +393,8 @@ class WindowClass(QMainWindow, from_class) :
         #databases 연결
         self.data_manage = DBManager("192.168.1.101", "0000", 3306, "turtles", "TurtlesDB")
         self.animal_df = self.data_manage.getAnimal()
-        self.camera_df = self.data_manage.getCameraPath()
+        # self.camera_df = self.data_manage.getCameraPath()
+        self.camera_df = self.get_file_info()
         self.food_df = self.data_manage.getFood()
         self.schedule_df= self.data_manage.getFoodRobotSchedule()
         self.userdata_df = self.data_manage.getUserData()
@@ -515,7 +516,7 @@ class WindowClass(QMainWindow, from_class) :
         self.food_df.rename(columns={'weight': 'weight (kg)'}, inplace=True)
         self.load_data_to_table(self.search_food_table, self.food_df)
         
-        self.camera_df.rename(columns={'camera_num': 'cam_num'}, inplace=True)
+        # self.camera_df.rename(columns={'camera_num': 'cam_num'}, inplace=True)
         self.load_data_to_table(self.search_camera_table, self.camera_df)
         self.load_data_to_table(self.registered_employee_table, self.employee_df)
         self.load_data_to_table(self.harmful_animal_table, self.harmful_animal_df)
@@ -549,8 +550,8 @@ class WindowClass(QMainWindow, from_class) :
         
         
         #camera_df 컬럼 데이터 
-        self.load_combobox(self.camera_df, 'cam_num', self.select_camera_box_video)
-        self.load_combobox(self.camera_df, 'info_type', self.select_camera_type_box)
+        self.load_combobox(self.camera_df, 'cam_type', self.select_camera_box_video)
+        self.load_combobox(self.camera_df, 'file_type', self.select_camera_type_box)
         self.load_combobox(self.camera_df, 'captured_date', self.captured_date_start)
         self.load_combobox(self.camera_df, 'captured_date', self.captured_date_end)
         
@@ -605,6 +606,49 @@ class WindowClass(QMainWindow, from_class) :
         
         self.feedingtime_display_label.setText(str(self.schedule_num)) # 
         self.record_label.hide()
+        
+    def get_file_info(self):
+        # 현재 경로에서 captures 폴더 경로 설정
+        captures_path = os.path.join(os.getcwd(), 'captures')
+
+        # captures 폴더 내의 모든 파일 리스트
+        files = os.listdir(captures_path)
+
+        # 데이터를 담을 리스트 초기화
+        data = []
+            # 비디오와 이미지 확장자 리스트
+        video_extensions = ['avi', 'mp4', 'mov', 'mkv']
+        image_extensions = ['png', 'jpg', 'jpeg', 'bmp', 'gif']
+
+        for file in files:
+            # 파일명과 확장자를 분리
+            file_name, file_extension = os.path.splitext(file)
+            file_extension = file_extension.lstrip('.')
+            
+            # 파일명을 '_' 기준으로 분리
+            file_parts = file_name.split('_')
+            
+            if len(file_parts) >= 3:  # cam_type과 captured_date를 모두 포함하는지 확인
+                cam_type = file_parts[0]
+                captured_date = file_parts[1]
+
+                # 파일의 상대 경로
+                file_path = os.path.join('captures', file)
+                # 확장자를 기반으로 파일 타입 결정
+                if file_extension in video_extensions:
+                    file_type = 'Video'
+                elif file_extension in image_extensions:
+                    file_type = 'Image'
+                else:
+                    file_type = 'Unknown'
+
+                # 데이터 리스트에 추가
+                data.append([cam_type, file_type, file_path, captured_date])
+
+        # 데이터프레임 생성
+        camera_df = pd.DataFrame(data, columns=['cam_type', 'file_type', 'path', 'captured_date'])
+
+        return camera_df
         
 
         
@@ -951,7 +995,7 @@ class WindowClass(QMainWindow, from_class) :
         
         if selected_start_date != 'all':
             self.captured_date_end.addItem('all')
-            selected_start_date = datetime.strptime(selected_start_date, '%Y-%m-%d').date()
+            #selected_start_date = datetime.strptime(selected_start_date, '%Y-%m-%d').date()
             filtered_dates = self.camera_df[self.camera_df['captured_date'] >= selected_start_date]['captured_date'].unique()
             sorted_filtered_dates = sorted(filtered_dates)
             self.captured_date_end.addItems(map(str, sorted_filtered_dates))
@@ -991,8 +1035,8 @@ class WindowClass(QMainWindow, from_class) :
     
     def camera_search(self):
         filters = { 
-            'cam_num': self.select_camera_box_video.currentText(),
-            'info_type': self.select_camera_type_box.currentText(),
+            'cam_type': self.select_camera_box_video.currentText(),
+            'file_type': self.select_camera_type_box.currentText(),
         }
         start_date_str = self.captured_date_start.currentText()
         end_date_str = self.captured_date_end.currentText()
