@@ -1299,7 +1299,8 @@ class WindowClass(QMainWindow, from_class) :
         if not os.path.exists('captures'):
             os.makedirs('captures')
         now = datetime.now().strftime('%Y%m%d_%H%M%S')
-        filename = 'captures/' + now + '.png'
+        self.cam_type=self.select_camera_box.currentText()
+        filename = 'captures/' + self.cam_type+ '_' +now + '.png'
         # BGR to RGB conversion
         rgb_image = cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
 
@@ -1322,11 +1323,12 @@ class WindowClass(QMainWindow, from_class) :
 
     def recordingStart(self):
         if not os.path.exists('captures'):
-            os.makedirs('captures')ㄴ
+            os.makedirs('captures')
         self.record.running = True
         self.record.start()
         now = datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = 'captures/' + now + '.avi'
+        self.cam_type=self.select_camera_box.currentText()
+        filename = 'captures/' + self.cam_type+ '_'+ now + '.avi'
         self.fourcc = cv2.VideoWriter_fourcc(*'XVID')
 
         w = int(self.temp_cap.get(cv2.CAP_PROP_FRAME_WIDTH))

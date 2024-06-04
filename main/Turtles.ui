@@ -2120,22 +2120,22 @@ color: rgb(192, 28, 40);</string>
        </item>
        <item>
         <property name="text">
-         <string>Cow Room1</string>
+         <string>CowRoom1</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>Cow Room2</string>
+         <string>CowRoom2</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>Calf Room1</string>
+         <string>CalfRoom1</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>Calf Room2</string>
+         <string>CalfRoom2</string>
         </property>
        </item>
       </widget>
