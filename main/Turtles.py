@@ -7,7 +7,8 @@ from PyQt5 import QtWidgets, QtCore
 import rclpy as rp
 from rclpy.node import Node
 from geometry_msgs.msg import Twist
-# from turtles_service_msgs.srv import NavToPose
+from turtles_service_msgs.srv import ArucoNavigateTo
+
 import time
 import socket
 import select 
@@ -457,9 +458,14 @@ class WindowClass(QMainWindow, from_class) :
 
         #task add
         self.task_add_button.clicked.connect(self.task_add_button_clicked)
+        self.save_button.clicked.connect(self.save_button_clicked)
 
         #ros 
         self.service_client_node = rp.create_node('client_test')
+        self.service_name_nav = '/navigate_to_pose'
+        self.cli = self.service_client_node.create_client(ArucoNavigateTo, self.service_name_nav)
+        self.req = ArucoNavigateTo.Request()
+        self.service_call_flag = False
 
         self.layout = QVBoxLayout()
         self.setTableWidget(self.feeding_table) 
@@ -1272,38 +1278,39 @@ class WindowClass(QMainWindow, from_class) :
         # else:
         #     print("현재 시간은 수정된 시간과 같습니다.")
 
-    def isServiceCalled(self, robot_task_id):
-        for task in self.task_list:
-            if task.task_id == robot_task_id:
-                if task.getCurrentProgress() == 1:
-                    print("service call")
-                    return True
+    def isServiceCalled(self):
+        print(self.service_call_flag)
+        if self.service_call_flag:
+                print("service call")
+                return True
         return False
     
     def isNavArucoFinished(self):
         # if task.getCurrentProgress() == 1:
         #     print("nav")
-            return True
+        return False
     
     def isArucoFoodTank(self):
-        return True
+        return False
 
     def isArucoStation(self):
-        return True
+        return False
     
     def isFoodChargeDone(self):
-        return True
+        return False
     
     def isArucoBarnEntrance(self):
-        return True
+        return False
     
     def isArucoDistanceSatisfied(self):
-        return True
+        return False
     
     def isFoodDistributeDone(self):
-        return True
+        return False
     
     def isTaskDone(self, robot_task_id):
+        if len(self.task_list) == 0:
+            return
         for task in self.task_list:
             if task.task_id == robot_task_id:
                 if task.getCurrentProgress() == 6:
@@ -1311,10 +1318,11 @@ class WindowClass(QMainWindow, from_class) :
         return False
 
     def robotStatusManager(self):
-
         for robot in self.robot_list:
             if robot.status == Status.STATUS_STANDBY.value:
-                if self.isServiceCalled(robot.getTaskID()) == True:
+                self.robot_status_label.setText("STANDBY")
+
+                if self.isServiceCalled() == True:
                     robot.setStatus(Status.STATUS_NAV_ARUCO.value)
 
                 elif self.isArucoFoodTank() == True:
@@ -1326,29 +1334,47 @@ class WindowClass(QMainWindow, from_class) :
                 elif self.isArucoDistanceSatisfied() == True:
                     robot.setStatus(Status.STATUS_FOOD_DISTRIBUTE.value)
                 
-                elif self.isTaskDone() == True:
+                elif self.isTaskDone(robot.task_id) == True:
                     robot.setStatus(Status.STATUS_RETURN.value)
+
                 
 
             elif robot.status == Status.STATUS_NAV_ARUCO.value:
+                self.robot_status_label.setText("NAV_ARUCO")
+
                 if self.isNavArucoFinished() == True:
                     robot.setStatus(Status.STATUS_STANDBY.value)
+                
 
             elif robot.status == Status.STATUS_FOOD_CHARGE.value:
+                self.robot_status_label.setText("FOOD_CHARGE")
+
                 if self.isFoodChargeDone() == True:
                     robot.setStatus(Status.STATUS_STANDBY.value)
+
+
                     
             elif robot.status == Status.STATUS_MANUAL_MOVE.value:
+                self.robot_status_label.setText("MANUAL_MOVE")
+
                 if self.isArucoDistanceSatisfied() == True:
                     robot.setStatus(Status.STATUS_STANDBY.value)
 
+                
+
             elif robot.status == Status.STATUS_FOOD_DISTRIBUTE.value:
+                self.robot_status_label.setText("FOOD_DISTRIBUTE")
+
                 if self.isFoodDistributeDone() == True:
                     robot.setStatus(Status.STATUS_STANDBY.value)
+                
 
             elif robot.status == Status.STATUS_RETURN.value:
+                self.robot_status_label.setText("RETURN")
+
                 if self.isArucoStation() == True:
                     robot.setStatus(Status.STATUS_STANDBY.value)
+                
                     
 
             
@@ -1358,9 +1384,15 @@ class WindowClass(QMainWindow, from_class) :
             if task.getCurrentProgress() == 0:
                 return
             elif task.getCurrentProgress() == 1:
-                self.sendToFoodTank(task.getFoodTank())
+                # self.sendToFoodTank(task.getFoodTank())
+                task.updateTaskProgress()
+                print(task.getCurrentProgress())
+                self.ros2ServiceCallNavTo(self.point_list[0])
+                
             elif task.getCurrentProgress() == 2:
-                self.sendSignaltoFoodTank(task.getFoodTank())
+                print("progress 2")
+                if self.isServiceCallDone() :
+                    self.ros2ServiceCallNavTo(self.point_list[1])
             elif task.getCurrentProgress() == 3:
                 self.sendToBarnEntrance()
             elif task.getCurrentProgress() == 4:
@@ -1376,10 +1408,63 @@ class WindowClass(QMainWindow, from_class) :
     def sendSignaltoFoodTank(self, tank_num):
         #사료탱크에 신호줘서 사료 받기
         pass
+    
+    def isServiceCallDone(self):
+        if not self.cli.wait_for_service(timeout_sec=1.0):
+            print("Waiting for service")
 
-    def sendToFoodTank(self, tank_num):
-        #service call 해서 tank_num에 맞게 ㄱㄱ
-        pass
+        future = self.cli.call_async(self.req)
+
+        if future.done():
+            print(future.done(), future.result())
+            return True
+        else:
+            print("not done")
+        return False
+
+    def ros2ServiceCallNavTo(self, pt):
+        
+        self.req.x = pt['x']
+        self.req.y = pt['y']
+        self.req.z = pt['z']
+        self.req.aruco_id = pt['aruco_id']
+        self.req.mode = pt['mode']
+        
+        print(self.req)
+
+        print("end")
+        self.service_call_flag = True
+
+        try:
+            rp.spin_once(self.service_client_node)
+        except Exception as e:
+            print("error in service call")
+
+        
+    def sendToFoodTank(self, pt,tank_num = 1):
+        service_name = '/navigate_to_pose'
+        cli = self.service_client_node.create_client(ArucoNavigateTo, service_name)
+        req = ArucoNavigateTo.Request()
+        req.x = pt['x']
+        req.y = pt['y']
+        req.z = pt['z']
+        req.aruco_id = pt['aruco_id']
+        req.mode = pt['mode']
+        
+        print(req)
+
+
+        # rp.spin_once(self.service_client_node)
+
+        # while not cli.wait_for_service(timeout_sec=1.0):
+        #     print("Waiting for service")
+
+        # future = cli.call_async(req)
+
+        # while not future.done():
+        #     rp.spin_once(self.service_client_node)
+        #     print(future.done(), future.result())
+        # pass
                 
     def update_robot_thread(self):
         self.assignRobotTask()
@@ -1392,11 +1477,19 @@ class WindowClass(QMainWindow, from_class) :
         return food_tank_type
     
     def task_add_button_clicked(self):
-        #task 클래스로 객체 만들어서 list에 넣어주기
+        #task add 화면으로 만들어 주기 
+        self.stackedWidget_robot_task.setCurrentIndex(0)           # task add 화면으로 이동    
+        now = datetime.now()
+        self.hour_edit.setText(str(now.hour))
+        self.minutes_edit.setText(str(now.minute))
+        
+
+    def save_button_clicked(self):
+        # task 클래스로 객체 만들어서 list에 넣어주기
         current_datetime = datetime.now()
         modified_datetime = current_datetime.replace(hour=int(self.hour_edit.text()), minute=int(self.minutes_edit.text()), second=0, microsecond=0)
         self.task_id += 1
-        temp_task = Task(self.task_id,TaskScheduleType.TASK_REGISTERED.value, self.room_number_edit.text(),modified_datetime)
+        temp_task = Task(self.task_id,TaskScheduleType.TASK_REGISTERED.value, self.robot_task_room_num_combobox.currentText(),modified_datetime)
         temp_task.setFoodTank(self.get_food_type())
         self.task_list.append(temp_task)
 
@@ -1532,14 +1625,14 @@ class WindowClass(QMainWindow, from_class) :
         
         print(req)
 
-        while not cli.wait_for_service(timeout_sec=1.0):
-            print("Waiting for service")
+        # while not cli.wait_for_service(timeout_sec=1.0):
+        #     print("Waiting for service")
 
-        future = cli.call_async(req)
+        # future = cli.call_async(req)
 
-        while not future.done():
-            rp.spin_once(self.service_client_node)
-            print(future.done(), future.result())
+        # while not future.done():
+        #     rp.spin_once(self.service_client_node)
+        #     print(future.done(), future.result())
 
 
     def logout_button_clicked(self):
@@ -1628,9 +1721,8 @@ class WindowClass(QMainWindow, from_class) :
     def robotmanager_taskpage_button_clicked(self,robot_name):
         self.stackedWidget.setCurrentIndex(Pages.PAGE_ROBOTMANAGER_TASK.value)
         self.food_robot_label.setText(robot_name)
-        now = datetime.now()
-        self.hour_edit.setText(str(now.hour))
-        self.minutes_edit.setText(str(now.minute))
+        self.stackedWidget_robot_task.setCurrentIndex(1)                         # robot_task_view
+        
 
     def choose_datamanager_animalpage_button_clicked(self):
         self.stackedWidget.setCurrentIndex(Pages.PAGE_CHOOSE_DATAMANAGER_ANIMAL.value)
