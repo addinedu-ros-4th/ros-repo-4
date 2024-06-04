@@ -22,13 +22,13 @@ from datetime import datetime, timedelta
 import torch
 import torchvision.transforms as transforms
 import numpy as np 
-
+import matplotlib.pyplot as plt
 #encryption
 from Crypto.Cipher import AES
 from Crypto.Random import get_random_bytes
-
+from PyQt5.QtCore import Qt, QRect
 rp.init()
-
+import os
 import cv2
 from ultralytics import YOLO
 import atexit
@@ -302,6 +302,21 @@ class ServerThread(QThread):
                
 from_class = uic.loadUiType("Turtles.ui")[0] 
 
+class Camera(QThread):
+    update = pyqtSignal()
+    
+    def __init__(self, parent=None):
+        super().__init__()
+        self.main = parent
+        self.running = True
+    
+    def run(self):
+        while self.running:
+            self.update.emit()
+            time.sleep(0.1)
+    
+    def stop(self):
+        self.running = False
 
 class WindowClass(QMainWindow, from_class) :
     def __init__(self):
@@ -320,8 +335,8 @@ class WindowClass(QMainWindow, from_class) :
                 camera.release()
         if len(self.available_index)> 0:
             for val in self.available_index:
-                temp_cap = cv2.VideoCapture(val)
-                self.camera_list.append(temp_cap)
+                self.temp_cap = cv2.VideoCapture(val)
+                self.camera_list.append(self.temp_cap)
 
         for idx,camera in enumerate(self.camera_list):
             if camera.isOpened():
@@ -343,6 +358,17 @@ class WindowClass(QMainWindow, from_class) :
         self.cam_num = 0
         self.cameraStart()
 
+        self.isCameraOn = False
+        self.isRecStart = False
+        
+        self.record = Camera(self)
+        self.record.daemon = True
+
+        self.btnRecord.clicked.connect(self.clickRecord)
+        self.record.update.connect(self.updateRecording)
+        self.count = 0
+        self.btnCapture.clicked.connect(self.capture)   #     
+
         #robot task 리스트
         self.task_list = []
         self.yaml_file = YamlFileManager('config.yaml')
@@ -362,10 +388,22 @@ class WindowClass(QMainWindow, from_class) :
         self.yolo_harmful_animal_detect_class_coordinate = []
         # Load the YOLOv8 model
         self.model = YOLO('yolov8n.pt')
-        
+
+
+        #databases 연결
+        self.data_manage = DBManager("192.168.1.101", "0000", 3306, "turtles", "TurtlesDB")
+        self.animal_df = self.data_manage.getAnimal()
+        self.camera_df = self.data_manage.getCameraPath()
+        self.food_df = self.data_manage.getFood()
+        self.schedule_df= self.data_manage.getFoodRobotSchedule()
+        self.userdata_df = self.data_manage.getUserData()
+        self.employee_df = self.data_manage.getEmployeeData()
+        self.harmful_animal_df = self.data_manage.getHarmfulAnimal()
+        self.facility_setting_df = self.data_manage.getFacilitySetting()
         self.robot_thread = RobotThread(parent=self)
         self.count = 0
-        self.server_thread = None        
+        self.server_thread = None
+        self.client_df = pd.DataFrame(columns=['IP', 'Port'])
         self.robotThreadStart()
 
         self.quit_button.hide()
@@ -443,128 +481,242 @@ class WindowClass(QMainWindow, from_class) :
 
         #ros 
         self.service_client_node = rp.create_node('client_test')
-        
-        # if torch.cuda.is_available():
-        # # GPU를 사용하도록 설정
-        #     self.device = torch.device("cuda")
-        #     print("GPU를 사용합니다.")
-        # else:
-        # # CPU를 사용하도록 설정
-        #     self.device = torch.device("cpu")
-        #     print("GPU를 사용할 수 없습니다. CPU를 사용합니다.")
 
-
-        # #databases 연결
-        # self.data_manage = DBManager("192.168.1.101", "0000", 3306, "turtles", "TurtlesDB")
-        # self.animal_df = self.data_manage.getAnimal()
-        # self.camera_df = self.data_manage.getCameraPath()
-        # self.food_df = self.data_manage.getFood()
-        # self.schedule_df= self.data_manage.getFoodRobotSchedule()
-        # self.userdata_df = self.data_manage.getUserData()
-        # self.employee_df = self.data_manage.getEmployeeData()
-        # self.harmful_animal_df = self.data_manage.getHarmfulAnimal()
-        # self.facility_setting_df = self.data_manage.getFacilitySetting()
-        # self.client_df = pd.DataFrame(columns=['IP', 'Port'])
-        # self.layout = QVBoxLayout()
-        # self.setTableWidget(self.feeding_table) 
-        # self.layout.addWidget(self.feeding_table)
-        # self.setTableWidget(self.ventilation_table)
-        # self.layout.addWidget(self.ventilation_table)
-        # self.setLayout(self.layout) 
+        self.layout = QVBoxLayout()
+        self.setTableWidget(self.feeding_table) 
+        self.layout.addWidget(self.feeding_table)
+        self.setTableWidget(self.ventilation_table)
+        self.layout.addWidget(self.ventilation_table)
+        self.setLayout(self.layout) 
         
-        # self.stop_recording_button.hide()
+        
+
+        if torch.cuda.is_available():
+            print("GPU 사용가능 여부를 확인중입니다......")
+        # GPU를 사용하도록 설정
+            self.device = torch.device("cuda")
+            print("GPU를 사용합니다.")
+        else:
+        # CPU를 사용하도록 설정
+            self.device = torch.device("cpu")
+            print("GPU를 사용할 수 없습니다. CPU를 사용합니다.")
             
-        # current_date = QDate.currentDate().toString('yyyy-MM-dd')
-        # #등록일에 현재 날짜 설정
-        # self.registered_date_animal.setText(current_date); self.registered_date_animal.setReadOnly(True)
-        # self.registered_date_food.setText(current_date); self.registered_date_food.setReadOnly(True)
-        # self.registered_date_employee.setText(current_date); self.registered_date_employee.setReadOnly(True)
-        # self.login_information_label.setText("")
+        current_date = QDate.currentDate().toString('yyyy-MM-dd')
+        #등록일에 현재 날짜 설정
+        self.registered_date_animal.setText(current_date); self.registered_date_animal.setReadOnly(True)
+        self.registered_date_food.setText(current_date); self.registered_date_food.setReadOnly(True)
+        self.registered_date_employee.setText(current_date); self.registered_date_employee.setReadOnly(True)
+        self.login_information_label.setText("")
         
-        # #테이블에 db 정보 불러오기 
-        # self.animal_df.rename(columns={'age': 'age (in months)', 'weight': 'weight (kg)'}, inplace=True)
-        # self.load_data_to_table(self.search_animal_table, self.animal_df)
+        #테이블에 db 정보 불러오기 
+        self.animal_df.rename(columns={'age': 'age (in months)', 'weight': 'weight (kg)'}, inplace=True)
+        self.load_data_to_table(self.search_animal_table, self.animal_df)
         
-        # self.food_df.rename(columns={'weight': 'weight (kg)'}, inplace=True)
-        # self.load_data_to_table(self.search_food_table, self.food_df)
+        self.food_df.rename(columns={'weight': 'weight (kg)'}, inplace=True)
+        self.load_data_to_table(self.search_food_table, self.food_df)
         
-        # self.camera_df.rename(columns={'camera_num': 'cam_num'}, inplace=True)
-        # self.load_data_to_table(self.search_camera_table, self.camera_df)
-        # self.load_data_to_table(self.registered_employee_table, self.employee_df)
-        # self.load_data_to_table(self.harmful_animal_table, self.harmful_animal_df)
-        # self.load_data_to_table(self.facility_table,self.facility_setting_df)
+        self.camera_df.rename(columns={'camera_num': 'cam_num'}, inplace=True)
+        self.load_data_to_table(self.search_camera_table, self.camera_df)
+        self.load_data_to_table(self.registered_employee_table, self.employee_df)
+        self.load_data_to_table(self.harmful_animal_table, self.harmful_animal_df)
+        self.load_data_to_table(self.facility_table,self.facility_setting_df)
         
-        # self.auto_resize_columns(self.search_animal_table)
-        # self.auto_resize_columns(self.search_food_table)
-        # self.auto_resize_columns(self.search_camera_table)
-        # self.auto_resize_columns(self.registered_employee_table)
-        # self.auto_resize_columns(self.harmful_animal_table)
-        # self.auto_resize_columns(self.facility_table)
-        
-        
-        # # animal_df 컬럼 데이터를 ComboBox에 추가
-        # self.load_combobox(self.animal_df, 'animal_id', self.search_id_box)
-        # self.load_combobox(self.animal_df, 'gender', self.search_gender_box)
-        # self.load_combobox(self.animal_df, 'age (in months)', self.search_age_box)
-        # self.load_combobox(self.animal_df, 'food_brand', self.search_food_brand_box)
-        # self.load_combobox(self.animal_df, 'room', self.search_room_box)
-        # self.load_combobox(self.animal_df, 'weight (kg)', self.search_weight_box)
-        # self.load_combobox(self.animal_df, 'registered_date', self.search_rfid_box)
-        # self.load_combobox(self.animal_df, 'rfid_uid', self.search_animal_date_box)
-        
-        # # food_df 컬럼 데이터를 ComboBox에 추가
-        # self.load_combobox(self.food_df, 'barcode_id', self.search_food_id_box)
-        # self.load_combobox(self.food_df, 'brand_name', self.search_brand_name_box)
-        # self.load_combobox_except_all(self.food_df, 'brand_name', self.select_feed_box)
-        # self.load_combobox(self.food_df, 'weight (kg)', self.search_food_weight_box)
-        # self.load_combobox(self.food_df, 'registered_date', self.search_registered_date_box)
-        # self.load_combobox(self.food_df, 'expiry_date', self.search_expiry_date_box)
+        self.auto_resize_columns(self.search_animal_table)
+        self.auto_resize_columns(self.search_food_table)
+        self.auto_resize_columns(self.search_camera_table)
+        self.auto_resize_columns(self.registered_employee_table)
+        self.auto_resize_columns(self.harmful_animal_table)
+        self.auto_resize_columns(self.facility_table)
         
         
-        # #camera_df 컬럼 데이터 
-        # self.load_combobox(self.camera_df, 'cam_num', self.select_camera_box_video)
-        # self.load_combobox(self.camera_df, 'info_type', self.select_camera_type_box)
-        # self.load_combobox(self.camera_df, 'captured_date', self.captured_date_start)
-        # self.load_combobox(self.camera_df, 'captured_date', self.captured_date_end)
+        # animal_df 컬럼 데이터를 ComboBox에 추가
+        self.load_combobox(self.animal_df, 'animal_id', self.search_id_box)
+        self.load_combobox(self.animal_df, 'gender', self.search_gender_box)
+        self.load_combobox(self.animal_df, 'age (in months)', self.search_age_box)
+        self.load_combobox(self.animal_df, 'food_brand', self.search_food_brand_box)
+        self.load_combobox(self.animal_df, 'room', self.search_room_box)
+        self.load_combobox(self.animal_df, 'weight (kg)', self.search_weight_box)
+        self.load_combobox(self.animal_df, 'registered_date', self.search_rfid_box)
+        self.load_combobox(self.animal_df, 'rfid_uid', self.search_animal_date_box)
         
-        # self.search_button_animal.clicked.connect(self.animal_search)
-        # self.search_button_food.clicked.connect(self.food_search)
-        # # 시작 날짜 콤보박스 변경 시 종료 날짜 콤보박스 업데이트
-        # self.captured_date_start.currentIndexChanged.connect(self.update_captured_date_end)
-        # self.search_button_video.clicked.connect(self.camera_search)
-        # self.employee_register_button.clicked.connect(self.register_new_employee)
-        # self.add_harmful_animal_button.clicked.connect(self.register_new_harmful_animal)
-        # #self.delete_harmful_animal_button.clicked.connect(self.delete_harmful_animal)
-        # self.refresh_combo_box()
-        # self.register_button_food.clicked.connect(self.register_new_food)
-        # self.register_button_animal.clicked.connect(self.register_new_animal)
-        # self.update_button.clicked.connect(self.update_facility_setting)
+        # food_df 컬럼 데이터를 ComboBox에 추가
+        self.load_combobox(self.food_df, 'barcode_id', self.search_food_id_box)
+        self.load_combobox(self.food_df, 'brand_name', self.search_brand_name_box)
+        self.load_combobox_except_all(self.food_df, 'brand_name', self.select_feed_box)
+        self.load_combobox(self.food_df, 'weight (kg)', self.search_food_weight_box)
+        self.load_combobox(self.food_df, 'registered_date', self.search_registered_date_box)
+        self.load_combobox(self.food_df, 'expiry_date', self.search_expiry_date_box)
         
-        # self.set_food_button.clicked.connect(self.on_set_food_button_click)
-        # self.populate_table()
-        # self.set_room_box.currentIndexChanged.connect(self.populate_table)
-        # self.checked_times = [] 
-        # self.set_facility_schedule_button.clicked.connect(self.setFacilitySchedule)
-        # self.display_existing_schedule()
         
-        # self.is_logged_in = False  # 로그인 상태 변수
-        # self.buttons = [
-        #     self.monitor_barnpage_button, self.monitor_camerapage_button, self.monitor_facilitiespage_button,
-        #     self.control_facilitiespage_button, self.control_robotpage_button, self.robotmanager_taskpage_button,
-        #     self.datamanager_animalpage_button, self.datamanager_facilitiespage_button, self.datamanager_foodpage_button,
-        #     self.datamanager_videopage_button, self.schedule_facilitiespage_button, self.schedule_foodpage_button,
-        #     self.home_page_button, self.notification_page_button, self.shortcut_page_button, self.log_button, self.setting_button
-        # ]
-        # for button in self.buttons:
-        #     button.clicked.connect(self.handle_button_click)
-        # self.update_buttons()
-        # self.permission=''
-        # self.UserEdit.hide()
-        # self.shortcut_page_button.clicked.connect(self.show_shortcut_dialog)
-        # self.current_active_button = None
-        # self.notifications = []  # 알림 저장 리스트
-        # self.notification_page_button.clicked.connect(self.show_notification_dialog)
-        # self.setting_button.setEnabled(False)
+        #camera_df 컬럼 데이터 
+        self.load_combobox(self.camera_df, 'cam_num', self.select_camera_box_video)
+        self.load_combobox(self.camera_df, 'info_type', self.select_camera_type_box)
+        self.load_combobox(self.camera_df, 'captured_date', self.captured_date_start)
+        self.load_combobox(self.camera_df, 'captured_date', self.captured_date_end)
+        
+        self.search_button_animal.clicked.connect(self.animal_search)
+        self.search_button_food.clicked.connect(self.food_search)
+        # 시작 날짜 콤보박스 변경 시 종료 날짜 콤보박스 업데이트
+        self.captured_date_start.currentIndexChanged.connect(self.update_captured_date_end)
+        self.search_button_video.clicked.connect(self.camera_search)
+        self.employee_register_button.clicked.connect(self.register_new_employee)
+        self.add_harmful_animal_button.clicked.connect(self.register_new_harmful_animal)
+        #self.delete_harmful_animal_button.clicked.connect(self.delete_harmful_animal)
+        self.refresh_combo_box()
+        self.register_button_food.clicked.connect(self.register_new_food)
+        self.register_button_animal.clicked.connect(self.register_new_animal)
+        self.update_button.clicked.connect(self.update_facility_setting)
+        
+
+        
+        self.set_food_button.clicked.connect(self.on_set_food_button_click)
+        self.populate_table()
+        self.set_room_box.currentIndexChanged.connect(self.populate_table)
+        self.checked_times = [] 
+        self.set_facility_schedule_button.clicked.connect(self.setFacilitySchedule)
+        self.display_existing_schedule()
+        
+        self.is_logged_in = False  # 로그인 상태 변수
+        self.buttons = [
+            self.monitor_barnpage_button, self.monitor_camerapage_button, self.monitor_facilitiespage_button,
+            self.control_facilitiespage_button, self.control_robotpage_button, self.robotmanager_taskpage_button,
+            self.datamanager_animalpage_button, self.datamanager_facilitiespage_button, self.datamanager_foodpage_button,
+            self.datamanager_videopage_button, self.schedule_facilitiespage_button, self.schedule_foodpage_button,
+            self.home_page_button, self.notification_page_button, self.shortcut_page_button, self.log_button, self.setting_button
+        ]
+        for button in self.buttons:
+            button.clicked.connect(self.handle_button_click)
+        self.update_buttons()
+        self.permission=''
+        self.UserEdit.hide()
+        self.shortcut_page_button.clicked.connect(self.show_shortcut_dialog)
+        self.current_active_button = None
+        self.notifications = []  # 알림 저장 리스트
+        self.notification_page_button.clicked.connect(self.show_notification_dialog)
+        self.setting_button.setEnabled(False)
+        
+        self.intake_df=self.data_manage.getFoodIntake()
+        self.pose_df = self.data_manage.getAnimalPose()
+        self.sensor_df = self.data_manage.getSensorData()
+        self.schedule_num=self.data_manage.getSchedulenums()        
+        self.displayFoodIntake()
+        self.displayanimalPose()
+        self.displaySensor()
+        
+        self.feedingtime_display_label.setText(str(self.schedule_num)) # 
+        self.record_label.hide()
+        
+
+        
+    def displayFoodIntake(self):
+        fig, ax = plt.subplots(figsize=(5, 3))
+        self.intake_df['Average'] = self.intake_df[['Room1', 'Room2', 'Room3', 'Room4']].mean(axis=1)
+        # 각 방별 섭취량을 꺾은선 그래프로 그리기 (색상 변경)
+        ax.plot(self.intake_df['Date'], self.intake_df['Room1'], marker='o', label='Room 1', color='red')
+        ax.plot(self.intake_df['Date'], self.intake_df['Room2'], marker='o', label='Room 2', color='green')
+        ax.plot(self.intake_df['Date'], self.intake_df['Room3'], marker='o', label='Room 3', color='blue')
+        ax.plot(self.intake_df['Date'], self.intake_df['Room4'], marker='o', label='Room 4', color='cyan')
+        ax.plot(self.intake_df['Date'], self.intake_df['Average'], marker='o', linestyle='--', color='black', label='Average')
+        # 그래프 설정
+        ax.set_title('Food Intake by Room and Date')
+        ax.set_xlabel('Date');ax.set_ylabel('Food Intake')
+        ax.legend();ax.grid(True)
+        fig.tight_layout()
+        # 이미지를 QPixmap으로 변환하여 QLabel에 삽입
+        canvas = fig.canvas
+        canvas.draw()
+        # RGB 이미지로 변환
+        width, height = canvas.get_width_height()
+        image = QImage(canvas.tostring_rgb(), width, height, QImage.Format_RGB888)
+        pixmap = QPixmap.fromImage(image)
+        self.food_intake_average_label.setPixmap(pixmap)
+        label_size = self.food_intake_average_label.size()
+        self.food_intake_average_label.setFixedSize(label_size)
+        self.drawTank(self.water_tank_display_label, 70)
+        self.drawTank(self.food_tank_A_display_label, 50)
+        self.drawTank(self.food_tank_B_display_label, 30)
+
+    def drawTank(self, label, percentage):
+        # Create a QPixmap with the same size as the label
+        pixmap = QPixmap(label.size())
+        pixmap.fill(Qt.transparent)  # Fill with transparent background
+
+        painter = QPainter(pixmap)
+        
+        # Draw the border
+        rect = label.rect()
+        painter.drawRect(rect)
+
+        # Fill the percentage area
+        fill_height = int(rect.height() * (percentage / 100.0))
+        fill_rect = QRect(rect.x(), rect.y() + rect.height() - fill_height, rect.width(), fill_height)
+        painter.fillRect(fill_rect, QColor(100, 150, 255))
+
+        # Draw the percentage text
+        painter.setFont(QFont('Arial', 14, QFont.Bold))
+        painter.setPen(QColor(0, 0, 0))
+        painter.drawText(rect, Qt.AlignCenter, f'{percentage}%')
+        
+        painter.end()
+        
+        # Set the pixmap to the label
+        label.setPixmap(pixmap)
+
+    
+    def displaySensor(self):
+        fig, ax = plt.subplots(figsize=(6, 2.5))
+        # 각 방별 섭취량을 꺾은선 그래프로 그리기 (색상 변경)
+        ax.plot(self.sensor_df['time'], self.sensor_df['Temperature'], marker='o', label='Temperature(°C)', color='red')
+        ax.plot(self.sensor_df['time'], self.sensor_df['Humidity'], marker='o', label='Humidity(%)', color='green')
+        ax.plot(self.sensor_df['time'], self.sensor_df['Luminance'], marker='o', label='Luminance(%)', color='blue')
+       # 그래프 설정
+        ax.set_title('IoT Data')
+        ax.set_xlabel('Time')
+        ax.set_ylabel('Sensor data')
+        ax.legend(fontsize='small')
+        ax.grid(True)
+        fig.tight_layout()
+        # 이미지를 QPixmap으로 변환하여 QLabel에 삽입
+        canvas = fig.canvas
+        canvas.draw()
+        # RGB 이미지로 변환
+        width, height = canvas.get_width_height()
+        image = QImage(canvas.tostring_rgb(), width, height, QImage.Format_RGB888)
+        pixmap = QPixmap.fromImage(image)
+        self.iot_display_label.setPixmap(pixmap)
+        label_size = self.iot_display_label.size()
+        self.iot_display_label.setFixedSize(label_size)  
+
+  
+    def displayanimalPose(self):   
+        fig, ax = plt.subplots(figsize=(5, 2.5))
+        self.pose_df['Average'] = self.pose_df[['Room1', 'Room2', 'Room3', 'Room4']].mean(axis=1)
+        # 각 방별 섭취량을 꺾은선 그래프로 그리기 (색상 변경)
+        ax.plot(self.pose_df['time'], self.pose_df['Room1'], marker='o', label='Room 1', color='red')
+        ax.plot(self.pose_df['time'], self.pose_df['Room2'], marker='o', label='Room 2', color='green')
+        ax.plot(self.pose_df['time'], self.pose_df['Room3'], marker='o', label='Room 3', color='blue')
+        ax.plot(self.pose_df['time'], self.pose_df['Room4'], marker='o', label='Room 4', color='cyan')
+        ax.plot(self.pose_df['time'], self.pose_df['Average'], marker='o', linestyle='--', color='black', label='Average')
+        # 그래프 설정
+        ax.set_title('Animal pose by Room and Time')
+        ax.set_xlabel('Time')
+        ax.set_ylabel('Animal pose')
+        ax.legend(fontsize='small')
+        ax.grid(True)
+        fig.tight_layout()
+        # 이미지를 QPixmap으로 변환하여 QLabel에 삽입
+        canvas = fig.canvas
+        canvas.draw()
+        # RGB 이미지로 변환
+        width, height = canvas.get_width_height()
+        image = QImage(canvas.tostring_rgb(), width, height, QImage.Format_RGB888)
+        pixmap = QPixmap.fromImage(image)
+        self.animal_posture_average_label.setPixmap(pixmap)
+        label_size = self.animal_posture_average_label.size()
+        self.animal_posture_average_label.setFixedSize(label_size)   
+        
+    
+        
         
     def show_notification_dialog(self):
         dialog = QDialog(self)
@@ -959,7 +1111,7 @@ class WindowClass(QMainWindow, from_class) :
 
                 roi = result[int(y1):int(y2), int(x1):int(x2)]
                 # result[int(y1):int(y2), int(x1):int(x2)] = self.checkAnimalTemepature(roi)
-                self.checkAnimalTemepature(roi)
+                self.checkAnimalTemperature(roi)
 
                 #소만 crop한 이미지
                 # cv2.imshow('ROI', roi)
@@ -990,7 +1142,7 @@ class WindowClass(QMainWindow, from_class) :
 
                 roi = result[int(y1):int(y2), int(x1):int(x2)]
                 # result[int(y1):int(y2), int(x1):int(x2)] = self.checkAnimalTemepature(roi)
-                self.checkAnimalTemepature(roi)
+                self.checkAnimalTemperature(roi)
 
                 #소만 crop한 이미지
                 # cv2.imshow('ROI', roi)
@@ -1062,55 +1214,53 @@ class WindowClass(QMainWindow, from_class) :
         text_y = int(h /2) -170
         cv2.putText(result, result_str, (text_x, text_y), font, font_scale, font_color, font_thickness)
 
-        print(result_str)
+        #print(result_str)
 
         # 마스크 확인해 보고 싶다면        
         # result = masked_image
 
         return result 
     
-    def checkAnimalTemepature(self,cropped_img):
+    def checkAnimalTemperature(self,cropped_img):
         result = cropped_img.copy()
         
         #HSV 색상으로 변환
-        rgb_image = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
-
         hsv_image = cv2.cvtColor(result, cv2.COLOR_RGB2HSV)
-
+        bgr_image = cv2.cvtColor(result, cv2.COLOR_RGB2BGR)
         # 빨간색과 분홍색의 HSV 범위 정의
-        lower_red_pink1 = np.array([0, 50, 50])
+        lower_red_pink1 = np.array([0, 70, 50])
         upper_red_pink1 = np.array([10, 255, 255])
-        lower_red_pink2 = np.array([160, 50, 50])
+        lower_red_pink2 = np.array([160, 70, 50])
         upper_red_pink2 = np.array([180, 255, 255])
         
         # 두 범위의 마스크 생성
-        mask1 = cv2.inRange(hsv_image, lower_red_pink1, upper_red_pink1)
-        mask2 = cv2.inRange(hsv_image, lower_red_pink2, upper_red_pink2)
+        mask_red1 = cv2.inRange(hsv_image, lower_red_pink1, upper_red_pink1)
+        mask_red2 = cv2.inRange(hsv_image, lower_red_pink2, upper_red_pink2)
         
         # 두 마스크를 합쳐서 최종 마스크 생성
-        mask = cv2.bitwise_or(mask1, mask2)
+        mask_red = cv2.bitwise_or(mask_red1, mask_red2)
         
         # 원본 이미지와 마스크를 사용하여 빨간색과 분홍색 부분 추출
-        red_pink_only = cv2.bitwise_and(result, result, mask=mask)
-
+        red_pink_only = cv2.bitwise_and(bgr_image, bgr_image, mask=mask_red)
+        
         # 파란색과 하늘색의 HSV 범위 정의
         lower_blue_cyan1 = np.array([90, 50, 50])
-        upper_blue_cyan1 = np.array([130, 255, 255])
-        lower_blue_cyan2 = np.array([70, 50, 50])
-        upper_blue_cyan2 = np.array([90, 255, 255])
+        upper_blue_cyan1 = np.array([110, 255, 255])
+        lower_blue_cyan2 = np.array([80, 50, 70])
+        upper_blue_cyan2 = np.array([100, 255, 255])
         
         # 두 범위의 마스크 생성
-        mask1 = cv2.inRange(hsv_image, lower_blue_cyan1, upper_blue_cyan1)
-        mask2 = cv2.inRange(hsv_image, lower_blue_cyan2, upper_blue_cyan2)
+        mask_blue1 = cv2.inRange(result, lower_blue_cyan1, upper_blue_cyan1)
+        mask_blue2 = cv2.inRange(result, lower_blue_cyan2, upper_blue_cyan2)
         
         # 두 마스크를 합쳐서 최종 마스크 생성
-        mask = cv2.bitwise_or(mask1, mask2)
+        mask_blue = cv2.bitwise_or(mask_blue1, mask_blue2)
         
         # 원본 이미지와 마스크를 사용하여 파란색과 하늘색 부분 추출
-        blue_cyan_only = cv2.bitwise_and(result, result, mask=mask)
+        blue_cyan_only = cv2.bitwise_and(bgr_image, bgr_image, mask=mask_blue)
 
-        # cv2.imshow('red', red_pink_only)
-        # cv2.imshow('blue', blue_cyan_only)
+        cv2.imshow('red', red_pink_only)
+        cv2.imshow('blue', blue_cyan_only)
 
         # 각 이미지가 차지하는 픽셀 수 계산
         cropped_pixel_count = np.count_nonzero(result)
@@ -1145,12 +1295,58 @@ class WindowClass(QMainWindow, from_class) :
         # result = masked_image
 
         return result 
-    
+    def capture(self):
+        if not os.path.exists('captures'):
+            os.makedirs('captures')
+        now = datetime.now().strftime('%Y%m%d_%H%M%S')
+        filename = 'captures/' + now + '.png'
+        # BGR to RGB conversion
+        rgb_image = cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
+
+        cv2.imwrite(filename, rgb_image)
+        
+    def updateRecording(self):
+        rgb_image = cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
+        self.writer.write(rgb_image)
+        
+
+    def clickRecord(self):
+        if not self.isRecStart:
+            self.btnRecord.setText("Rec Stop")
+            self.isRecStart = True
+            self.recordingStart()
+        else:
+            self.btnRecord.setText("Rec Start")
+            self.isRecStart = False
+            self.recordingStop()
+
+    def recordingStart(self):
+        if not os.path.exists('captures'):
+            os.makedirs('captures')ㄴ
+        self.record.running = True
+        self.record.start()
+        now = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = 'captures/' + now + '.avi'
+        self.fourcc = cv2.VideoWriter_fourcc(*'XVID')
+
+        w = int(self.temp_cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        h = int(self.temp_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        self.writer = cv2.VideoWriter(filename, self.fourcc, 20.0, (w, h))
+        self.record_label.show()
+
+    def recordingStop(self):
+        self.record.running = False
+        self.writer.release() 
+        self.record_label.hide()
+        
 
     def combochanged(self):
         self.cam_num = self.select_camera_box.currentIndex()
 
     def updateCameraView(self):
+        
+        if self.stackedWidget.currentIndex() != 4:
+            return
 
         retval_list = []
         image_list = []
@@ -1169,12 +1365,12 @@ class WindowClass(QMainWindow, from_class) :
                 self.image = cv2.cvtColor(image_list[self.cam_num],cv2.COLOR_BGR2RGB)
 
                 # if self.cam_num != 0:    # Entrance 카메라를 제외하고 나머지는 cow yolo 인식 처리 하기 
-                #     self.updateDetectedListWithYolo(self.image)
-                #     self.image = self.drawRedBox(self.image)
-                #     self.image = self.checkRemainedFood(self.image)
+                self.updateDetectedListWithYolo(self.image)
+                self.image = self.drawRedBox(self.image)
+                self.image = self.checkRemainedFood(self.image)
 
-                self.updateHarmfulAnimalDetectedListWithYolo(self.image)
-                self.image = self.drawBlueBox(self.image,self.yolo_harmful_animal_detect_class, self.yolo_harmful_animal_detect_class_coordinate)
+                # self.updateHarmfulAnimalDetectedListWithYolo(self.image)
+                # self.image = self.drawBlueBox(self.image,self.yolo_harmful_animal_detect_class, self.yolo_harmful_animal_detect_class_coordinate)
                 
                 #이미지 화면에 띄우기
                 h,w,c = self.image.shape
@@ -1190,6 +1386,7 @@ class WindowClass(QMainWindow, from_class) :
     def cameraStart(self):
         self.camera.running = True
         self.camera.start()
+        
         
 
     def cameraStop(self):

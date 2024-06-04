@@ -28,7 +28,6 @@ class DBManager:
         result = cursor.fetchall()
         columns = [column[0] for column in cursor.description]
         intake_df = pd.DataFrame(result, columns=columns)
-
         return intake_df      
 
     def getAnimalPose(self):
@@ -38,8 +37,16 @@ class DBManager:
         result = cursor.fetchall()
         columns = [column[0] for column in cursor.description]
         pose_df = pd.DataFrame(result, columns=columns)
-
-        return pose_df        
+        return pose_df
+    
+    def getSensorData(self):
+        cursor = self.local.cursor()
+        sql = "SELECT * FROM SensorData;"
+        cursor.execute(sql)
+        result = cursor.fetchall()
+        columns = [column[0] for column in cursor.description]
+        sensor_df = pd.DataFrame(result, columns=columns)
+        return sensor_df                
       
         
     def getAnimal(self): 
@@ -233,7 +240,6 @@ class DBManager:
         cursor.execute(query)
         result = cursor.fetchall()
         return result
-        
     
     def insert_food_schedule(self, room, time):
         cursor = self.local.cursor()
@@ -251,9 +257,6 @@ class DBManager:
         self.local.close()
 
 def main():
-    db = DBManager('localhost', "0000", 3306, "sy", "TurtlesDB")
-    pose = db.getSchedulenums()
-    print(pose)
     pass
     
 
