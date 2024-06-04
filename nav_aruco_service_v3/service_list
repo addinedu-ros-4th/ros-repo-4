@@ -1,0 +1,6 @@
+ros2 service call /navigate_to_pose turtles_service_msgs/srv/ArucoNavigateTo "{x: 0.6675429940223694, y: -0.0015401430428028107, z: 0.002471923828125, aruco_id: 5, mode: NAVIGATION_WITH_ARUCO}" #사료탱크 전진 아르코마커 탐색후 거리조절
+ros2 service call /navigate_to_pose turtles_service_msgs/srv/ArucoNavigateTo "{x: 1.3040435314178467, y: 0.028110727667808533, z: 0.002471923828125, aruco_id: 5, mode: NAVIGATION_ONLY}" #사료배달위한 좌표 사료탱크 에서 살짝 전진함
+ros2 service call /navigate_to_pose turtles_service_msgs/srv/ArucoNavigateTo "{x: 1.1507164239883423, y: -0.5464926362037659, z: 0.002471923828125, aruco_id: 5, mode: NAVIGATION_ONLY}" # 축사 가운데 통로 위치해서 정면 바라보게 함
+ros2 service call /navigate_to_pose turtles_service_msgs/srv/ArucoNavigateTo "{x: 1.8156918287277222, y: -0.3954252004623413, z: -0.001434326171875, aruco_id: 5, mode: NAVIGATION_ONLY}" # 축사 중 한곳에 배달하기위해 멈추는곳
+ros2 service call /navigate_to_pose turtles_service_msgs/srv/ArucoNavigateTo "{x: 2.919975757598877, y: -0.363183856010437, z: -0.001434326171875, aruco_id: 5, mode: NAVIGATION_ONLY}" # 축사 끝까지 전진 (복귀는 이 순서 반대로 하고 첫번째거 대신 0,0,0 을 주면됨)
+
