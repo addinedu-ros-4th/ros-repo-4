@@ -345,9 +345,14 @@ class WindowClass(QMainWindow, from_class) :
 
         #robot task 리스트
         self.task_list = []
+        self.point_list = []
         self.yaml_file = YamlFileManager('config.yaml')
-        self.task_id = self.yaml_file.getLastTaskID()
         self.client_module = self.yaml_file.getClientMoudule()
+        self.point_list = self.yaml_file.getPositionData()
+
+        self.task_yaml_file = YamlFileManager('task.yaml')
+        self.task_id = self.task_yaml_file.getLastTaskID()
+
         self.robot_list = []
         food_robot1 = RobotStatus(1,RobotType.ROBOT_FOOD.value)
         # food_robot2 = RobotStatus(2,RobotType.ROBOT_FOOD.value)
