@@ -12,6 +12,42 @@ class DBManager:
             password = password,
             database = databases 
         )
+    def getSchedulenums(self):
+        cursor = self.local.cursor()
+        sql = "SELECT COUNT(DISTINCT time) AS total_unique_times FROM food_scheduled_time;"
+        cursor.execute(sql)
+        schedule_result = cursor.fetchone()  # fetchone으로 하나의 행을 가져옵니다.
+        total_unique_times = schedule_result[0]  # 튜플의 첫 번째 요소로 접근하여 total_unique_times 값을 가져옵니다.
+        return total_unique_times
+
+        
+    def getFoodIntake(self):
+        cursor = self.local.cursor()
+        sql = "SELECT * FROM FoodIntake;"
+        cursor.execute(sql)
+        result = cursor.fetchall()
+        columns = [column[0] for column in cursor.description]
+        intake_df = pd.DataFrame(result, columns=columns)
+        return intake_df      
+
+    def getAnimalPose(self):
+        cursor = self.local.cursor()
+        sql = "SELECT * FROM animalPosture;"
+        cursor.execute(sql)
+        result = cursor.fetchall()
+        columns = [column[0] for column in cursor.description]
+        pose_df = pd.DataFrame(result, columns=columns)
+        return pose_df
+    
+    def getSensorData(self):
+        cursor = self.local.cursor()
+        sql = "SELECT * FROM SensorData;"
+        cursor.execute(sql)
+        result = cursor.fetchall()
+        columns = [column[0] for column in cursor.description]
+        sensor_df = pd.DataFrame(result, columns=columns)
+        return sensor_df                
+      
         
     def getAnimal(self): 
         cursor = self.local.cursor()
@@ -204,9 +240,7 @@ class DBManager:
         cursor.execute(query)
         result = cursor.fetchall()
         return result
-        
     
-
     def insert_food_schedule(self, room, time):
         cursor = self.local.cursor()
         query = "INSERT INTO food_scheduled_time (room, time) VALUES (%s, %s)"

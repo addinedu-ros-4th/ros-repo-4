@@ -23,13 +23,13 @@ from datetime import datetime, timedelta
 import torch
 import torchvision.transforms as transforms
 import numpy as np 
-
+import matplotlib.pyplot as plt
 #encryption
 from Crypto.Cipher import AES
 from Crypto.Random import get_random_bytes
-
+from PyQt5.QtCore import Qt, QRect
 rp.init()
-
+import os
 import cv2
 from ultralytics import YOLO
 import atexit
@@ -303,6 +303,21 @@ class ServerThread(QThread):
                
 from_class = uic.loadUiType("Turtles.ui")[0] 
 
+class Camera(QThread):
+    update = pyqtSignal()
+    
+    def __init__(self, parent=None):
+        super().__init__()
+        self.main = parent
+        self.running = True
+    
+    def run(self):
+        while self.running:
+            self.update.emit()
+            time.sleep(0.1)
+    
+    def stop(self):
+        self.running = False
 
 class WindowClass(QMainWindow, from_class) :
     def __init__(self):
@@ -321,8 +336,8 @@ class WindowClass(QMainWindow, from_class) :
                 camera.release()
         if len(self.available_index)> 0:
             for val in self.available_index:
-                temp_cap = cv2.VideoCapture(val)
-                self.camera_list.append(temp_cap)
+                self.temp_cap = cv2.VideoCapture(val)
+                self.camera_list.append(self.temp_cap)
 
         for idx,camera in enumerate(self.camera_list):
             if camera.isOpened():
@@ -343,6 +358,17 @@ class WindowClass(QMainWindow, from_class) :
         self.select_camera_box.currentIndexChanged.connect(self.combochanged)
         self.cam_num = 0
         self.cameraStart()
+
+        self.isCameraOn = False
+        self.isRecStart = False
+        
+        self.record = Camera(self)
+        self.record.daemon = True
+
+        self.btnRecord.clicked.connect(self.clickRecord)
+        self.record.update.connect(self.updateRecording)
+        self.count = 0
+        self.btnCapture.clicked.connect(self.capture)   #     
 
         #robot task 리스트
         self.task_list = []
@@ -373,7 +399,8 @@ class WindowClass(QMainWindow, from_class) :
         #databases 연결
         self.data_manage = DBManager("192.168.1.101", "0000", 3306, "turtles", "TurtlesDB")
         self.animal_df = self.data_manage.getAnimal()
-        self.camera_df = self.data_manage.getCameraPath()
+        # self.camera_df = self.data_manage.getCameraPath()
+        self.camera_df = self.get_file_info()
         self.food_df = self.data_manage.getFood()
         self.schedule_df= self.data_manage.getFoodRobotSchedule()
         self.userdata_df = self.data_manage.getUserData()
@@ -474,7 +501,7 @@ class WindowClass(QMainWindow, from_class) :
         self.layout.addWidget(self.ventilation_table)
         self.setLayout(self.layout) 
         
-        self.stop_recording_button.hide()
+        
 
         if torch.cuda.is_available():
             print("GPU 사용가능 여부를 확인중입니다......")
@@ -500,7 +527,7 @@ class WindowClass(QMainWindow, from_class) :
         self.food_df.rename(columns={'weight': 'weight (kg)'}, inplace=True)
         self.load_data_to_table(self.search_food_table, self.food_df)
         
-        self.camera_df.rename(columns={'camera_num': 'cam_num'}, inplace=True)
+        # self.camera_df.rename(columns={'camera_num': 'cam_num'}, inplace=True)
         self.load_data_to_table(self.search_camera_table, self.camera_df)
         self.load_data_to_table(self.registered_employee_table, self.employee_df)
         self.load_data_to_table(self.harmful_animal_table, self.harmful_animal_df)
@@ -534,8 +561,8 @@ class WindowClass(QMainWindow, from_class) :
         
         
         #camera_df 컬럼 데이터 
-        self.load_combobox(self.camera_df, 'cam_num', self.select_camera_box_video)
-        self.load_combobox(self.camera_df, 'info_type', self.select_camera_type_box)
+        self.load_combobox(self.camera_df, 'cam_type', self.select_camera_box_video)
+        self.load_combobox(self.camera_df, 'file_type', self.select_camera_type_box)
         self.load_combobox(self.camera_df, 'captured_date', self.captured_date_start)
         self.load_combobox(self.camera_df, 'captured_date', self.captured_date_end)
         
@@ -579,6 +606,172 @@ class WindowClass(QMainWindow, from_class) :
         self.notifications = []  # 알림 저장 리스트
         self.notification_page_button.clicked.connect(self.show_notification_dialog)
         self.setting_button.setEnabled(False)
+        
+        self.intake_df=self.data_manage.getFoodIntake()
+        self.pose_df = self.data_manage.getAnimalPose()
+        self.sensor_df = self.data_manage.getSensorData()
+        self.schedule_num=self.data_manage.getSchedulenums()        
+        self.displayFoodIntake()
+        self.displayanimalPose()
+        self.displaySensor()
+        
+        self.feedingtime_display_label.setText(str(self.schedule_num)) # 
+        self.record_label.hide()
+        
+    def get_file_info(self):
+        # 현재 경로에서 captures 폴더 경로 설정
+        captures_path = os.path.join(os.getcwd(), 'captures')
+
+        # captures 폴더 내의 모든 파일 리스트
+        files = os.listdir(captures_path)
+
+        # 데이터를 담을 리스트 초기화
+        data = []
+            # 비디오와 이미지 확장자 리스트
+        video_extensions = ['avi', 'mp4', 'mov', 'mkv']
+        image_extensions = ['png', 'jpg', 'jpeg', 'bmp', 'gif']
+
+        for file in files:
+            # 파일명과 확장자를 분리
+            file_name, file_extension = os.path.splitext(file)
+            file_extension = file_extension.lstrip('.')
+            
+            # 파일명을 '_' 기준으로 분리
+            file_parts = file_name.split('_')
+            
+            if len(file_parts) >= 3:  # cam_type과 captured_date를 모두 포함하는지 확인
+                cam_type = file_parts[0]
+                captured_date = file_parts[1]
+
+                # 파일의 상대 경로
+                file_path = os.path.join('captures', file)
+                # 확장자를 기반으로 파일 타입 결정
+                if file_extension in video_extensions:
+                    file_type = 'Video'
+                elif file_extension in image_extensions:
+                    file_type = 'Image'
+                else:
+                    file_type = 'Unknown'
+
+                # 데이터 리스트에 추가
+                data.append([cam_type, file_type, file_path, captured_date])
+
+        # 데이터프레임 생성
+        camera_df = pd.DataFrame(data, columns=['cam_type', 'file_type', 'path', 'captured_date'])
+
+        return camera_df
+        
+
+        
+    def displayFoodIntake(self):
+        fig, ax = plt.subplots(figsize=(5, 3))
+        self.intake_df['Average'] = self.intake_df[['Room1', 'Room2', 'Room3', 'Room4']].mean(axis=1)
+        # 각 방별 섭취량을 꺾은선 그래프로 그리기 (색상 변경)
+        ax.plot(self.intake_df['Date'], self.intake_df['Room1'], marker='o', label='Room 1', color='red')
+        ax.plot(self.intake_df['Date'], self.intake_df['Room2'], marker='o', label='Room 2', color='green')
+        ax.plot(self.intake_df['Date'], self.intake_df['Room3'], marker='o', label='Room 3', color='blue')
+        ax.plot(self.intake_df['Date'], self.intake_df['Room4'], marker='o', label='Room 4', color='cyan')
+        ax.plot(self.intake_df['Date'], self.intake_df['Average'], marker='o', linestyle='--', color='black', label='Average')
+        # 그래프 설정
+        ax.set_title('Food Intake by Room and Date')
+        ax.set_xlabel('Date');ax.set_ylabel('Food Intake')
+        ax.legend();ax.grid(True)
+        fig.tight_layout()
+        # 이미지를 QPixmap으로 변환하여 QLabel에 삽입
+        canvas = fig.canvas
+        canvas.draw()
+        # RGB 이미지로 변환
+        width, height = canvas.get_width_height()
+        image = QImage(canvas.tostring_rgb(), width, height, QImage.Format_RGB888)
+        pixmap = QPixmap.fromImage(image)
+        self.food_intake_average_label.setPixmap(pixmap)
+        label_size = self.food_intake_average_label.size()
+        self.food_intake_average_label.setFixedSize(label_size)
+        self.drawTank(self.water_tank_display_label, 70)
+        self.drawTank(self.food_tank_A_display_label, 50)
+        self.drawTank(self.food_tank_B_display_label, 30)
+
+    def drawTank(self, label, percentage):
+        # Create a QPixmap with the same size as the label
+        pixmap = QPixmap(label.size())
+        pixmap.fill(Qt.transparent)  # Fill with transparent background
+
+        painter = QPainter(pixmap)
+        
+        # Draw the border
+        rect = label.rect()
+        painter.drawRect(rect)
+
+        # Fill the percentage area
+        fill_height = int(rect.height() * (percentage / 100.0))
+        fill_rect = QRect(rect.x(), rect.y() + rect.height() - fill_height, rect.width(), fill_height)
+        painter.fillRect(fill_rect, QColor(100, 150, 255))
+
+        # Draw the percentage text
+        painter.setFont(QFont('Arial', 14, QFont.Bold))
+        painter.setPen(QColor(0, 0, 0))
+        painter.drawText(rect, Qt.AlignCenter, f'{percentage}%')
+        
+        painter.end()
+        
+        # Set the pixmap to the label
+        label.setPixmap(pixmap)
+
+    
+    def displaySensor(self):
+        fig, ax = plt.subplots(figsize=(6, 2.5))
+        # 각 방별 섭취량을 꺾은선 그래프로 그리기 (색상 변경)
+        ax.plot(self.sensor_df['time'], self.sensor_df['Temperature'], marker='o', label='Temperature(°C)', color='red')
+        ax.plot(self.sensor_df['time'], self.sensor_df['Humidity'], marker='o', label='Humidity(%)', color='green')
+        ax.plot(self.sensor_df['time'], self.sensor_df['Luminance'], marker='o', label='Luminance(%)', color='blue')
+       # 그래프 설정
+        ax.set_title('IoT Data')
+        ax.set_xlabel('Time')
+        ax.set_ylabel('Sensor data')
+        ax.legend(fontsize='small')
+        ax.grid(True)
+        fig.tight_layout()
+        # 이미지를 QPixmap으로 변환하여 QLabel에 삽입
+        canvas = fig.canvas
+        canvas.draw()
+        # RGB 이미지로 변환
+        width, height = canvas.get_width_height()
+        image = QImage(canvas.tostring_rgb(), width, height, QImage.Format_RGB888)
+        pixmap = QPixmap.fromImage(image)
+        self.iot_display_label.setPixmap(pixmap)
+        label_size = self.iot_display_label.size()
+        self.iot_display_label.setFixedSize(label_size)  
+
+  
+    def displayanimalPose(self):   
+        fig, ax = plt.subplots(figsize=(5, 2.5))
+        self.pose_df['Average'] = self.pose_df[['Room1', 'Room2', 'Room3', 'Room4']].mean(axis=1)
+        # 각 방별 섭취량을 꺾은선 그래프로 그리기 (색상 변경)
+        ax.plot(self.pose_df['time'], self.pose_df['Room1'], marker='o', label='Room 1', color='red')
+        ax.plot(self.pose_df['time'], self.pose_df['Room2'], marker='o', label='Room 2', color='green')
+        ax.plot(self.pose_df['time'], self.pose_df['Room3'], marker='o', label='Room 3', color='blue')
+        ax.plot(self.pose_df['time'], self.pose_df['Room4'], marker='o', label='Room 4', color='cyan')
+        ax.plot(self.pose_df['time'], self.pose_df['Average'], marker='o', linestyle='--', color='black', label='Average')
+        # 그래프 설정
+        ax.set_title('Animal pose by Room and Time')
+        ax.set_xlabel('Time')
+        ax.set_ylabel('Animal pose')
+        ax.legend(fontsize='small')
+        ax.grid(True)
+        fig.tight_layout()
+        # 이미지를 QPixmap으로 변환하여 QLabel에 삽입
+        canvas = fig.canvas
+        canvas.draw()
+        # RGB 이미지로 변환
+        width, height = canvas.get_width_height()
+        image = QImage(canvas.tostring_rgb(), width, height, QImage.Format_RGB888)
+        pixmap = QPixmap.fromImage(image)
+        self.animal_posture_average_label.setPixmap(pixmap)
+        label_size = self.animal_posture_average_label.size()
+        self.animal_posture_average_label.setFixedSize(label_size)   
+        
+    
+        
         
     def show_notification_dialog(self):
         dialog = QDialog(self)
@@ -813,7 +1006,7 @@ class WindowClass(QMainWindow, from_class) :
         
         if selected_start_date != 'all':
             self.captured_date_end.addItem('all')
-            selected_start_date = datetime.strptime(selected_start_date, '%Y-%m-%d').date()
+            #selected_start_date = datetime.strptime(selected_start_date, '%Y-%m-%d').date()
             filtered_dates = self.camera_df[self.camera_df['captured_date'] >= selected_start_date]['captured_date'].unique()
             sorted_filtered_dates = sorted(filtered_dates)
             self.captured_date_end.addItems(map(str, sorted_filtered_dates))
@@ -853,8 +1046,8 @@ class WindowClass(QMainWindow, from_class) :
     
     def camera_search(self):
         filters = { 
-            'cam_num': self.select_camera_box_video.currentText(),
-            'info_type': self.select_camera_type_box.currentText(),
+            'cam_type': self.select_camera_box_video.currentText(),
+            'file_type': self.select_camera_type_box.currentText(),
         }
         start_date_str = self.captured_date_start.currentText()
         end_date_str = self.captured_date_end.currentText()
@@ -1076,7 +1269,7 @@ class WindowClass(QMainWindow, from_class) :
         text_y = int(h /2) -170
         cv2.putText(result, result_str, (text_x, text_y), font, font_scale, font_color, font_thickness)
 
-        print(result_str)
+        #print(result_str)
 
         # 마스크 확인해 보고 싶다면        
         # result = masked_image
@@ -1157,7 +1350,52 @@ class WindowClass(QMainWindow, from_class) :
         # result = masked_image
 
         return result 
-    
+    def capture(self):
+        if not os.path.exists('captures'):
+            os.makedirs('captures')
+        now = datetime.now().strftime('%Y%m%d_%H%M%S')
+        self.cam_type=self.select_camera_box.currentText()
+        filename = 'captures/' + self.cam_type+ '_' +now + '.png'
+        # BGR to RGB conversion
+        rgb_image = cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
+
+        cv2.imwrite(filename, rgb_image)
+        
+    def updateRecording(self):
+        rgb_image = cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
+        self.writer.write(rgb_image)
+        
+
+    def clickRecord(self):
+        if not self.isRecStart:
+            self.btnRecord.setText("Rec Stop")
+            self.isRecStart = True
+            self.recordingStart()
+        else:
+            self.btnRecord.setText("Rec Start")
+            self.isRecStart = False
+            self.recordingStop()
+
+    def recordingStart(self):
+        if not os.path.exists('captures'):
+            os.makedirs('captures')
+        self.record.running = True
+        self.record.start()
+        now = datetime.now().strftime("%Y%m%d_%H%M%S")
+        self.cam_type=self.select_camera_box.currentText()
+        filename = 'captures/' + self.cam_type+ '_'+ now + '.avi'
+        self.fourcc = cv2.VideoWriter_fourcc(*'XVID')
+
+        w = int(self.temp_cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        h = int(self.temp_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        self.writer = cv2.VideoWriter(filename, self.fourcc, 20.0, (w, h))
+        self.record_label.show()
+
+    def recordingStop(self):
+        self.record.running = False
+        self.writer.release() 
+        self.record_label.hide()
+        
 
     def combochanged(self):
         self.cam_num = self.select_camera_box.currentIndex()
@@ -1205,6 +1443,7 @@ class WindowClass(QMainWindow, from_class) :
     def cameraStart(self):
         self.camera.running = True
         self.camera.start()
+        
         
 
     def cameraStop(self):
