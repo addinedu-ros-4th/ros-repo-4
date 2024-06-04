@@ -465,14 +465,15 @@ class WindowClass(QMainWindow, from_class) :
         
         self.stop_recording_button.hide()
 
-        # if torch.cuda.is_available():
-        # # GPU를 사용하도록 설정
-        #     self.device = torch.device("cuda")
-        #     print("GPU를 사용합니다.")
-        # else:
-        # # CPU를 사용하도록 설정
-        #     self.device = torch.device("cpu")
-        #     print("GPU를 사용할 수 없습니다. CPU를 사용합니다.")
+        if torch.cuda.is_available():
+            print("GPU 사용가능 여부를 확인중입니다......")
+        # GPU를 사용하도록 설정
+            self.device = torch.device("cuda")
+            print("GPU를 사용합니다.")
+        else:
+        # CPU를 사용하도록 설정
+            self.device = torch.device("cpu")
+            print("GPU를 사용할 수 없습니다. CPU를 사용합니다.")
             
         current_date = QDate.currentDate().toString('yyyy-MM-dd')
         #등록일에 현재 날짜 설정
@@ -961,7 +962,7 @@ class WindowClass(QMainWindow, from_class) :
 
                 roi = result[int(y1):int(y2), int(x1):int(x2)]
                 # result[int(y1):int(y2), int(x1):int(x2)] = self.checkAnimalTemepature(roi)
-                self.checkAnimalTemepature(roi)
+                self.checkAnimalTemperature(roi)
 
                 #소만 crop한 이미지
                 # cv2.imshow('ROI', roi)
@@ -992,7 +993,7 @@ class WindowClass(QMainWindow, from_class) :
 
                 roi = result[int(y1):int(y2), int(x1):int(x2)]
                 # result[int(y1):int(y2), int(x1):int(x2)] = self.checkAnimalTemepature(roi)
-                self.checkAnimalTemepature(roi)
+                self.checkAnimalTemperature(roi)
 
                 #소만 crop한 이미지
                 # cv2.imshow('ROI', roi)
@@ -1071,48 +1072,46 @@ class WindowClass(QMainWindow, from_class) :
 
         return result 
     
-    def checkAnimalTemepature(self,cropped_img):
+    def checkAnimalTemperature(self,cropped_img):
         result = cropped_img.copy()
         
         #HSV 색상으로 변환
-        rgb_image = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
-
         hsv_image = cv2.cvtColor(result, cv2.COLOR_RGB2HSV)
-
+        bgr_image = cv2.cvtColor(result, cv2.COLOR_RGB2BGR)
         # 빨간색과 분홍색의 HSV 범위 정의
-        lower_red_pink1 = np.array([0, 50, 50])
+        lower_red_pink1 = np.array([0, 70, 50])
         upper_red_pink1 = np.array([10, 255, 255])
-        lower_red_pink2 = np.array([160, 50, 50])
+        lower_red_pink2 = np.array([160, 70, 50])
         upper_red_pink2 = np.array([180, 255, 255])
         
         # 두 범위의 마스크 생성
-        mask1 = cv2.inRange(hsv_image, lower_red_pink1, upper_red_pink1)
-        mask2 = cv2.inRange(hsv_image, lower_red_pink2, upper_red_pink2)
+        mask_red1 = cv2.inRange(hsv_image, lower_red_pink1, upper_red_pink1)
+        mask_red2 = cv2.inRange(hsv_image, lower_red_pink2, upper_red_pink2)
         
         # 두 마스크를 합쳐서 최종 마스크 생성
-        mask = cv2.bitwise_or(mask1, mask2)
+        mask_red = cv2.bitwise_or(mask_red1, mask_red2)
         
         # 원본 이미지와 마스크를 사용하여 빨간색과 분홍색 부분 추출
-        red_pink_only = cv2.bitwise_and(result, result, mask=mask)
-
+        red_pink_only = cv2.bitwise_and(bgr_image, bgr_image, mask=mask_red)
+        
         # 파란색과 하늘색의 HSV 범위 정의
         lower_blue_cyan1 = np.array([90, 50, 50])
-        upper_blue_cyan1 = np.array([130, 255, 255])
-        lower_blue_cyan2 = np.array([70, 50, 50])
-        upper_blue_cyan2 = np.array([90, 255, 255])
+        upper_blue_cyan1 = np.array([110, 255, 255])
+        lower_blue_cyan2 = np.array([80, 50, 70])
+        upper_blue_cyan2 = np.array([100, 255, 255])
         
         # 두 범위의 마스크 생성
-        mask1 = cv2.inRange(hsv_image, lower_blue_cyan1, upper_blue_cyan1)
-        mask2 = cv2.inRange(hsv_image, lower_blue_cyan2, upper_blue_cyan2)
+        mask_blue1 = cv2.inRange(result, lower_blue_cyan1, upper_blue_cyan1)
+        mask_blue2 = cv2.inRange(result, lower_blue_cyan2, upper_blue_cyan2)
         
         # 두 마스크를 합쳐서 최종 마스크 생성
-        mask = cv2.bitwise_or(mask1, mask2)
+        mask_blue = cv2.bitwise_or(mask_blue1, mask_blue2)
         
         # 원본 이미지와 마스크를 사용하여 파란색과 하늘색 부분 추출
-        blue_cyan_only = cv2.bitwise_and(result, result, mask=mask)
+        blue_cyan_only = cv2.bitwise_and(bgr_image, bgr_image, mask=mask_blue)
 
-        # cv2.imshow('red', red_pink_only)
-        # cv2.imshow('blue', blue_cyan_only)
+        cv2.imshow('red', red_pink_only)
+        cv2.imshow('blue', blue_cyan_only)
 
         # 각 이미지가 차지하는 픽셀 수 계산
         cropped_pixel_count = np.count_nonzero(result)
@@ -1153,6 +1152,9 @@ class WindowClass(QMainWindow, from_class) :
         self.cam_num = self.select_camera_box.currentIndex()
 
     def updateCameraView(self):
+        
+        if self.stackedWidget.currentIndex() != 4:
+            return
 
         retval_list = []
         image_list = []
@@ -1171,12 +1173,12 @@ class WindowClass(QMainWindow, from_class) :
                 self.image = cv2.cvtColor(image_list[self.cam_num],cv2.COLOR_BGR2RGB)
 
                 # if self.cam_num != 0:    # Entrance 카메라를 제외하고 나머지는 cow yolo 인식 처리 하기 
-                #     self.updateDetectedListWithYolo(self.image)
-                #     self.image = self.drawRedBox(self.image)
-                #     self.image = self.checkRemainedFood(self.image)
+                self.updateDetectedListWithYolo(self.image)
+                self.image = self.drawRedBox(self.image)
+                self.image = self.checkRemainedFood(self.image)
 
-                self.updateHarmfulAnimalDetectedListWithYolo(self.image)
-                self.image = self.drawBlueBox(self.image,self.yolo_harmful_animal_detect_class, self.yolo_harmful_animal_detect_class_coordinate)
+                # self.updateHarmfulAnimalDetectedListWithYolo(self.image)
+                # self.image = self.drawBlueBox(self.image,self.yolo_harmful_animal_detect_class, self.yolo_harmful_animal_detect_class_coordinate)
                 
                 #이미지 화면에 띄우기
                 h,w,c = self.image.shape
