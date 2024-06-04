@@ -664,6 +664,8 @@ class WindowClass(QMainWindow, from_class) :
 
         
     def displayFoodIntake(self):
+        if self.stackedWidget.currentIndex() != Pages.PAGE_MONITOR_BARN.value:
+            return
         fig, ax = plt.subplots(figsize=(5, 3))
         self.intake_df['Average'] = self.intake_df[['Room1', 'Room2', 'Room3', 'Room4']].mean(axis=1)
         # 각 방별 섭취량을 꺾은선 그래프로 그리기 (색상 변경)
@@ -719,6 +721,9 @@ class WindowClass(QMainWindow, from_class) :
 
     
     def displaySensor(self):
+        if self.stackedWidget.currentIndex() != Pages.PAGE_MONITOR_FACILITIES.value:
+            return
+        
         fig, ax = plt.subplots(figsize=(6, 2.5))
         # 각 방별 섭취량을 꺾은선 그래프로 그리기 (색상 변경)
         ax.plot(self.sensor_df['time'], self.sensor_df['Temperature'], marker='o', label='Temperature(°C)', color='red')
@@ -744,6 +749,8 @@ class WindowClass(QMainWindow, from_class) :
 
   
     def displayanimalPose(self):   
+        if self.stackedWidget.currentIndex() != Pages.PAGE_MONITOR_BARN.value:
+            return
         fig, ax = plt.subplots(figsize=(5, 2.5))
         self.pose_df['Average'] = self.pose_df[['Room1', 'Room2', 'Room3', 'Room4']].mean(axis=1)
         # 각 방별 섭취량을 꺾은선 그래프로 그리기 (색상 변경)
@@ -1649,7 +1656,7 @@ class WindowClass(QMainWindow, from_class) :
         pass
     
     def isServiceCallDone(self):
-        if not self.cli.wait_for_service(timeout_sec=1.0):
+        if not self.cli.wait_for_service(timeout_sec=0.1):
             print("Waiting for service")
 
         future = self.cli.call_async(self.req)
