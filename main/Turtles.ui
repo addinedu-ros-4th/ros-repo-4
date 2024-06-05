@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1501</width>
+    <width>1517</width>
     <height>868</height>
    </rect>
   </property>
@@ -496,7 +496,7 @@
      <enum>QFrame::NoFrame</enum>
     </property>
     <property name="currentIndex">
-     <number>23</number>
+     <number>16</number>
     </property>
     <widget class="QWidget" name="home_page">
      <widget class="QLabel" name="label">
@@ -771,7 +771,7 @@
         <x>80</x>
         <y>40</y>
         <width>191</width>
-        <height>121</height>
+        <height>111</height>
        </rect>
       </property>
       <property name="frameShape">
@@ -829,7 +829,7 @@
         <x>290</x>
         <y>40</y>
         <width>301</width>
-        <height>121</height>
+        <height>111</height>
        </rect>
       </property>
       <property name="frameShape">
@@ -887,7 +887,7 @@
         <x>610</x>
         <y>40</y>
         <width>301</width>
-        <height>121</height>
+        <height>111</height>
        </rect>
       </property>
       <property name="frameShape">
@@ -948,7 +948,7 @@
         <x>930</x>
         <y>40</y>
         <width>311</width>
-        <height>121</height>
+        <height>111</height>
        </rect>
       </property>
       <property name="frameShape">
@@ -1007,9 +1007,9 @@
       <property name="geometry">
        <rect>
         <x>80</x>
-        <y>190</y>
-        <width>511</width>
-        <height>270</height>
+        <y>150</y>
+        <width>531</width>
+        <height>351</height>
        </rect>
       </property>
       <property name="font">
@@ -1027,8 +1027,8 @@
         <rect>
          <x>20</x>
          <y>40</y>
-         <width>471</width>
-         <height>211</height>
+         <width>500</width>
+         <height>300</height>
         </rect>
        </property>
        <property name="styleSheet">
@@ -1046,9 +1046,9 @@
       <property name="geometry">
        <rect>
         <x>80</x>
-        <y>470</y>
-        <width>511</width>
-        <height>270</height>
+        <y>510</y>
+        <width>531</width>
+        <height>301</height>
        </rect>
       </property>
       <property name="font">
@@ -1066,8 +1066,8 @@
         <rect>
          <x>20</x>
          <y>40</y>
-         <width>471</width>
-         <height>211</height>
+         <width>500</width>
+         <height>250</height>
         </rect>
        </property>
        <property name="styleSheet">
@@ -1084,10 +1084,10 @@
      <widget class="QGroupBox" name="groupBox_29">
       <property name="geometry">
        <rect>
-        <x>620</x>
-        <y>190</y>
-        <width>631</width>
-        <height>551</height>
+        <x>630</x>
+        <y>170</y>
+        <width>611</width>
+        <height>641</height>
        </rect>
       </property>
       <property name="font">
@@ -1103,10 +1103,10 @@
       <widget class="QLabel" name="position_map_label">
        <property name="geometry">
         <rect>
-         <x>110</x>
+         <x>60</x>
          <y>70</y>
-         <width>441</width>
-         <height>441</height>
+         <width>500</width>
+         <height>500</height>
         </rect>
        </property>
        <property name="styleSheet">
@@ -1128,7 +1128,7 @@
         <x>40</x>
         <y>10</y>
         <width>180</width>
-        <height>91</height>
+        <height>81</height>
        </rect>
       </property>
       <property name="frameShape">
@@ -1143,7 +1143,7 @@
          <x>10</x>
          <y>0</y>
          <width>160</width>
-         <height>91</height>
+         <height>81</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_10">
@@ -1186,7 +1186,7 @@
         <x>250</x>
         <y>10</y>
         <width>180</width>
-        <height>91</height>
+        <height>81</height>
        </rect>
       </property>
       <property name="frameShape">
@@ -1201,7 +1201,7 @@
          <x>10</x>
          <y>-1</y>
          <width>161</width>
-         <height>91</height>
+         <height>81</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_11">
@@ -1244,7 +1244,7 @@
         <x>460</x>
         <y>10</y>
         <width>180</width>
-        <height>91</height>
+        <height>81</height>
        </rect>
       </property>
       <property name="frameShape">
@@ -1259,7 +1259,7 @@
          <x>10</x>
          <y>-1</y>
          <width>161</width>
-         <height>91</height>
+         <height>81</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_13">
@@ -1305,7 +1305,7 @@
         <x>670</x>
         <y>10</y>
         <width>180</width>
-        <height>91</height>
+        <height>81</height>
        </rect>
       </property>
       <property name="frameShape">
@@ -1320,7 +1320,7 @@
          <x>10</x>
          <y>-1</y>
          <width>161</width>
-         <height>91</height>
+         <height>81</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_12">
@@ -1364,9 +1364,9 @@
       <property name="geometry">
        <rect>
         <x>40</x>
-        <y>110</y>
-        <width>601</width>
-        <height>181</height>
+        <y>100</y>
+        <width>621</width>
+        <height>281</height>
        </rect>
       </property>
       <property name="font">
@@ -1377,15 +1377,15 @@
        </font>
       </property>
       <property name="title">
-       <string>Temperature Humidity Luminance</string>
+       <string>Temperature/Humidity/Luminance</string>
       </property>
       <widget class="QLabel" name="iot_display_label">
        <property name="geometry">
         <rect>
          <x>10</x>
          <y>40</y>
-         <width>581</width>
-         <height>131</height>
+         <width>600</width>
+         <height>231</height>
         </rect>
        </property>
        <property name="styleSheet">
@@ -1403,9 +1403,9 @@
       <property name="geometry">
        <rect>
         <x>40</x>
-        <y>300</y>
-        <width>601</width>
-        <height>191</height>
+        <y>390</y>
+        <width>611</width>
+        <height>151</height>
        </rect>
       </property>
       <property name="font">
@@ -1422,7 +1422,7 @@
        <property name="geometry">
         <rect>
          <x>380</x>
-         <y>160</y>
+         <y>120</y>
          <width>121</width>
          <height>31</height>
         </rect>
@@ -1448,7 +1448,7 @@
          <x>380</x>
          <y>40</y>
          <width>121</width>
-         <height>111</height>
+         <height>80</height>
         </rect>
        </property>
        <property name="styleSheet">
@@ -1467,7 +1467,7 @@
          <x>240</x>
          <y>40</y>
          <width>121</width>
-         <height>111</height>
+         <height>80</height>
         </rect>
        </property>
        <property name="styleSheet">
@@ -1484,7 +1484,7 @@
        <property name="geometry">
         <rect>
          <x>240</x>
-         <y>160</y>
+         <y>120</y>
          <width>121</width>
          <height>31</height>
         </rect>
@@ -1510,7 +1510,7 @@
          <x>100</x>
          <y>40</y>
          <width>121</width>
-         <height>111</height>
+         <height>80</height>
         </rect>
        </property>
        <property name="styleSheet">
@@ -1527,7 +1527,7 @@
        <property name="geometry">
         <rect>
          <x>100</x>
-         <y>160</y>
+         <y>120</y>
          <width>121</width>
          <height>31</height>
         </rect>
@@ -1551,10 +1551,10 @@
      <widget class="QGroupBox" name="groupBox_32">
       <property name="geometry">
        <rect>
-        <x>660</x>
-        <y>110</y>
+        <x>670</x>
+        <y>100</y>
         <width>591</width>
-        <height>651</height>
+        <height>721</height>
        </rect>
       </property>
       <property name="font">
@@ -1571,7 +1571,7 @@
        <property name="geometry">
         <rect>
          <x>30</x>
-         <y>50</y>
+         <y>90</y>
          <width>531</width>
          <height>571</height>
         </rect>
@@ -1591,7 +1591,7 @@
       <property name="geometry">
        <rect>
         <x>40</x>
-        <y>500</y>
+        <y>560</y>
         <width>291</width>
         <height>261</height>
        </rect>
@@ -1626,7 +1626,7 @@
         <string notr="true"/>
        </property>
        <property name="text">
-        <string/>
+        <string>🐢 </string>
        </property>
        <property name="pixmap">
         <pixmap>../../../../../../Pictures/Screenshots/grap1.png</pixmap>
@@ -1811,7 +1811,7 @@ color: rgb(192, 28, 40);</string>
       <property name="geometry">
        <rect>
         <x>350</x>
-        <y>500</y>
+        <y>560</y>
         <width>291</width>
         <height>261</height>
        </rect>
@@ -1846,7 +1846,7 @@ color: rgb(192, 28, 40);</string>
         <string notr="true"/>
        </property>
        <property name="text">
-        <string/>
+        <string>🐢 </string>
        </property>
        <property name="pixmap">
         <pixmap>../../../../../../Pictures/Screenshots/grap1.png</pixmap>
@@ -2045,7 +2045,7 @@ color: rgb(192, 28, 40);</string>
        <string/>
       </property>
      </widget>
-     <widget class="QPushButton" name="capture_button">
+     <widget class="QPushButton" name="btnCapture">
       <property name="geometry">
        <rect>
         <x>310</x>
@@ -2065,7 +2065,7 @@ color: rgb(192, 28, 40);</string>
        <string>Capture</string>
       </property>
      </widget>
-     <widget class="QPushButton" name="start_recording_button">
+     <widget class="QPushButton" name="btnRecord">
       <property name="geometry">
        <rect>
         <x>700</x>
@@ -2082,33 +2082,10 @@ color: rgb(192, 28, 40);</string>
        </font>
       </property>
       <property name="styleSheet">
-       <string notr="true">background-color: #4CAF50; color: #fff;</string>
+       <string notr="true"/>
       </property>
       <property name="text">
        <string>Start Recording</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="stop_recording_button">
-      <property name="geometry">
-       <rect>
-        <x>700</x>
-        <y>590</y>
-        <width>241</width>
-        <height>81</height>
-       </rect>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>20</pointsize>
-        <weight>75</weight>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">background-color: #D32F2F; color: #fff;</string>
-      </property>
-      <property name="text">
-       <string>Stop Recording</string>
       </property>
      </widget>
      <widget class="QSplitter" name="splitter">
@@ -2143,25 +2120,490 @@ color: rgb(192, 28, 40);</string>
        </item>
        <item>
         <property name="text">
-         <string>Cow Room1</string>
+         <string>CowRoom1</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>Cow Room2</string>
+         <string>CowRoom2</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>Calf Room1</string>
+         <string>CalfRoom1</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>Calf Room2</string>
+         <string>CalfRoom2</string>
         </property>
        </item>
       </widget>
+     </widget>
+     <widget class="QLabel" name="record_label">
+      <property name="geometry">
+       <rect>
+        <x>130</x>
+        <y>120</y>
+        <width>301</width>
+        <height>61</height>
+       </rect>
+      </property>
+      <property name="palette">
+       <palette>
+        <active>
+         <colorrole role="WindowText">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>224</red>
+            <green>27</green>
+            <blue>36</blue>
+           </color>
+          </brush>
+         </colorrole>
+         <colorrole role="Button">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>224</red>
+            <green>27</green>
+            <blue>36</blue>
+           </color>
+          </brush>
+         </colorrole>
+         <colorrole role="Light">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>255</red>
+            <green>112</green>
+            <blue>118</blue>
+           </color>
+          </brush>
+         </colorrole>
+         <colorrole role="Midlight">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>239</red>
+            <green>69</green>
+            <blue>77</blue>
+           </color>
+          </brush>
+         </colorrole>
+         <colorrole role="Dark">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>112</red>
+            <green>13</green>
+            <blue>18</blue>
+           </color>
+          </brush>
+         </colorrole>
+         <colorrole role="Mid">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>149</red>
+            <green>18</green>
+            <blue>24</blue>
+           </color>
+          </brush>
+         </colorrole>
+         <colorrole role="Text">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>224</red>
+            <green>27</green>
+            <blue>36</blue>
+           </color>
+          </brush>
+         </colorrole>
+         <colorrole role="BrightText">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>255</red>
+            <green>255</green>
+            <blue>255</blue>
+           </color>
+          </brush>
+         </colorrole>
+         <colorrole role="ButtonText">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>224</red>
+            <green>27</green>
+            <blue>36</blue>
+           </color>
+          </brush>
+         </colorrole>
+         <colorrole role="Base">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>255</red>
+            <green>255</green>
+            <blue>255</blue>
+           </color>
+          </brush>
+         </colorrole>
+         <colorrole role="Window">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>224</red>
+            <green>27</green>
+            <blue>36</blue>
+           </color>
+          </brush>
+         </colorrole>
+         <colorrole role="Shadow">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>0</red>
+            <green>0</green>
+            <blue>0</blue>
+           </color>
+          </brush>
+         </colorrole>
+         <colorrole role="AlternateBase">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>239</red>
+            <green>141</green>
+            <blue>145</blue>
+           </color>
+          </brush>
+         </colorrole>
+         <colorrole role="ToolTipBase">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>255</red>
+            <green>255</green>
+            <blue>220</blue>
+           </color>
+          </brush>
+         </colorrole>
+         <colorrole role="ToolTipText">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>0</red>
+            <green>0</green>
+            <blue>0</blue>
+           </color>
+          </brush>
+         </colorrole>
+         <colorrole role="PlaceholderText">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>224</red>
+            <green>27</green>
+            <blue>36</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </active>
+        <inactive>
+         <colorrole role="WindowText">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>224</red>
+            <green>27</green>
+            <blue>36</blue>
+           </color>
+          </brush>
+         </colorrole>
+         <colorrole role="Button">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>224</red>
+            <green>27</green>
+            <blue>36</blue>
+           </color>
+          </brush>
+         </colorrole>
+         <colorrole role="Light">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>255</red>
+            <green>112</green>
+            <blue>118</blue>
+           </color>
+          </brush>
+         </colorrole>
+         <colorrole role="Midlight">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>239</red>
+            <green>69</green>
+            <blue>77</blue>
+           </color>
+          </brush>
+         </colorrole>
+         <colorrole role="Dark">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>112</red>
+            <green>13</green>
+            <blue>18</blue>
+           </color>
+          </brush>
+         </colorrole>
+         <colorrole role="Mid">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>149</red>
+            <green>18</green>
+            <blue>24</blue>
+           </color>
+          </brush>
+         </colorrole>
+         <colorrole role="Text">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>224</red>
+            <green>27</green>
+            <blue>36</blue>
+           </color>
+          </brush>
+         </colorrole>
+         <colorrole role="BrightText">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>255</red>
+            <green>255</green>
+            <blue>255</blue>
+           </color>
+          </brush>
+         </colorrole>
+         <colorrole role="ButtonText">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>224</red>
+            <green>27</green>
+            <blue>36</blue>
+           </color>
+          </brush>
+         </colorrole>
+         <colorrole role="Base">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>255</red>
+            <green>255</green>
+            <blue>255</blue>
+           </color>
+          </brush>
+         </colorrole>
+         <colorrole role="Window">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>224</red>
+            <green>27</green>
+            <blue>36</blue>
+           </color>
+          </brush>
+         </colorrole>
+         <colorrole role="Shadow">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>0</red>
+            <green>0</green>
+            <blue>0</blue>
+           </color>
+          </brush>
+         </colorrole>
+         <colorrole role="AlternateBase">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>239</red>
+            <green>141</green>
+            <blue>145</blue>
+           </color>
+          </brush>
+         </colorrole>
+         <colorrole role="ToolTipBase">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>255</red>
+            <green>255</green>
+            <blue>220</blue>
+           </color>
+          </brush>
+         </colorrole>
+         <colorrole role="ToolTipText">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>0</red>
+            <green>0</green>
+            <blue>0</blue>
+           </color>
+          </brush>
+         </colorrole>
+         <colorrole role="PlaceholderText">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>224</red>
+            <green>27</green>
+            <blue>36</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </inactive>
+        <disabled>
+         <colorrole role="WindowText">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>224</red>
+            <green>27</green>
+            <blue>36</blue>
+           </color>
+          </brush>
+         </colorrole>
+         <colorrole role="Button">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>224</red>
+            <green>27</green>
+            <blue>36</blue>
+           </color>
+          </brush>
+         </colorrole>
+         <colorrole role="Light">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>255</red>
+            <green>112</green>
+            <blue>118</blue>
+           </color>
+          </brush>
+         </colorrole>
+         <colorrole role="Midlight">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>239</red>
+            <green>69</green>
+            <blue>77</blue>
+           </color>
+          </brush>
+         </colorrole>
+         <colorrole role="Dark">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>112</red>
+            <green>13</green>
+            <blue>18</blue>
+           </color>
+          </brush>
+         </colorrole>
+         <colorrole role="Mid">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>149</red>
+            <green>18</green>
+            <blue>24</blue>
+           </color>
+          </brush>
+         </colorrole>
+         <colorrole role="Text">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>224</red>
+            <green>27</green>
+            <blue>36</blue>
+           </color>
+          </brush>
+         </colorrole>
+         <colorrole role="BrightText">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>255</red>
+            <green>255</green>
+            <blue>255</blue>
+           </color>
+          </brush>
+         </colorrole>
+         <colorrole role="ButtonText">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>224</red>
+            <green>27</green>
+            <blue>36</blue>
+           </color>
+          </brush>
+         </colorrole>
+         <colorrole role="Base">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>224</red>
+            <green>27</green>
+            <blue>36</blue>
+           </color>
+          </brush>
+         </colorrole>
+         <colorrole role="Window">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>224</red>
+            <green>27</green>
+            <blue>36</blue>
+           </color>
+          </brush>
+         </colorrole>
+         <colorrole role="Shadow">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>0</red>
+            <green>0</green>
+            <blue>0</blue>
+           </color>
+          </brush>
+         </colorrole>
+         <colorrole role="AlternateBase">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>224</red>
+            <green>27</green>
+            <blue>36</blue>
+           </color>
+          </brush>
+         </colorrole>
+         <colorrole role="ToolTipBase">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>255</red>
+            <green>255</green>
+            <blue>220</blue>
+           </color>
+          </brush>
+         </colorrole>
+         <colorrole role="ToolTipText">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>0</red>
+            <green>0</green>
+            <blue>0</blue>
+           </color>
+          </brush>
+         </colorrole>
+         <colorrole role="PlaceholderText">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>224</red>
+            <green>27</green>
+            <blue>36</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </disabled>
+       </palette>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>30</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color: rgb(224, 27, 36);</string>
+      </property>
+      <property name="text">
+       <string>Recording Now</string>
+      </property>
      </widget>
     </widget>
     <widget class="QWidget" name="control_robot_page_choose_robot">
@@ -3067,7 +3509,7 @@ rgb(255, 210, 30)</string>
       <property name="title">
        <string>Task Management</string>
       </property>
-      <widget class="QStackedWidget" name="stackedWidget_2">
+      <widget class="QStackedWidget" name="stackedWidget_robot_task">
        <property name="geometry">
         <rect>
          <x>20</x>
@@ -3079,8 +3521,409 @@ rgb(255, 210, 30)</string>
        <property name="currentIndex">
         <number>0</number>
        </property>
-       <widget class="QWidget" name="page"/>
-       <widget class="QWidget" name="page_3"/>
+       <widget class="QWidget" name="page_task_add">
+        <widget class="QLabel" name="robot_task_task_id_2">
+         <property name="geometry">
+          <rect>
+           <x>30</x>
+           <y>260</y>
+           <width>181</width>
+           <height>32</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Room number</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="robot_task_task_id_3">
+         <property name="geometry">
+          <rect>
+           <x>30</x>
+           <y>50</y>
+           <width>181</width>
+           <height>32</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Task type</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="robot_task_task_id_4">
+         <property name="geometry">
+          <rect>
+           <x>30</x>
+           <y>150</y>
+           <width>241</width>
+           <height>32</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Hour  :    Minutes</string>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="hour_edit">
+         <property name="geometry">
+          <rect>
+           <x>290</x>
+           <y>150</y>
+           <width>81</width>
+           <height>40</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="minutes_edit">
+         <property name="geometry">
+          <rect>
+           <x>430</x>
+           <y>150</y>
+           <width>81</width>
+           <height>40</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QComboBox" name="robot_task_type_combobox">
+         <property name="geometry">
+          <rect>
+           <x>290</x>
+           <y>60</y>
+           <width>101</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <item>
+          <property name="text">
+           <string>food</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>cleaning</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>arrange</string>
+          </property>
+         </item>
+        </widget>
+        <widget class="QLabel" name="robot_task_task_id_5">
+         <property name="geometry">
+          <rect>
+           <x>390</x>
+           <y>150</y>
+           <width>31</width>
+           <height>32</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string> :</string>
+         </property>
+        </widget>
+        <widget class="QComboBox" name="robot_task_room_num_combobox">
+         <property name="geometry">
+          <rect>
+           <x>290</x>
+           <y>260</y>
+           <width>101</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <item>
+          <property name="text">
+           <string>1</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>2</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>3</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>4</string>
+          </property>
+         </item>
+        </widget>
+        <widget class="QPushButton" name="save_button">
+         <property name="geometry">
+          <rect>
+           <x>820</x>
+           <y>510</y>
+           <width>131</width>
+           <height>41</height>
+          </rect>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>15</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="styleSheet">
+          <string notr="true"/>
+         </property>
+         <property name="text">
+          <string>SAVE</string>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QWidget" name="task_view">
+        <widget class="QPushButton" name="right_button_date">
+         <property name="geometry">
+          <rect>
+           <x>200</x>
+           <y>40</y>
+           <width>21</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>10</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="styleSheet">
+          <string notr="true"/>
+         </property>
+         <property name="text">
+          <string>▶</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="left_button_date">
+         <property name="geometry">
+          <rect>
+           <x>40</x>
+           <y>40</y>
+           <width>21</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>10</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="styleSheet">
+          <string notr="true"/>
+         </property>
+         <property name="text">
+          <string>◀</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_4">
+         <property name="geometry">
+          <rect>
+           <x>80</x>
+           <y>40</y>
+           <width>111</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>15</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>2024-06-04</string>
+         </property>
+        </widget>
+        <widget class="QTableWidget" name="feeding_table_2">
+         <property name="geometry">
+          <rect>
+           <x>40</x>
+           <y>90</y>
+           <width>191</width>
+           <height>441</height>
+          </rect>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>13</pointsize>
+           <weight>50</weight>
+           <bold>false</bold>
+          </font>
+         </property>
+         <column>
+          <property name="text">
+           <string>Service List</string>
+          </property>
+         </column>
+        </widget>
+        <widget class="QLineEdit" name="robot_task_task_id_edit">
+         <property name="geometry">
+          <rect>
+           <x>620</x>
+           <y>101</y>
+           <width>261</width>
+           <height>40</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QLabel" name="robot_task_task_id">
+         <property name="geometry">
+          <rect>
+           <x>350</x>
+           <y>111</y>
+           <width>89</width>
+           <height>32</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Task id</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="robot_task_robot_number">
+         <property name="geometry">
+          <rect>
+           <x>350</x>
+           <y>162</y>
+           <width>185</width>
+           <height>32</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Robot number</string>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="robot_task_robot_number_edit">
+         <property name="geometry">
+          <rect>
+           <x>620</x>
+           <y>160</y>
+           <width>261</width>
+           <height>40</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="robot_task_tank_num_edit">
+         <property name="geometry">
+          <rect>
+           <x>620</x>
+           <y>210</y>
+           <width>261</width>
+           <height>40</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QLabel" name="robot_task_tank_num">
+         <property name="geometry">
+          <rect>
+           <x>350</x>
+           <y>214</y>
+           <width>235</width>
+           <height>32</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Food tank number</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="robot_task_room_num">
+         <property name="geometry">
+          <rect>
+           <x>350</x>
+           <y>276</y>
+           <width>180</width>
+           <height>32</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Room number</string>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="robot_task_room_num_edit">
+         <property name="geometry">
+          <rect>
+           <x>620</x>
+           <y>270</y>
+           <width>261</width>
+           <height>40</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QLabel" name="robot_task_register_time">
+         <property name="geometry">
+          <rect>
+           <x>350</x>
+           <y>339</y>
+           <width>174</width>
+           <height>32</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Register time</string>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="robot_task_register_time_edit">
+         <property name="geometry">
+          <rect>
+           <x>620</x>
+           <y>340</y>
+           <width>261</width>
+           <height>40</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_13">
+         <property name="geometry">
+          <rect>
+           <x>350</x>
+           <y>460</y>
+           <width>212</width>
+           <height>32</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Work finish time</string>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="robot_task_work_start_edit">
+         <property name="geometry">
+          <rect>
+           <x>620</x>
+           <y>400</y>
+           <width>261</width>
+           <height>40</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="robot_task_work_finish_edit">
+         <property name="geometry">
+          <rect>
+           <x>620</x>
+           <y>460</y>
+           <width>261</width>
+           <height>40</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QLabel" name="robot_task_work_start">
+         <property name="geometry">
+          <rect>
+           <x>350</x>
+           <y>400</y>
+           <width>203</width>
+           <height>32</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Work start time</string>
+         </property>
+        </widget>
+       </widget>
       </widget>
      </widget>
      <widget class="QFrame" name="frame_4">
@@ -3157,29 +4000,6 @@ rgb(255, 210, 30)</string>
         <string>Task delete</string>
        </property>
       </widget>
-     </widget>
-     <widget class="QPushButton" name="save_button">
-      <property name="geometry">
-       <rect>
-        <x>1130</x>
-        <y>740</y>
-        <width>131</width>
-        <height>41</height>
-       </rect>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>15</pointsize>
-        <weight>75</weight>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="styleSheet">
-       <string notr="true"/>
-      </property>
-      <property name="text">
-       <string>SAVE</string>
-      </property>
      </widget>
     </widget>
     <widget class="QWidget" name="datamanager_choose_animal_job">
@@ -4857,14 +5677,14 @@ rgb(255, 210, 30)</string>
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>310</y>
-        <width>571</width>
+        <y>220</y>
+        <width>691</width>
         <height>411</height>
        </rect>
       </property>
       <property name="font">
        <font>
-        <pointsize>14</pointsize>
+        <pointsize>13</pointsize>
        </font>
       </property>
       <row>
@@ -4920,9 +5740,9 @@ rgb(255, 210, 30)</string>
      <widget class="QLabel" name="video_label">
       <property name="geometry">
        <rect>
-        <x>640</x>
+        <x>720</x>
         <y>220</y>
-        <width>601</width>
+        <width>521</width>
         <height>501</height>
        </rect>
       </property>

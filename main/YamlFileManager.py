@@ -29,18 +29,24 @@ class YamlFileManager:
     def getTagData(self):
         return self.config['security']['ip_tag'], self.config['security']['password_tag']
     
+    def getPositionData(self):
+        
+        position_list = []
+
+        position_list.append(self.config['position']['point1'])
+        position_list.append(self.config['position']['point2'])
+        position_list.append(self.config['position']['point3'])
+        position_list.append(self.config['position']['point4'])
+        position_list.append(self.config['position']['point5'])
+
+
+        return position_list
+    
     def saveYamlFile(self,task_id):
 
         data = {
             'robot': {
                 'last_task_id': task_id,
-                'total_robot_num': self.getTotalRobotNum()
-            },
-            'client': {
-                'module1': 1,
-                'module2': 2,
-                'module3': 3,
-                'module4': 4,
             }
         }
 
