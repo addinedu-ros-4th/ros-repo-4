@@ -496,7 +496,7 @@
      <enum>QFrame::NoFrame</enum>
     </property>
     <property name="currentIndex">
-     <number>16</number>
+     <number>3</number>
     </property>
     <widget class="QWidget" name="home_page">
      <widget class="QLabel" name="label">
@@ -1127,7 +1127,7 @@
        <rect>
         <x>40</x>
         <y>10</y>
-        <width>180</width>
+        <width>191</width>
         <height>81</height>
        </rect>
       </property>
@@ -1142,7 +1142,7 @@
         <rect>
          <x>10</x>
          <y>0</y>
-         <width>160</width>
+         <width>181</width>
          <height>81</height>
         </rect>
        </property>
@@ -1158,7 +1158,7 @@
            </font>
           </property>
           <property name="text">
-           <string>Temperature</string>
+           <string>Temperature  (°C)</string>
           </property>
          </widget>
         </item>
@@ -1173,7 +1173,7 @@
            </font>
           </property>
           <property name="text">
-           <string>28 °C</string>
+           <string>28 </string>
           </property>
          </widget>
         </item>
@@ -1216,7 +1216,7 @@
            </font>
           </property>
           <property name="text">
-           <string>Humidity</string>
+           <string>Humidity (%)</string>
           </property>
          </widget>
         </item>
@@ -1231,7 +1231,7 @@
            </font>
           </property>
           <property name="text">
-           <string>30 %</string>
+           <string>30</string>
           </property>
          </widget>
         </item>
@@ -1274,7 +1274,7 @@
            </font>
           </property>
           <property name="text">
-           <string>Luminance</string>
+           <string>Luminance (%)</string>
           </property>
          </widget>
         </item>
@@ -1292,7 +1292,7 @@
            <string notr="true"/>
           </property>
           <property name="text">
-           <string>30 %</string>
+           <string>30 </string>
           </property>
          </widget>
         </item>
@@ -1567,7 +1567,7 @@
       <property name="title">
        <string>Position Map</string>
       </property>
-      <widget class="QLabel" name="position_map_label_2">
+      <widget class="QLabel" name="map">
        <property name="geometry">
         <rect>
          <x>30</x>
@@ -5511,10 +5511,10 @@ rgb(255, 210, 30)</string>
      <widget class="QGroupBox" name="groupBox_8">
       <property name="geometry">
        <rect>
-        <x>20</x>
-        <y>40</y>
+        <x>10</x>
+        <y>10</y>
         <width>1221</width>
-        <height>171</height>
+        <height>141</height>
        </rect>
       </property>
       <property name="title">
@@ -5524,7 +5524,7 @@ rgb(255, 210, 30)</string>
        <property name="geometry">
         <rect>
          <x>360</x>
-         <y>100</y>
+         <y>80</y>
          <width>171</width>
          <height>41</height>
         </rect>
@@ -5534,7 +5534,7 @@ rgb(255, 210, 30)</string>
        <property name="geometry">
         <rect>
          <x>360</x>
-         <y>40</y>
+         <y>20</y>
          <width>171</width>
          <height>41</height>
         </rect>
@@ -5544,7 +5544,7 @@ rgb(255, 210, 30)</string>
        <property name="geometry">
         <rect>
          <x>660</x>
-         <y>40</y>
+         <y>20</y>
          <width>171</width>
          <height>41</height>
         </rect>
@@ -5554,7 +5554,7 @@ rgb(255, 210, 30)</string>
        <property name="geometry">
         <rect>
          <x>120</x>
-         <y>30</y>
+         <y>10</y>
          <width>221</width>
          <height>121</height>
         </rect>
@@ -5597,7 +5597,7 @@ rgb(255, 210, 30)</string>
        <property name="geometry">
         <rect>
          <x>660</x>
-         <y>100</y>
+         <y>80</y>
          <width>171</width>
          <height>41</height>
         </rect>
@@ -5607,7 +5607,7 @@ rgb(255, 210, 30)</string>
        <property name="geometry">
         <rect>
          <x>530</x>
-         <y>100</y>
+         <y>80</y>
          <width>131</width>
          <height>41</height>
         </rect>
@@ -5630,7 +5630,7 @@ rgb(255, 210, 30)</string>
        <property name="geometry">
         <rect>
          <x>551</x>
-         <y>40</y>
+         <y>20</y>
          <width>91</width>
          <height>41</height>
         </rect>
@@ -5653,7 +5653,7 @@ rgb(255, 210, 30)</string>
        <property name="geometry">
         <rect>
          <x>890</x>
-         <y>40</y>
+         <y>20</y>
          <width>291</width>
          <height>111</height>
         </rect>
@@ -5676,10 +5676,10 @@ rgb(255, 210, 30)</string>
      <widget class="QTableWidget" name="search_camera_table">
       <property name="geometry">
        <rect>
-        <x>20</x>
-        <y>220</y>
+        <x>30</x>
+        <y>170</y>
         <width>691</width>
-        <height>411</height>
+        <height>471</height>
        </rect>
       </property>
       <property name="font">
@@ -5737,21 +5737,34 @@ rgb(255, 210, 30)</string>
        </property>
       </column>
      </widget>
-     <widget class="QLabel" name="video_label">
+     <widget class="QStackedWidget" name="stackedWidget2">
       <property name="geometry">
        <rect>
-        <x>720</x>
-        <y>220</y>
-        <width>521</width>
-        <height>501</height>
+        <x>730</x>
+        <y>160</y>
+        <width>501</width>
+        <height>381</height>
        </rect>
       </property>
-      <property name="frameShape">
-       <enum>QFrame::Box</enum>
-      </property>
-      <property name="text">
-       <string/>
-      </property>
+      <widget class="QWidget" name="page">
+       <widget class="QLabel" name="video_label">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>20</y>
+          <width>480</width>
+          <height>360</height>
+         </rect>
+        </property>
+        <property name="frameShape">
+         <enum>QFrame::Box</enum>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="page_3"/>
      </widget>
     </widget>
     <widget class="QWidget" name="datamanager_choose_facilities_job">
