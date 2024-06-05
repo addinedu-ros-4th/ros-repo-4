@@ -203,7 +203,6 @@ class ServerThread(QThread):
         self.client_sockets = []
 
     def run(self):
-        print("run first")
 
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server_socket.bind((self.host, self.port))
@@ -211,16 +210,12 @@ class ServerThread(QThread):
         self.client_sockets.append(self.server_socket)
         ServerThread.client_socket_list=self.client_sockets
         print(f"서버가 {self.host}:{self.port}에서 대기 중입니다...")
-        print("run function")
 
         while True:
-            print("run while")
             readable, _, _ = select.select(self.client_sockets, [], [], 5 ) #타임 아웃 5 추가 없으면 계속해서 대기 상태로 무한 루프 들어감 
             print(len(readable))
             for sock in readable:
-                print("inside for ")
                 if sock == self.server_socket:
-                    print("sock == sock")
                     # 새로운 클라이언트 연결
                     client_socket, client_address = self.server_socket.accept()
                     self.client_sockets.append(client_socket)
@@ -228,18 +223,13 @@ class ServerThread(QThread):
                     self.new_connection.emit(client_address[0], client_address[1])
                     data = b""
                     payload_size = struct.calcsize("L")
-                    print("여기까지는 오는거니")
 
-                    print(len(data))
-                    print(payload_size)
                     client_socket.settimeout(3.0)
                     while len(data) < payload_size:
                         try:
-                            print("try")
                             packet = client_socket.recv(4096)
                             data += packet
                         except socket.timeout:
-                            print("timeout")
                             break
                         
                     if len(data) != 0:
@@ -248,8 +238,6 @@ class ServerThread(QThread):
                         msg_size = struct.unpack("L", packed_msg_size)[0]
 
                         while len(data) < msg_size:
-                            print("in side msg_size")
-
                             data += client_socket.recv(4096)
                         
                         frame_data = data[:msg_size]
@@ -261,7 +249,6 @@ class ServerThread(QThread):
 
                         q_img = self.cv2_to_qimage(img_decoded)
                         self.image_signal.emit(q_img,frame)
-                        print("image emit 1")
 
                     
                     if data == None:
@@ -300,7 +287,24 @@ class ServerThread(QThread):
 
                         q_img = self.cv2_to_qimage(img_decoded)
                         self.image_signal.emit(q_img,frame)
-                        print("image emit 2")
+                    
+                        # ros service를 처리하는 client로 이미지 전송 
+                        # print("sock")
+                        # print(sock)
+                        # print(sock.getpeername()[0])
+                        
+                        if sock.getpeername()[0] == '192.168.1.103':
+                            for cli in self.client_sockets:
+                                if (cli != self.server_socket) and (cli != sock) :
+                                    # print(cli)
+                                    try:
+                                        cli.settimeout(5.0) 
+                                        message_size = struct.pack("L", len(frame_data))
+                                        cli.sendall(message_size + frame_data)
+                                    except socket.timeout:
+                                        print(f'Timeout error sending image to client {cli.getpeername()}')
+                                    except Exception as e:
+                                        print(f'Error sending image to client {cli.getpeername()}: {e}')
 
                         
                         if data == None:
@@ -442,7 +446,7 @@ class WindowClass(QMainWindow, from_class) :
 
 
         #databases 연결
-        self.data_manage = DBManager("192.168.0.86", "0000", 3306, "turtles", "TurtlesDB")
+        self.data_manage = DBManager("192.168.1.101", "0000", 3306, "turtles", "TurtlesDB")
         self.animal_df = self.data_manage.getAnimal()
         # self.camera_df = self.data_manage.getCameraPath()
         self.camera_df = self.get_file_info()
@@ -1670,6 +1674,10 @@ class WindowClass(QMainWindow, from_class) :
             
     
     def checkTaskProgress(self):
+        for robot in self.robot_list:
+            task_assigned = ( task for task in self.task_list if task.task_id == robot.task_id)
+            print("task assigned")
+            print(task_assigned)
         for task in self.task_list:
             if task.getCurrentProgress() == 0:
                 return
