@@ -192,7 +192,7 @@ class RobotThread(QThread):
 class ServerThread(QThread):
     new_connection = pyqtSignal(str, int)
     connection_lost = pyqtSignal(str, int)
-    image_signal = pyqtSignal(QImage)
+    image_signal = pyqtSignal(QImage,np.ndarray)
     client_socket_list = []
 
     def __init__(self, host, port):
@@ -203,18 +203,24 @@ class ServerThread(QThread):
         self.client_sockets = []
 
     def run(self):
+        print("run first")
+
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server_socket.bind((self.host, self.port))
         self.server_socket.listen(5)
         self.client_sockets.append(self.server_socket)
         ServerThread.client_socket_list=self.client_sockets
         print(f"서버가 {self.host}:{self.port}에서 대기 중입니다...")
+        print("run function")
 
         while True:
-            readable, _, _ = select.select(self.client_sockets, [], [])
-
+            print("run while")
+            readable, _, _ = select.select(self.client_sockets, [], [], 5 ) #타임 아웃 5 추가 없으면 계속해서 대기 상태로 무한 루프 들어감 
+            print(len(readable))
             for sock in readable:
+                print("inside for ")
                 if sock == self.server_socket:
+                    print("sock == sock")
                     # 새로운 클라이언트 연결
                     client_socket, client_address = self.server_socket.accept()
                     self.client_sockets.append(client_socket)
@@ -222,37 +228,50 @@ class ServerThread(QThread):
                     self.new_connection.emit(client_address[0], client_address[1])
                     data = b""
                     payload_size = struct.calcsize("L")
+                    print("여기까지는 오는거니")
 
-                    while True:
-                        while len(data) < payload_size:
+                    print(len(data))
+                    print(payload_size)
+                    client_socket.settimeout(3.0)
+                    while len(data) < payload_size:
+                        try:
+                            print("try")
                             packet = client_socket.recv(4096)
-                            if not packet:
-                                return
                             data += packet
-
+                        except socket.timeout:
+                            print("timeout")
+                            break
+                        
+                    if len(data) != 0:
                         packed_msg_size = data[:payload_size]
                         data = data[payload_size:]
                         msg_size = struct.unpack("L", packed_msg_size)[0]
 
                         while len(data) < msg_size:
-                            data += client_socket.recv(4096)
+                            print("in side msg_size")
 
+                            data += client_socket.recv(4096)
+                        
                         frame_data = data[:msg_size]
                         data = data[msg_size:]
 
                         frame = pickle.loads(frame_data)
-                        frame = cv2.imdecode(frame, cv2.IMREAD_COLOR)
-                        q_img = self.cv2_to_qimage(frame)
-                        self.image_signal.emit(q_img)
-                        
-                        if data == None:
-                            # 클라이언트 연결 종료
-                            client_address = sock.getpeername()
-                            print(f"클라이언트 {client_address} 연결이 끊어졌습니다.")
-                            self.client_sockets.remove(sock)
-                            sock.close()
-                            self.connection_lost.emit(client_address[0], client_address[1])
-                            break                        
+
+                        img_decoded = cv2.imdecode(frame, cv2.IMREAD_COLOR)
+
+                        q_img = self.cv2_to_qimage(img_decoded)
+                        self.image_signal.emit(q_img,frame)
+                        print("image emit 1")
+
+                    
+                    if data == None:
+                        # 클라이언트 연결 종료
+                        client_address = sock.getpeername()
+                        print(f"클라이언트 {client_address} 연결이 끊어졌습니다.")
+                        self.client_sockets.remove(sock)
+                        sock.close()
+                        self.connection_lost.emit(client_address[0], client_address[1])
+                        break                        
                 else:
                     # 기존 클라이언트의 데이터 수신 및 처리
                     data = b""
@@ -276,10 +295,13 @@ class ServerThread(QThread):
                         data = data[msg_size:]
 
                         frame = pickle.loads(frame_data)
-                        frame = cv2.imdecode(frame, cv2.IMREAD_COLOR)
 
-                        q_img = self.cv2_to_qimage(frame)
-                        self.image_signal.emit(q_img)
+                        img_decoded = cv2.imdecode(frame, cv2.IMREAD_COLOR)
+
+                        q_img = self.cv2_to_qimage(img_decoded)
+                        self.image_signal.emit(q_img,frame)
+                        print("image emit 2")
+
                         
                         if data == None:
                             # 클라이언트 연결 종료
@@ -1548,7 +1570,6 @@ class WindowClass(QMainWindow, from_class) :
         #     print("현재 시간은 수정된 시간과 같습니다.")
 
     def isServiceCalled(self):
-        print(self.service_call_flag)
         if self.service_call_flag:
                 print("service call")
                 return True
@@ -1836,14 +1857,37 @@ class WindowClass(QMainWindow, from_class) :
         self.server_thread.image_signal.connect(self.update_image)
         self.server_thread.new_connection.connect(self.update_client_info)
         self.server_thread.connection_lost.connect(self.remove_client_info)
-        self.server_thread.start()
+        # self.server_thread.start()
         self.server_label.show()
         self.connect_button.hide()
         self.quit_button.show()
         
-    def update_image(self, q_img):
+    def update_image(self, q_img,raw_data):
+
         pixmap = QPixmap.fromImage(q_img)
         self.robot_label.setPixmap(pixmap)
+
+        robot_ip = '192.168.0.5'
+        filtered_row = self.client_df[self.client_df['IP'] == robot_ip]
+        is_empty = filtered_row.empty
+
+        # print(self.server_thread.client_sockets)
+        
+        if is_empty == False:
+            try:
+                # ServerThread.client_socket_list[1].send(b'hi')
+                byte_data = raw_data.tobytes()
+                message_size = struct.pack("L", len(byte_data))
+                self.server_thread.client_sockets[2].send(message_size + byte_data)
+            except Exception as e:
+                print(f'Error sending image to client {ServerThread.client_socket_list[1].getpeername()}: {e}')
+                
+
+        # ServerThread.client_socket_list.send(data.encode("utf-8"))
+
+
+
+        # print(self.client_df.loc[0,'IP'])
         
     def stop_tcp_server_thread(self):
         if self.server_thread:
