@@ -274,7 +274,7 @@ class ServerThread(QThread):
                         packed_msg_size = data[:payload_size]
                         data = data[payload_size:]
                         msg_size = struct.unpack("L", packed_msg_size)[0]
-
+    
                         while len(data) < msg_size:
                             data += client_socket.recv(4096)
 
@@ -1636,8 +1636,9 @@ class WindowClass(QMainWindow, from_class) :
             elif robot.status == Status.STATUS_NAV_ARUCO.value:
                 self.robot_status_label.setText("NAV_ARUCO")
 
-                if self.isNavArucoFinished() == True:
+                if self.isServiceCallDone() == True:
                     robot.setStatus(Status.STATUS_STANDBY.value)
+                    self.service_call_flag = False
                 
 
             elif robot.status == Status.STATUS_FOOD_CHARGE.value:
@@ -1675,28 +1676,58 @@ class WindowClass(QMainWindow, from_class) :
     
     def checkTaskProgress(self):
         for robot in self.robot_list:
-            task_assigned = ( task for task in self.task_list if task.task_id == robot.task_id)
-            print("task assigned")
-            print(task_assigned)
-        for task in self.task_list:
-            if task.getCurrentProgress() == 0:
-                return
-            elif task.getCurrentProgress() == 1:
-                # self.sendToFoodTank(task.getFoodTank())
-                task.updateTaskProgress()
-                print(task.getCurrentProgress())
-                self.ros2ServiceCallNavTo(self.point_list[0])
-                
-            elif task.getCurrentProgress() == 2:
-                print("progress 2")
-                if self.isServiceCallDone() :
-                    self.ros2ServiceCallNavTo(self.point_list[1])
-            elif task.getCurrentProgress() == 3:
-                self.sendToBarnEntrance()
-            elif task.getCurrentProgress() == 4:
-                pass
-            elif task.getCurrentProgress() == 5:
-                pass
+            for task in self.task_list:
+                if robot.task_id != 0 :
+                    if robot.task_id == task.task_id:
+                        if task.getCurrentProgress() == 0:
+                            return
+                        elif task.getCurrentProgress() == 1:
+                            if robot.status == Status.STATUS_STANDBY.value :
+                                task.updateTaskProgress()
+                                print("in task progress 1:")
+                                print(task.getCurrentProgress())
+                                self.ros2ServiceCallNavTo(self.point_list[0])
+                            else:
+                                print("in task progress 1 : robot not standby")
+                            
+                        elif task.getCurrentProgress() == 2:
+                            if robot.status == Status.STATUS_STANDBY.value :
+                                # if self.isServiceCallDone() :
+                                task.updateTaskProgress()
+                                print("in task progress 2:")
+                                print(task.getCurrentProgress())
+                                self.ros2ServiceCallNavTo(self.point_list[1])
+                            else:
+                                print("in task progress 2 : robot not standby")
+
+                        elif task.getCurrentProgress() == 3:
+                            if robot.status == Status.STATUS_STANDBY.value :
+                                # if self.isServiceCallDone() :
+                                task.updateTaskProgress()
+                                print("in task progress 3:")
+                                print(task.getCurrentProgress())
+                                self.ros2ServiceCallNavTo(self.point_list[2])
+                            else:
+                                print("in task progress 3 : robot not standby")
+                            # self.sendToBarnEntrance()
+                        elif task.getCurrentProgress() == 4:
+                            if robot.status == Status.STATUS_STANDBY.value :
+                                # if self.isServiceCallDone() :
+                                task.updateTaskProgress()
+                                print("in task progress 4:")
+                                print(task.getCurrentProgress())
+                                self.ros2ServiceCallNavTo(self.point_list[3])
+                            else:
+                                print("in task progress 3 : robot not standby")
+                        elif task.getCurrentProgress() == 5:
+                            if robot.status == Status.STATUS_STANDBY.value :
+                                # if self.isServiceCallDone() :
+                                task.updateTaskProgress()
+                                print("in task progress 5:")
+                                print(task.getCurrentProgress())
+                                self.ros2ServiceCallNavTo(self.point_list[4])
+                            else:
+                                print("in task progress 5 : robot not standby")
 
 
     def sendToBarnEntrance(self):
@@ -1841,7 +1872,7 @@ class WindowClass(QMainWindow, from_class) :
 
     def closeEvent(self, event):
         #창을 종료할때 task_id 저장해주기
-        self.yaml_file.saveYamlFile(self.task_id)
+        self.task_yaml_file.saveYamlFile(self.task_id)
 
         self.robotThreadStop()
 
