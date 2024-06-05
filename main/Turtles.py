@@ -241,6 +241,7 @@ class ServerThread(QThread):
                         data = data[msg_size:]
 
                         frame = pickle.loads(frame_data)
+                        frame = cv2.imdecode(frame, cv2.IMREAD_COLOR)
                         q_img = self.cv2_to_qimage(frame)
                         self.image_signal.emit(q_img)
                         
@@ -275,6 +276,8 @@ class ServerThread(QThread):
                         data = data[msg_size:]
 
                         frame = pickle.loads(frame_data)
+                        frame = cv2.imdecode(frame, cv2.IMREAD_COLOR)
+
                         q_img = self.cv2_to_qimage(frame)
                         self.image_signal.emit(q_img)
                         
@@ -288,11 +291,31 @@ class ServerThread(QThread):
                             break
                             
     def cv2_to_qimage(self, cv2_image):
-        height, width, channel = cv2_image.shape
-        bytes_per_line = 3 * width
-        # BGR에서 RGB로 변환
-        rgb_image = cv2.cvtColor(cv2_image, cv2.COLOR_BGR2RGB)
-        q_img = QImage(rgb_image.data, width, height, bytes_per_line, QImage.Format_RGB888)
+
+        if len(cv2_image.shape) == 2:
+            # Grayscale image
+            height, width = cv2_image.shape
+            channel = 1
+        elif len(cv2_image.shape) == 3:
+            # Color image
+            height, width, channel = cv2_image.shape
+        else:
+            raise ValueError("Invalid image shape")
+
+         # Further processing based on the number of channels
+        if channel == 1:
+            # Grayscale image to QImage
+            q_img = QImage(cv2_image.data, width, height, width, QImage.Format_Grayscale8)
+        elif channel == 3:
+            # Convert BGR to RGB for QImage
+            height, width, channel = cv2_image.shape
+            bytes_per_line = 3 * width
+            # BGR에서 RGB로 변환
+            rgb_image = cv2.cvtColor(cv2_image, cv2.COLOR_BGR2RGB)
+            q_img = QImage(rgb_image.data, width, height, bytes_per_line, QImage.Format_RGB888)
+        else:
+            raise ValueError("Unsupported channel number: {}".format(channel))
+    
         return q_img
     
     def stop(self):
@@ -397,7 +420,7 @@ class WindowClass(QMainWindow, from_class) :
 
 
         #databases 연결
-        self.data_manage = DBManager("192.168.1.101", "0000", 3306, "turtles", "TurtlesDB")
+        self.data_manage = DBManager("192.168.0.86", "0000", 3306, "turtles", "TurtlesDB")
         self.animal_df = self.data_manage.getAnimal()
         # self.camera_df = self.data_manage.getCameraPath()
         self.camera_df = self.get_file_info()
