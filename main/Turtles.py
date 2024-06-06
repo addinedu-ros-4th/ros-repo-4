@@ -1,50 +1,59 @@
 import sys
-from PyQt5.QtWidgets import *
-from PyQt5.QtGui import *
-from PyQt5 import uic, QtCore
-from PyQt5.QtCore import QThread, pyqtSignal,Qt,QDate
-from PyQt5 import QtWidgets, QtCore
 import numpy 
-import rclpy as rp
-from rclpy.node import Node
-from geometry_msgs.msg import Twist
-from turtles_service_msgs.srv import ArucoNavigateTo
-from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
-from PyQt5.QtMultimediaWidgets import QVideoWidget
-from PyQt5.QtCore import Qt, QUrl
 import time
 import socket
 import select 
 import struct 
 import pickle
+import torch
 import cv2
+import os
+import cv2
+import atexit
+import yaml
+import logging
 import pandas as pd 
+import numpy as np 
 from enum import Enum
+from time import sleep
+from ultralytics import YOLO
+import matplotlib.pyplot as plt
+from datetime import datetime, timedelta
+import torchvision.transforms as transforms
+
+from PyQt5.QtWidgets import *
+from PyQt5.QtGui import *
+from PyQt5.QtCore import QTimer   
+from PyQt5 import uic, QtCore
+from PyQt5 import QtWidgets, QtCore
+from PyQt5.QtCore import Qt, QUrl
+from PyQt5.QtCore import Qt, QRect
+from PyQt5.QtMultimediaWidgets import QVideoWidget
+from PyQt5.QtCore import QThread, pyqtSignal,Qt,QDate
+from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
+
+import rclpy as rp
+from rclpy.node import Node
+from geometry_msgs.msg import Twist
+from turtles_service_msgs.srv import ArucoNavigateTo
+from rclpy.executors import MultiThreadedExecutor
+from geometry_msgs.msg import PoseWithCovarianceStamped
+from rclpy.qos import QoSProfile, QoSDurabilityPolicy, QoSReliabilityPolicy, QoSHistoryPolicy
+
 from YamlFileManager import YamlFileManager
 from DBManager import DBManager
-from datetime import datetime, timedelta
-import torch
-import torchvision.transforms as transforms
-import numpy as np 
-import matplotlib.pyplot as plt
+
 #encryption
 from Crypto.Cipher import AES
 from Crypto.Random import get_random_bytes
-from PyQt5.QtCore import Qt, QRect
-rp.init()
-import os
-import cv2
-from ultralytics import YOLO
-import atexit
-import yaml
-from time import sleep
-from rclpy.executors import MultiThreadedExecutor
-from rclpy.qos import QoSProfile, QoSDurabilityPolicy, QoSReliabilityPolicy, QoSHistoryPolicy
-from geometry_msgs.msg import PoseWithCovarianceStamped
-from PyQt5.QtCore import QTimer   
 
+
+#초기화
+rp.init()
+
+#---------------------------------- Class Definition--------------------------------------------------------------- 
+#page 상수 정의
 class Pages(Enum):
-    #page 상수 정의
     PAGE_HOME = 0
     PAGE_LOGIN = 1
     PAGE_MONITOR_BARN = 2
@@ -72,15 +81,14 @@ class Pages(Enum):
     
 
 class TaskScheduleType(Enum):
-    TASK_SCHEDULED = 0  # schedule 화면에서 저장된 업무
-    TASK_REGISTERED = 1 # Robot Manager Task 화면에서 등록한 업무 
+    TASK_SCHEDULED = 0                  # schedule 화면에서 저장된 업무
+    TASK_REGISTERED = 1                 # Robot Manager Task 화면에서 등록한 업무 
 
 class TaskType(Enum):
     TASK_FOOD = 1
     TASK_CLEANING = 2
     TASK_ARRANGE = 3
 
-#TaskType이랑 RobotType은 숫자 같게 맞춰줘야 함... 일단은..
 class RobotType(Enum):
     ROBOT_FOOD = 1
     ROBOT_CLEANING = 2
@@ -93,8 +101,6 @@ class Status(Enum):
     STATUS_MANUAL_MOVE= 3
     STATUS_FOOD_DISTRIBUTE = 4
     STATUS_RETURN = 5
-
-
 
 class RobotStatus:
     def __init__(self,robot_num, type):
@@ -146,7 +152,7 @@ class Teleop(Node):
         self.twist = Twist()
         
 
-    def publish_twist(self):
+    def publishTwist(self):
         self.publisher.publish(self.twist)
 
 class RosThread(QThread):
@@ -159,12 +165,12 @@ class RosThread(QThread):
         self.new_connection.emit(self.node)
 
     def run(self):
-        self.node.publish_twist()
+        self.node.publishTwist()
         self.msleep(100) #추가 안하면 UI에 딜레이 발생
         rp.spin(self.node)
             
     
-class Camera(QThread):
+class CameraThread(QThread):
     update = QtCore.pyqtSignal()
 
     def __init__(self, sec =0, parent = None):
@@ -179,7 +185,8 @@ class Camera(QThread):
 
     def stop(self):
         self.running = False
-    
+
+
 class RobotThread(QThread):
     update = QtCore.pyqtSignal()
 
@@ -255,7 +262,7 @@ class ServerThread(QThread):
 
                         img_decoded = cv2.imdecode(frame, cv2.IMREAD_COLOR)
 
-                        q_img = self.cv2_to_qimage(img_decoded)
+                        q_img = self.cv2ToQimage(img_decoded)
                         self.image_signal.emit(q_img,frame)
 
                     
@@ -298,7 +305,7 @@ class ServerThread(QThread):
 
                         img_decoded = cv2.imdecode(frame, cv2.IMREAD_COLOR)
 
-                        q_img = self.cv2_to_qimage(img_decoded)
+                        q_img = self.cv2ToQimage(img_decoded)
                         self.image_signal.emit(q_img,frame)
                     
                         # ros service를 처리하는 client로 이미지 전송 
@@ -329,7 +336,7 @@ class ServerThread(QThread):
                             self.connection_lost.emit(client_address[0], client_address[1])
                             break
                             
-    def cv2_to_qimage(self, cv2_image):
+    def cv2ToQimage(self, cv2_image):
 
         if len(cv2_image.shape) == 2:
             # Grayscale image
@@ -363,23 +370,10 @@ class ServerThread(QThread):
             self.server_socket.close()
             print("서버를 종료합니다.")
                
-from_class = uic.loadUiType("Turtles.ui")[0] 
 
-class Camera(QThread):
-    update = pyqtSignal()
-    
-    def __init__(self, parent=None):
-        super().__init__()
-        self.main = parent
-        self.running = True
-    
-    def run(self):
-        while self.running:
-            self.update.emit()
-            time.sleep(0.1)
-    
-    def stop(self):
-        self.running = False
+#---------------------------------- Qt WindowClass --------------------------------------------------------------- 
+
+from_class = uic.loadUiType("Turtles.ui")[0] 
 
 class WindowClass(QMainWindow, from_class) :
     def __init__(self):
@@ -411,20 +405,20 @@ class WindowClass(QMainWindow, from_class) :
 
         print(self.available_index)
         
-        self.camera = Camera(self)
+        self.camera = CameraThread(self)
         self.camera.daemon = True
         self.pixmap = QPixmap()
 
         self.camera.update.connect(self.updateCameraView)
 
-        self.select_camera_box.currentIndexChanged.connect(self.combochanged)
+        self.select_camera_box.currentIndexChanged.connect(self.comboChanged)
         self.cam_num = 0
         self.cameraStart()
 
-        self.isCameraOn = False
-        self.isRecStart = False
+        self.is_camera_on = False
+        self.is_rec_start = False
         
-        self.record = Camera(self)
+        self.record = CameraThread(self)
         self.record.daemon = True
 
         self.btnRecord.clicked.connect(self.clickRecord)
@@ -435,6 +429,8 @@ class WindowClass(QMainWindow, from_class) :
         #robot task 리스트
         self.task_list = []
         self.point_list = []
+
+        #yaml file
         self.yaml_file = YamlFileManager('config.yaml')
         self.client_module = self.yaml_file.getClientMoudule()
         self.point_list = self.yaml_file.getPositionData()
@@ -457,7 +453,6 @@ class WindowClass(QMainWindow, from_class) :
         # Load the YOLOv8 model
         self.model = YOLO('yolov8n.pt')
 
-
         #databases 연결
         self.data_manage = DBManager("192.168.100.85", "0000", 3306, "turtles", "TurtlesDB")
         self.animal_df = self.data_manage.getAnimal()
@@ -478,8 +473,8 @@ class WindowClass(QMainWindow, from_class) :
         self.quit_button.hide()
         self.server_label.hide()
         self.client_label.hide()
-        self.connect_button.clicked.connect(self.start_tcp_server_thread)
-        self.quit_button.clicked.connect(self.stop_tcp_server_thread)
+        self.connect_button.clicked.connect(self.startTcpServerThread)
+        self.quit_button.clicked.connect(self.stopTcpServerThread)
         self.client_table.horizontalHeader().setStretchLastSection(True)
         self.client_table.setColumnWidth(0, 280)
          
@@ -489,53 +484,41 @@ class WindowClass(QMainWindow, from_class) :
         for idx in range(self.toolBox.count()):
             self.toolBox.setItemEnabled(idx,False)
 
-
         #버튼과 페이지 이동 연결
-        self.home_page_button.clicked.connect(self.home_page_button_clicked)
-        
-        self.monitor_barnpage_button.clicked.connect(self.monitor_barnpage_button_clicked)
-        self.monitor_facilitiespage_button.clicked.connect(self.monitor_facilitiespage_button_clicked)
-        self.monitor_camerapage_button.clicked.connect(self.monitor_camerapage_button_clicked) #
-
-        self.control_robotpage_button.clicked.connect(self.control_robotpage_button_clicked) 
-        self.control_robot_a_button.clicked.connect(lambda: self.control_robotpage("Food Robot A"))
-        self.control_robot_b_button.clicked.connect(lambda: self.control_robotpage("Food Robot B"))
-        
-        self.control_facilitiespage_button.clicked.connect(self.control_facilitiespage_button_clicked)
-        
-        self.robotmanager_taskpage_button.clicked.connect(self.robotmanager_choose_button_clicked)
-        self.manage_robot_a_button.clicked.connect(lambda: self.robotmanager_taskpage_button_clicked("Food Robot A"))
-        self.manage_robot_b_button.clicked.connect(lambda: self.robotmanager_taskpage_button_clicked("Food Robot B"))
-
-        self.datamanager_animalpage_button.clicked.connect(self.choose_datamanager_animalpage_button_clicked)
-        self.choose_register_button_animal.clicked.connect(self.register_animal_button_clicked)
-        self.choose_search_button_animal.clicked.connect(self.search_animal_button_clicked)
-        
-        self.datamanager_foodpage_button.clicked.connect(self.choose_datamanager_foodpage_button_clicked)
-        self.choose_register_button_food.clicked.connect(self.register_food_button_clicked)
-        
-        self.choose_search_button_food.clicked.connect(self.search_food_button_clicked)
-        
-        self.datamanager_videopage_button.clicked.connect(self.datamanager_videopage_button_clicked)
-        
-        self.datamanager_facilitiespage_button.clicked.connect(self.choose_datamanager_facilitiespage_button_clicked)
-        self.choose_register_employee_button.clicked.connect(self.register_employee_button_clicked)
-        self.choose_others_button.clicked.connect(self.register_others_button_clicked)
-
-        self.schedule_foodpage_button.clicked.connect(self.schedule_foodpage_button_clicked)
-        self.schedule_facilitiespage_button.clicked.connect(self.schedule_facilitiespage_button_clicked)
+        self.home_page_button.clicked.connect(self.homePageButtonClicked)
+        self.monitor_barnpage_button.clicked.connect(self.monitorBarnPageButtonClicked)
+        self.monitor_facilitiespage_button.clicked.connect(self.monitorFacilitiesPageButtonClicked)
+        self.monitor_camerapage_button.clicked.connect(self.monitorCameraPageButtonClicked) #
+        self.control_robotpage_button.clicked.connect(self.controlRobotPageButtonClicked) 
+        self.control_robot_a_button.clicked.connect(lambda: self.controlRobotPage("Food Robot A"))
+        self.control_robot_b_button.clicked.connect(lambda: self.controlRobotPage("Food Robot B"))
+        self.control_facilitiespage_button.clicked.connect(self.controlFacilitiesPageButtonClicked)
+        self.robotmanager_taskpage_button.clicked.connect(self.robotmanagerChooseButtonClicked)
+        self.manage_robot_a_button.clicked.connect(lambda: self.robotmanagerTaskpageButtonClicked("Food Robot A"))
+        self.manage_robot_b_button.clicked.connect(lambda: self.robotmanagerTaskpageButtonClicked("Food Robot B"))
+        self.datamanager_animalpage_button.clicked.connect(self.chooseDatamanagerAnimalPageButtonClicked)
+        self.choose_register_button_animal.clicked.connect(self.registerAnimalButtonClicked)
+        self.choose_search_button_animal.clicked.connect(self.searchAnimalButtonClicked)
+        self.datamanager_foodpage_button.clicked.connect(self.chooseDatamanagerFoodpageButtonClicked)
+        self.choose_register_button_food.clicked.connect(self.registerFoodButtonClicked)
+        self.choose_search_button_food.clicked.connect(self.searchFoodButtonClicked)
+        self.datamanager_videopage_button.clicked.connect(self.datamanagerVideoPageButtonClicked)
+        self.datamanager_facilitiespage_button.clicked.connect(self.chooseDatamanagerFacilitiesPageButtonClicked)
+        self.choose_register_employee_button.clicked.connect(self.registerEmployeeButtonClicked)
+        self.choose_others_button.clicked.connect(self.registerOthersButtonClicked)
+        self.schedule_foodpage_button.clicked.connect(self.scheduleFoodPageButtonClicked)
+        self.schedule_facilitiespage_button.clicked.connect(self.scheduleFacilitiesPageButtonClicked)
 
         # self.toolBox.currentChanged.connect(self.toolbox_changed) ## 버튼 페이지 연결 
-        self.setting_button.clicked.connect(self.setting_page_button_clicked)
-        self.log_button.clicked.connect(self.log_page_button_clicked)
+        self.setting_button.clicked.connect(self.settingPageButtonClicked)
+        self.log_button.clicked.connect(self.logPageButtonClicked)
 
         #login logout 버튼 연결
-        self.logout_button.clicked.connect(self.logout_button_clicked)
-        self.login_button.clicked.connect(self.login_button_clicked)
-
+        self.logout_button.clicked.connect(self.logoutButtonClicked)
+        self.login_button.clicked.connect(self.loginButtonClicked)
     
         #robot thread  
-        self.robot_thread.update.connect(self.update_robot_thread)
+        self.robot_thread.update.connect(self.updateRobotThread)
 
         # teleop_button connect
         self.up_button.clicked.connect(self.foodrobot_up_button_clicked)
@@ -547,7 +530,6 @@ class WindowClass(QMainWindow, from_class) :
         self.foodtank_servo_close_button.clicked.connect(self.foodtank_servo_close_button_clicked)
         self.foodtrailer_servo_open_button.clicked.connect(self.foodtrailer_servo_open_button_clicked)
         self.foodtrailer_servo_close_button.clicked.connect(self.foodtrailer_servo_close_button_clicked)
-
 
         self.log_search_button.clicked.connect(self.log_search_button_clicked)
 
@@ -569,19 +551,7 @@ class WindowClass(QMainWindow, from_class) :
         self.setTableWidget(self.ventilation_table)
         self.layout.addWidget(self.ventilation_table)
         self.setLayout(self.layout) 
-        
-        
-
-        if torch.cuda.is_available():
-            print("GPU 사용가능 여부를 확인중입니다......")
-        # GPU를 사용하도록 설정
-            self.device = torch.device("cuda")
-            print("GPU를 사용합니다.")
-        else:
-        # CPU를 사용하도록 설정
-            self.device = torch.device("cpu")
-            print("GPU를 사용할 수 없습니다. CPU를 사용합니다.")
-            
+         
         current_date = QDate.currentDate().toString('yyyy-MM-dd')
         #등록일에 현재 날짜 설정
         self.registered_date_animal.setText(current_date); self.registered_date_animal.setReadOnly(True)
@@ -696,6 +666,16 @@ class WindowClass(QMainWindow, from_class) :
         
         self.feedingtime_display_label.setText(str(self.schedule_num)) # 
         self.record_label.hide()
+
+        if torch.cuda.is_available():
+            print("GPU 사용가능 여부를 확인중입니다......")
+        # GPU를 사용하도록 설정
+            self.device = torch.device("cuda")
+            print("GPU를 사용합니다.")
+        else:
+        # CPU를 사용하도록 설정
+            self.device = torch.device("cpu")
+            print("GPU를 사용할 수 없습니다. CPU를 사용합니다.")
     
 
     def display_image_in_barn(self, file_path):
@@ -1445,8 +1425,8 @@ class WindowClass(QMainWindow, from_class) :
         # 원본 이미지와 마스크를 사용하여 파란색과 하늘색 부분 추출
         blue_cyan_only = cv2.bitwise_and(bgr_image, bgr_image, mask=mask_blue)
 
-        cv2.imshow('red', red_pink_only)
-        cv2.imshow('blue', blue_cyan_only)
+        # cv2.imshow('red', red_pink_only)
+        # cv2.imshow('blue', blue_cyan_only)
 
         # 각 이미지가 차지하는 픽셀 수 계산
         cropped_pixel_count = np.count_nonzero(result)
@@ -1498,13 +1478,13 @@ class WindowClass(QMainWindow, from_class) :
         
 
     def clickRecord(self):
-        if not self.isRecStart:
+        if not self.is_rec_start:
             self.btnRecord.setText("Rec Stop")
-            self.isRecStart = True
+            self.is_rec_start = True
             self.recordingStart()
         else:
             self.btnRecord.setText("Rec Start")
-            self.isRecStart = False
+            self.is_rec_start = False
             self.recordingStop()
 
     def recordingStart(self):
@@ -1528,7 +1508,7 @@ class WindowClass(QMainWindow, from_class) :
         self.record_label.hide()
         
 
-    def combochanged(self):
+    def comboChanged(self):
         self.cam_num = self.select_camera_box.currentIndex()
 
     def updateCameraView(self):
@@ -1875,7 +1855,7 @@ class WindowClass(QMainWindow, from_class) :
         #     print(future.done(), future.result())
         # pass
                 
-    def update_robot_thread(self):
+    def updateRobotThread(self):
         self.assignRobotTask()
         self.robotStatusManager()
         self.checkTaskProgress()
@@ -1905,22 +1885,22 @@ class WindowClass(QMainWindow, from_class) :
     def foodrobot_up_button_clicked(self):
         teleop_node.twist.linear.x = 3.0
         teleop_node.twist.angular.z = 0.0
-        teleop_node.publish_twist()
+        teleop_node.publishTwist()
     
     def foodrobot_down_button_clicked(self):
         teleop_node.twist.linear.x = -3.0
         teleop_node.twist.angular.z = 0.0
-        teleop_node.publish_twist()
+        teleop_node.publishTwist()
 
     def foodrobot_left_button_clicked(self):
         teleop_node.twist.linear.x = 0.0
         teleop_node.twist.angular.z = 3.0
-        teleop_node.publish_twist()
+        teleop_node.publishTwist()
 
     def foodrobot_right_button_clicked(self):
         teleop_node.twist.linear.x = 0.0
         teleop_node.twist.angular.z = -3.0
-        teleop_node.publish_twist()    
+        teleop_node.publishTwist()    
 
     def foodtrailer_servo_open_button_clicked(self):
         self.send_to_rasp("FT1,1")
@@ -1968,7 +1948,7 @@ class WindowClass(QMainWindow, from_class) :
     def robotThreadStop(self):
         self.robot_thread.stop()
 
-    def start_tcp_server_thread(self):
+    def startTcpServerThread(self):
         host = self.ip_input.text()
         port = int(self.port_input.text())
         self.server_thread = ServerThread(host, port)
@@ -2008,7 +1988,7 @@ class WindowClass(QMainWindow, from_class) :
 
         # print(self.client_df.loc[0,'IP'])
         
-    def stop_tcp_server_thread(self):
+    def stopTcpServerThread(self):
         if self.server_thread:
             self.server_thread.stop()  # 서버 스레드 종료
             self.server_thread = None  # 서버 스레드 객체를 None으로 설정하여 참조 제거
@@ -2067,7 +2047,7 @@ class WindowClass(QMainWindow, from_class) :
         #     print(future.done(), future.result())
 
 
-    def logout_button_clicked(self):
+    def logoutButtonClicked(self):
         self.stackedWidget.setCurrentIndex(Pages.PAGE_LOGIN.value)
         self.input_id =""; self.input_pw =""
         self.id_input.setText(""); self.pw_input.setText("")
@@ -2079,7 +2059,7 @@ class WindowClass(QMainWindow, from_class) :
         self.update_buttons() 
         
     
-    def login_button_clicked(self):
+    def loginButtonClicked(self):
         self.input_id = int(self.id_input.text())
         self.input_pw = int(self.pw_input.text())
         user_row = self.userdata_df[self.userdata_df['id'] == self.input_id]
@@ -2123,31 +2103,31 @@ class WindowClass(QMainWindow, from_class) :
         # elif self.toolBox.currentIndex() == 6 and self.is_logged_in == True:
         #     self.stackedWidget.setCurrentIndex(Pages.PAGE_SETTING.value)
     
-    def log_page_button_clicked(self):
+    def logPageButtonClicked(self):
         self.stackedWidget.setCurrentIndex(Pages.PAGE_LOG.value)
             
-    def setting_page_button_clicked(self):
+    def settingPageButtonClicked(self):
         self.stackedWidget.setCurrentIndex(Pages.PAGE_SETTING.value)
 
-    def home_page_button_clicked(self):
+    def homePageButtonClicked(self):
         self.stackedWidget.setCurrentIndex(Pages.PAGE_HOME.value)
 
-    def monitor_barnpage_button_clicked(self):
+    def monitorBarnPageButtonClicked(self):
         self.stackedWidget.setCurrentIndex(Pages.PAGE_MONITOR_BARN.value) 
         animal_count = len(self.animal_df)
         self.animalcount_display_label.setText(str(animal_count))
         self.display_image_in_barn('barn_map.png')
     
-    def monitor_facilitiespage_button_clicked(self):
+    def monitorFacilitiesPageButtonClicked(self):
         self.stackedWidget.setCurrentIndex(Pages.PAGE_MONITOR_FACILITIES.value)
 
-    def monitor_camerapage_button_clicked(self):
+    def monitorCameraPageButtonClicked(self):
         self.stackedWidget.setCurrentIndex(Pages.PAGE_MONITOR_CAMERA.value)
     
-    def control_robotpage_button_clicked(self):
+    def controlRobotPageButtonClicked(self):
         self.stackedWidget.setCurrentIndex(Pages.PAGE_CHOOSE_CONTROL_ROBOT.value)
 
-    def control_robotpage(self,robot_name):
+    def controlRobotPage(self,robot_name):
         self.stackedWidget.setCurrentIndex(Pages.PAGE_CONTROL_ROBOT.value)
         self.return_button.setEnabled(False)
         self.resume_work_button.setEnabled(False)
@@ -2155,22 +2135,22 @@ class WindowClass(QMainWindow, from_class) :
         self.foodtrailer_servo_close_button.setEnabled(False)
         self.robot_name_label.setText(robot_name)
         
-    def control_facilitiespage_button_clicked(self):
+    def controlFacilitiesPageButtonClicked(self):
         self.stackedWidget.setCurrentIndex(Pages.PAGE_CONTROL_FACILITIES.value)
         
-    def robotmanager_choose_button_clicked(self):
+    def robotmanagerChooseButtonClicked(self):
         self.stackedWidget.setCurrentIndex(Pages.PAGE_CHOOSE_ROBOTMANAGER_TASK.value)   
 
-    def robotmanager_taskpage_button_clicked(self,robot_name):
+    def robotmanagerTaskpageButtonClicked(self,robot_name):
         self.stackedWidget.setCurrentIndex(Pages.PAGE_ROBOTMANAGER_TASK.value)
         self.food_robot_label.setText(robot_name)
         self.stackedWidget_robot_task.setCurrentIndex(1)                         # robot_task_view
         
 
-    def choose_datamanager_animalpage_button_clicked(self):
+    def chooseDatamanagerAnimalPageButtonClicked(self):
         self.stackedWidget.setCurrentIndex(Pages.PAGE_CHOOSE_DATAMANAGER_ANIMAL.value)
     
-    def register_animal_button_clicked(self):
+    def registerAnimalButtonClicked(self):
         self.label_33.setText("등록할 RFID를 리더기 위에 얹어주세요.")
         self.load_combobox_except_all(self.food_df, 'brand_name', self.select_feed_box)
         self.RFID_edit.setText("")
@@ -2179,7 +2159,7 @@ class WindowClass(QMainWindow, from_class) :
         self.weight_edit.setText("")
         self.stackedWidget.setCurrentIndex(Pages.PAGE_REGISTER_ANIMAL.value)
     
-    def search_animal_button_clicked(self):
+    def searchAnimalButtonClicked(self):
         self.animal_df=self.data_manage.getAnimal()
         self.animal_df.rename(columns={'age': 'age (in months)', 'weight': 'weight (kg)'}, inplace=True)
         self.load_data_to_table(self.search_animal_table, self.animal_df)
@@ -2194,10 +2174,10 @@ class WindowClass(QMainWindow, from_class) :
         self.load_combobox(self.animal_df, 'rfid_uid', self.search_animal_date_box)
         self.stackedWidget.setCurrentIndex(Pages.PAGE_SEARCH_ANIMAL.value)
     
-    def choose_datamanager_foodpage_button_clicked(self):
+    def chooseDatamanagerFoodpageButtonClicked(self):
         self.stackedWidget.setCurrentIndex(Pages.PAGE_CHOOSE_DATAMANAGER_FOOD.value)
 
-    def register_food_button_clicked(self):
+    def registerFoodButtonClicked(self):
         self.label_35.setText("사료 포대의 바코드를 인식해주세요")
         self.barcode_edit.setText("")
         self.brand_name_edit.setText("")
@@ -2205,10 +2185,10 @@ class WindowClass(QMainWindow, from_class) :
         self.expiry_date_edit.setText("")
         self.stackedWidget.setCurrentIndex(Pages.PAGE_REGISTER_FOOD.value)
     
-    def search_food_button_clicked(self):
+    def searchFoodButtonClicked(self):
         self.stackedWidget.setCurrentIndex(Pages.PAGE_SEARCH_FOOD.value)
 
-    def datamanager_videopage_button_clicked(self):
+    def datamanagerVideoPageButtonClicked(self):
         self.camera_df = self.get_file_info()
         self.load_data_to_table(self.search_camera_table, self.camera_df)
         self.auto_resize_columns(self.search_camera_table)
@@ -2220,19 +2200,19 @@ class WindowClass(QMainWindow, from_class) :
         self.stackedWidget.setCurrentIndex(Pages.PAGE_DATAMANAGER_VIDEO.value)
         
 
-    def choose_datamanager_facilitiespage_button_clicked(self):
+    def chooseDatamanagerFacilitiesPageButtonClicked(self):
         self.stackedWidget.setCurrentIndex(Pages.PAGE_CHOOSE_DATAMANAGER_FACILITIES.value)
 
-    def register_employee_button_clicked(self):
+    def registerEmployeeButtonClicked(self):
         self.stackedWidget.setCurrentIndex(Pages.PAGE_REGISTER_EMPLOYEE.value)
     
-    def register_others_button_clicked(self):
+    def registerOthersButtonClicked(self):
         self.stackedWidget.setCurrentIndex(Pages.PAGE_REGISTER_OTHERS.value)
 
-    def schedule_foodpage_button_clicked(self):
+    def scheduleFoodPageButtonClicked(self):
         self.stackedWidget.setCurrentIndex(Pages.PAGE_SCHEDULE_FOOD.value)
 
-    def schedule_facilitiespage_button_clicked(self):
+    def scheduleFacilitiesPageButtonClicked(self):
         self.stackedWidget.setCurrentIndex(Pages.PAGE_SCHEDULE_FACILITIES.value)
 
    
