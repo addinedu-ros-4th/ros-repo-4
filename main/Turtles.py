@@ -4,11 +4,14 @@ from PyQt5.QtGui import *
 from PyQt5 import uic, QtCore
 from PyQt5.QtCore import QThread, pyqtSignal,Qt,QDate
 from PyQt5 import QtWidgets, QtCore
+import numpy 
 import rclpy as rp
 from rclpy.node import Node
 from geometry_msgs.msg import Twist
 from turtles_service_msgs.srv import ArucoNavigateTo
-
+from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
+from PyQt5.QtMultimediaWidgets import QVideoWidget
+from PyQt5.QtCore import Qt, QUrl
 import time
 import socket
 import select 
@@ -33,8 +36,13 @@ import os
 import cv2
 from ultralytics import YOLO
 import atexit
+import yaml
+from time import sleep
+from rclpy.executors import MultiThreadedExecutor
+from rclpy.qos import QoSProfile, QoSDurabilityPolicy, QoSReliabilityPolicy, QoSHistoryPolicy
+from geometry_msgs.msg import PoseWithCovarianceStamped
+from PyQt5.QtCore import QTimer   
 
-    
 class Pages(Enum):
     #page 상수 정의
     PAGE_HOME = 0
@@ -673,6 +681,16 @@ class WindowClass(QMainWindow, from_class) :
         self.displayanimalPose()
         self.displaySensor()
         
+        #ESP 센서 값 받아올때 수정 
+        temperature_now = 30 ; self.temperature_display_label.setText(str(temperature_now))
+        humidity_now = 30;self.humidity_display_label.setText(str(humidity_now))
+        luminance_now = 30; self.luminance_display_label.setText(str(luminance_now))
+        self.fan_status = False
+        if self.fan_status == False:
+            self.fanstatus_display_label.setText("OFF")
+        else:
+            self.fanstatus_display_label.setText("ON")
+        
         self.feedingtime_display_label.setText(str(self.schedule_num)) # 
         self.record_label.hide()
     
@@ -680,42 +698,77 @@ class WindowClass(QMainWindow, from_class) :
         print("log_search clicked")
         self.ros2ServiceCallNavTo(self.point_list[1])
 
+        self.search_camera_table.cellClicked.connect(self.on_click)
+        
+    def on_click(self, row, column):
+        # Get the file path from the table
+        file_path = self.search_camera_table.item(row, 2).text()  # Assuming the path is in the 3rd column
+        file_type = self.search_camera_table.item(row, 1).text()  # Assuming the file type is in the 2nd column
+
+        if os.path.exists(file_path):
+            if file_type == 'Image':
+                self.display_image(file_path)
+            elif file_type == 'Video':
+                self.display_video_in_label(file_path, self.video_label)
+        else:
+            self.display_label.setText('File does not exist.')
+            
+    def display_image(self, file_path):
+        pixmap = QPixmap(file_path)
+        self.video_label.setPixmap(pixmap)
+        self.stackedWidget2.setCurrentWidget(self.video_label)
+
+    def display_video_in_label(self,filename, label):
+        cap = cv2.VideoCapture(filename)
+        fps = cap.get(cv2.CAP_PROP_FPS)
+        timer = QTimer()
+
+        def display_frame():
+            nonlocal cap
+            ret, frame = cap.read()
+            if ret:
+                frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                h, w, ch = frame_rgb.shape
+                bytes_per_line = ch * w
+                q_img = QImage(frame_rgb.data, w, h, bytes_per_line, QImage.Format_RGB888)
+                pixmap = QPixmap.fromImage(q_img)
+                label.setPixmap(pixmap.scaled(label.size()))
+            else:
+                timer.stop()
+                cap.release()
+
+        timer.timeout.connect(display_frame)
+        timer.start(int(1000 / fps))
+
+
+        
     def get_file_info(self):
         # 현재 경로에서 captures 폴더 경로 설정
         captures_path = os.path.join(os.getcwd(), 'captures')
 
         # captures 폴더 내의 모든 파일 리스트
         files = os.listdir(captures_path)
-
-        # 데이터를 담을 리스트 초기화
         data = []
-            # 비디오와 이미지 확장자 리스트
+
+        # 비디오와 이미지 확장자 리스트
         video_extensions = ['avi', 'mp4', 'mov', 'mkv']
         image_extensions = ['png', 'jpg', 'jpeg', 'bmp', 'gif']
 
         for file in files:
-            # 파일명과 확장자를 분리
             file_name, file_extension = os.path.splitext(file)
             file_extension = file_extension.lstrip('.')
-            
-            # 파일명을 '_' 기준으로 분리
             file_parts = file_name.split('_')
             
             if len(file_parts) >= 3:  # cam_type과 captured_date를 모두 포함하는지 확인
                 cam_type = file_parts[0]
                 captured_date = file_parts[1]
-
-                # 파일의 상대 경로
                 file_path = os.path.join('captures', file)
-                # 확장자를 기반으로 파일 타입 결정
                 if file_extension in video_extensions:
                     file_type = 'Video'
                 elif file_extension in image_extensions:
                     file_type = 'Image'
                 else:
                     file_type = 'Unknown'
-
-                # 데이터 리스트에 추가
                 data.append([cam_type, file_type, file_path, captured_date])
 
         # 데이터프레임 생성
@@ -726,8 +779,8 @@ class WindowClass(QMainWindow, from_class) :
 
         
     def displayFoodIntake(self):
-        if self.stackedWidget.currentIndex() != Pages.PAGE_MONITOR_BARN.value:
-            return
+        # if self.stackedWidget.currentIndex() != Pages.PAGE_MONITOR_BARN.value:
+        #     return
         fig, ax = plt.subplots(figsize=(5, 3))
         self.intake_df['Average'] = self.intake_df[['Room1', 'Room2', 'Room3', 'Room4']].mean(axis=1)
         # 각 방별 섭취량을 꺾은선 그래프로 그리기 (색상 변경)
@@ -783,8 +836,8 @@ class WindowClass(QMainWindow, from_class) :
 
     
     def displaySensor(self):
-        if self.stackedWidget.currentIndex() != Pages.PAGE_MONITOR_FACILITIES.value:
-            return
+        # if self.stackedWidget.currentIndex() != Pages.PAGE_MONITOR_FACILITIES.value:
+        #     return
         
         fig, ax = plt.subplots(figsize=(6, 2.5))
         # 각 방별 섭취량을 꺾은선 그래프로 그리기 (색상 변경)
@@ -811,8 +864,8 @@ class WindowClass(QMainWindow, from_class) :
 
   
     def displayanimalPose(self):   
-        if self.stackedWidget.currentIndex() != Pages.PAGE_MONITOR_BARN.value:
-            return
+        # if self.stackedWidget.currentIndex() != Pages.PAGE_MONITOR_BARN.value:
+        #     return
         fig, ax = plt.subplots(figsize=(5, 2.5))
         self.pose_df['Average'] = self.pose_df[['Room1', 'Room2', 'Room3', 'Room4']].mean(axis=1)
         # 각 방별 섭취량을 꺾은선 그래프로 그리기 (색상 변경)
@@ -2080,6 +2133,10 @@ class WindowClass(QMainWindow, from_class) :
 
     def control_robotpage(self,robot_name):
         self.stackedWidget.setCurrentIndex(Pages.PAGE_CONTROL_ROBOT.value)
+        self.return_button.setEnabled(False)
+        self.resume_work_button.setEnabled(False)
+        self.foodtrailer_servo_open_button.setEnabled(False)
+        self.foodtrailer_servo_close_button.setEnabled(False)
         self.robot_name_label.setText(robot_name)
         
     def control_facilitiespage_button_clicked(self):
@@ -2136,7 +2193,16 @@ class WindowClass(QMainWindow, from_class) :
         self.stackedWidget.setCurrentIndex(Pages.PAGE_SEARCH_FOOD.value)
 
     def datamanager_videopage_button_clicked(self):
+        self.camera_df = self.get_file_info()
+        self.load_data_to_table(self.search_camera_table, self.camera_df)
+        self.auto_resize_columns(self.search_camera_table)
+        #camera_df 컬럼 데이터 
+        self.load_combobox(self.camera_df, 'cam_type', self.select_camera_box_video)
+        self.load_combobox(self.camera_df, 'file_type', self.select_camera_type_box)
+        self.load_combobox(self.camera_df, 'captured_date', self.captured_date_start)
+        self.load_combobox(self.camera_df, 'captured_date', self.captured_date_end)
         self.stackedWidget.setCurrentIndex(Pages.PAGE_DATAMANAGER_VIDEO.value)
+        
 
     def choose_datamanager_facilitiespage_button_clicked(self):
         self.stackedWidget.setCurrentIndex(Pages.PAGE_CHOOSE_DATAMANAGER_FACILITIES.value)
