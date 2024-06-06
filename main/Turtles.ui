@@ -496,7 +496,7 @@
      <enum>QFrame::NoFrame</enum>
     </property>
     <property name="currentIndex">
-     <number>22</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="home_page">
      <widget class="QLabel" name="label">
@@ -7044,7 +7044,7 @@ Others</string>
        <string notr="true"/>
       </property>
       <property name="text">
-       <string>set</string>
+       <string>Save</string>
       </property>
      </widget>
     </widget>
@@ -7816,8 +7816,17 @@ Others</string>
        <property name="text">
         <string>User: Turtle A (Admin)</string>
        </property>
+       <property name="frame">
+        <bool>false</bool>
+       </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
+       </property>
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+       <property name="clearButtonEnabled">
+        <bool>false</bool>
        </property>
       </widget>
      </item>

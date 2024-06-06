@@ -459,7 +459,7 @@ class WindowClass(QMainWindow, from_class) :
 
 
         #databases 연결
-        self.data_manage = DBManager("192.168.1.101", "0000", 3306, "turtles", "TurtlesDB")
+        self.data_manage = DBManager("192.168.100.85", "0000", 3306, "turtles", "TurtlesDB")
         self.animal_df = self.data_manage.getAnimal()
         # self.camera_df = self.data_manage.getCameraPath()
         self.camera_df = self.get_file_info()
@@ -486,6 +486,9 @@ class WindowClass(QMainWindow, from_class) :
         #login 화면으로 초기화면 셋팅
         self.stackedWidget.setCurrentIndex(Pages.PAGE_LOGIN.value)
         self.toolBox.setCurrentIndex(7)
+        for idx in range(self.toolBox.count()):
+            self.toolBox.setItemEnabled(idx,False)
+
 
         #버튼과 페이지 이동 연결
         self.home_page_button.clicked.connect(self.home_page_button_clicked)
@@ -522,7 +525,7 @@ class WindowClass(QMainWindow, from_class) :
         self.schedule_foodpage_button.clicked.connect(self.schedule_foodpage_button_clicked)
         self.schedule_facilitiespage_button.clicked.connect(self.schedule_facilitiespage_button_clicked)
 
-        #self.toolBox.currentChanged.connect(self.toolbox_changed) ## 버튼 페이지 연결 
+        self.toolBox.currentChanged.connect(self.toolbox_changed) ## 버튼 페이지 연결 
         self.setting_button.clicked.connect(self.setting_page_button_clicked)
         self.log_button.clicked.connect(self.log_page_button_clicked)
 
@@ -2064,6 +2067,9 @@ class WindowClass(QMainWindow, from_class) :
         self.id_input.setText(""); self.pw_input.setText("")
         self.UserEdit.hide()
         self.is_logged_in = False
+        self.toolBox.setCurrentIndex(7)
+        for idx in range(self.toolBox.count()):
+            self.toolBox.setItemEnabled(idx,False)
         self.update_buttons() 
         
     
@@ -2084,6 +2090,8 @@ class WindowClass(QMainWindow, from_class) :
         self.UserEdit.show()
         self.UserEdit.setText(f"User: {username} ({permission})")
         self.is_logged_in = True
+        for idx in range(self.toolBox.count()):
+            self.toolBox.setItemEnabled(idx,True)
         self.update_buttons()  # 버튼 업데이트
         
         # Admin 권한이면 설정 버튼 활성화
@@ -2102,11 +2110,12 @@ class WindowClass(QMainWindow, from_class) :
             button.setEnabled(self.is_logged_in)
 
             
-    # def toolbox_changed(self):
-    #     if self.toolBox.currentIndex() == 5 and self.is_logged_in == True:
-    #         self.stackedWidget.setCurrentIndex(Pages.PAGE_LOG.value)
-    #     elif self.toolBox.currentIndex() == 6 and self.is_logged_in == True:
-    #         self.stackedWidget.setCurrentIndex(Pages.PAGE_SETTING.value)
+    def toolbox_changed(self):
+        print("toolbox")
+        # if self.toolBox.currentIndex() == 5 and self.is_logged_in == True:
+        #     self.stackedWidget.setCurrentIndex(Pages.PAGE_LOG.value)
+        # elif self.toolBox.currentIndex() == 6 and self.is_logged_in == True:
+        #     self.stackedWidget.setCurrentIndex(Pages.PAGE_SETTING.value)
     
     def log_page_button_clicked(self):
         self.stackedWidget.setCurrentIndex(Pages.PAGE_LOG.value)
