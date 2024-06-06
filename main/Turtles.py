@@ -525,7 +525,7 @@ class WindowClass(QMainWindow, from_class) :
         self.schedule_foodpage_button.clicked.connect(self.schedule_foodpage_button_clicked)
         self.schedule_facilitiespage_button.clicked.connect(self.schedule_facilitiespage_button_clicked)
 
-        self.toolBox.currentChanged.connect(self.toolbox_changed) ## 버튼 페이지 연결 
+        # self.toolBox.currentChanged.connect(self.toolbox_changed) ## 버튼 페이지 연결 
         self.setting_button.clicked.connect(self.setting_page_button_clicked)
         self.log_button.clicked.connect(self.log_page_button_clicked)
 
@@ -697,6 +697,12 @@ class WindowClass(QMainWindow, from_class) :
         self.feedingtime_display_label.setText(str(self.schedule_num)) # 
         self.record_label.hide()
     
+
+    def display_image_in_barn(self, file_path):
+        pixmap = QPixmap(file_path)
+        self.position_map_label.setPixmap(pixmap.scaled(self.position_map_label.size()))
+
+
     def log_search_button_clicked(self):
         print("log_search clicked")
         self.ros2ServiceCallNavTo(self.point_list[1])
@@ -2110,8 +2116,8 @@ class WindowClass(QMainWindow, from_class) :
             button.setEnabled(self.is_logged_in)
 
             
-    def toolbox_changed(self):
-        print("toolbox")
+    # def toolbox_changed(self):
+        # print("toolbox")
         # if self.toolBox.currentIndex() == 5 and self.is_logged_in == True:
         #     self.stackedWidget.setCurrentIndex(Pages.PAGE_LOG.value)
         # elif self.toolBox.currentIndex() == 6 and self.is_logged_in == True:
@@ -2130,6 +2136,7 @@ class WindowClass(QMainWindow, from_class) :
         self.stackedWidget.setCurrentIndex(Pages.PAGE_MONITOR_BARN.value) 
         animal_count = len(self.animal_df)
         self.animalcount_display_label.setText(str(animal_count))
+        self.display_image_in_barn('barn_map.png')
     
     def monitor_facilitiespage_button_clicked(self):
         self.stackedWidget.setCurrentIndex(Pages.PAGE_MONITOR_FACILITIES.value)
