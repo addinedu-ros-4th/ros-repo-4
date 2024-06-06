@@ -380,6 +380,12 @@ class WindowClass(QMainWindow, from_class) :
         super().__init__()
         self.setupUi(self)
         self.setWindowTitle("Turtles : Herding Heroes")
+        self.log_file_path = 'Turtles_main.log'
+        #logging setting
+        logging.basicConfig(level=logging.INFO, filename=self.log_file_path, format='%(asctime)s - %(levelname)s - %(message)s')
+        logging.info("program start")
+        
+        self.displayLogData()
 
         # Camera check
         self.available_index = []
@@ -476,7 +482,12 @@ class WindowClass(QMainWindow, from_class) :
         self.connect_button.clicked.connect(self.startTcpServerThread)
         self.quit_button.clicked.connect(self.stopTcpServerThread)
         self.client_table.horizontalHeader().setStretchLastSection(True)
-        self.client_table.setColumnWidth(0, 280)
+        self.client_table.setColumnWidth(0, 300)      
+        self.log_table.horizontalHeader().setStretchLastSection(True)
+        self.log_table.setColumnWidth(0, 150)
+        self.log_table.setColumnWidth(1, 200)
+
+
          
         #login 화면으로 초기화면 셋팅
         self.stackedWidget.setCurrentIndex(Pages.PAGE_LOGIN.value)
@@ -677,6 +688,25 @@ class WindowClass(QMainWindow, from_class) :
             self.device = torch.device("cpu")
             print("GPU를 사용할 수 없습니다. CPU를 사용합니다.")
     
+
+    def displayLogData(self):
+
+        with open(self.log_file_path, 'r') as file:
+            log_lines = file.readlines()
+
+        # 각 로그 메시지 앞뒤 공백 제거
+        log_data_list = []
+        log_lines = [line.strip() for line in log_lines]
+        for val in log_lines:
+            split_val = val.split(' - ')
+            log_data_list.append(split_val)
+
+        self.log_table.setRowCount(len(log_data_list))
+        for idx, val in enumerate(log_data_list):
+            self.log_table.setItem(idx, 0, QTableWidgetItem(val[1]))  # 첫 번째 열에 IP 설정
+            self.log_table.setItem(idx, 1, QTableWidgetItem(val[0]))  # 두 번째 열에 Port 설정  
+            self.log_table.setItem(idx, 2, QTableWidgetItem(val[2]))  # 두 번째 열에 Port 설정  
+
 
     def display_image_in_barn(self, file_path):
         pixmap = QPixmap(file_path)
@@ -2049,6 +2079,8 @@ class WindowClass(QMainWindow, from_class) :
 
     def logoutButtonClicked(self):
         self.stackedWidget.setCurrentIndex(Pages.PAGE_LOGIN.value)
+        tmp_log = "user" + str(self.input_id) + ": log out"
+        logging.info(tmp_log)
         self.input_id =""; self.input_pw =""
         self.id_input.setText(""); self.pw_input.setText("")
         self.UserEdit.hide()
@@ -2058,6 +2090,7 @@ class WindowClass(QMainWindow, from_class) :
             self.toolBox.setItemEnabled(idx,False)
         self.update_buttons() 
         
+        
     
     def loginButtonClicked(self):
         self.input_id = int(self.id_input.text())
@@ -2065,6 +2098,8 @@ class WindowClass(QMainWindow, from_class) :
         user_row = self.userdata_df[self.userdata_df['id'] == self.input_id]
         if not user_row.empty and user_row.iloc[0]['password'] == self.input_pw:
             self.login_success(user_row)
+            tmp_log = "user" + str(self.input_id) + ": log in"
+            logging.info(tmp_log)
         else:
             self.login_failed()
 
@@ -2105,6 +2140,7 @@ class WindowClass(QMainWindow, from_class) :
     
     def logPageButtonClicked(self):
         self.stackedWidget.setCurrentIndex(Pages.PAGE_LOG.value)
+        self.displayLogData()
             
     def settingPageButtonClicked(self):
         self.stackedWidget.setCurrentIndex(Pages.PAGE_SETTING.value)

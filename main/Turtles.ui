@@ -496,7 +496,7 @@
      <enum>QFrame::NoFrame</enum>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>22</number>
     </property>
     <widget class="QWidget" name="home_page">
      <widget class="QLabel" name="label">
@@ -7220,6 +7220,11 @@ Others</string>
       <column>
        <property name="text">
         <string>Occured Time</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Details</string>
        </property>
       </column>
       <item row="0" column="0">
