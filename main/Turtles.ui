@@ -496,7 +496,7 @@
      <enum>QFrame::NoFrame</enum>
     </property>
     <property name="currentIndex">
-     <number>16</number>
+     <number>22</number>
     </property>
     <widget class="QWidget" name="home_page">
      <widget class="QLabel" name="label">
@@ -1626,7 +1626,7 @@
         <string notr="true"/>
        </property>
        <property name="text">
-        <string>🐢 </string>
+        <string/>
        </property>
        <property name="pixmap">
         <pixmap>../../../../../../Pictures/Screenshots/grap1.png</pixmap>
@@ -1846,7 +1846,7 @@ color: rgb(192, 28, 40);</string>
         <string notr="true"/>
        </property>
        <property name="text">
-        <string>🐢 </string>
+        <string/>
        </property>
        <property name="pixmap">
         <pixmap>../../../../../../Pictures/Screenshots/grap1.png</pixmap>
@@ -7154,7 +7154,7 @@ Others</string>
         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
        </property>
       </widget>
-      <widget class="QPushButton" name="search_button_video_2">
+      <widget class="QPushButton" name="log_search_button">
        <property name="geometry">
         <rect>
          <x>710</x>

@@ -274,9 +274,14 @@ class ServerThread(QThread):
                         packed_msg_size = data[:payload_size]
                         data = data[payload_size:]
                         msg_size = struct.unpack("L", packed_msg_size)[0]
-    
+
+                        client_socket.settimeout(3.0)
+
                         while len(data) < msg_size:
-                            data += client_socket.recv(4096)
+                            try:
+                                data += client_socket.recv(4096)
+                            except socket.timeout:
+                                break
 
                         frame_data = data[:msg_size]
                         data = data[msg_size:]
@@ -532,6 +537,9 @@ class WindowClass(QMainWindow, from_class) :
         self.foodtrailer_servo_open_button.clicked.connect(self.foodtrailer_servo_open_button_clicked)
         self.foodtrailer_servo_close_button.clicked.connect(self.foodtrailer_servo_close_button_clicked)
 
+
+        self.log_search_button.clicked.connect(self.log_search_button_clicked)
+
         #task add
         self.task_add_button.clicked.connect(self.task_add_button_clicked)
         self.save_button.clicked.connect(self.save_button_clicked)
@@ -540,6 +548,7 @@ class WindowClass(QMainWindow, from_class) :
         self.service_client_node = rp.create_node('client_test')
         self.service_name_nav = '/navigate_to_pose'
         self.cli = self.service_client_node.create_client(ArucoNavigateTo, self.service_name_nav)
+        self.future = None
         self.req = ArucoNavigateTo.Request()
         self.service_call_flag = False
 
@@ -666,7 +675,11 @@ class WindowClass(QMainWindow, from_class) :
         
         self.feedingtime_display_label.setText(str(self.schedule_num)) # 
         self.record_label.hide()
-        
+    
+    def log_search_button_clicked(self):
+        print("log_search clicked")
+        self.ros2ServiceCallNavTo(self.point_list[1])
+
     def get_file_info(self):
         # 현재 경로에서 captures 폴더 경로 설정
         captures_path = os.path.join(os.getcwd(), 'captures')
@@ -1739,17 +1752,21 @@ class WindowClass(QMainWindow, from_class) :
         pass
     
     def isServiceCallDone(self):
-        if not self.cli.wait_for_service(timeout_sec=0.1):
-            print("Waiting for service")
+        if self.future is None:
+            print("No service call initiated")
+            return False
+        
+        if not self.future.done():
+            print("Service call is not done yet")
+            return False
 
-        future = self.cli.call_async(self.req)
-
-        if future.done():
-            print(future.done(), future.result())
+        try:
+            result = self.future.result()
+            print(f"Service call completed: {result}")
             return True
-        else:
-            print("not done")
-        return False
+        except Exception as e:
+            print(f"Service call failed: {e}")
+            return False
 
     def ros2ServiceCallNavTo(self, pt):
         
@@ -1763,6 +1780,7 @@ class WindowClass(QMainWindow, from_class) :
 
         print("end")
         self.service_call_flag = True
+        self.future = self.cli.call_async(self.req)
 
         try:
             rp.spin_once(self.service_client_node)
