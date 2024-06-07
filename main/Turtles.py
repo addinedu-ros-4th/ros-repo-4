@@ -21,6 +21,7 @@ import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
 import torchvision.transforms as transforms
 
+from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import QTimer   
@@ -369,8 +370,30 @@ class ServerThread(QThread):
             sock.close()
             self.server_socket.close()
             print("서버를 종료합니다.")
-               
+             
+class PoseSignalEmitter(QObject): # 포즈 신호 전달을 위한 클래스 
+    pose_signal = pyqtSignal(PoseWithCovarianceStamped)
 
+class PoseSubscriber(Node):
+    def __init__(self, signal_emitter):
+        super().__init__('pose_subscriber')
+        self.signal_emitter = signal_emitter  # PoseSignalEmitter 인스턴스를 저장
+        self.subscription = self.create_subscription(
+            PoseWithCovarianceStamped,
+            'amcl_pose',
+            self.pose_callback,
+            10)
+
+    def pose_callback(self, msg):
+        self.signal_emitter.pose_signal.emit(msg)  # PoseSignalEmitter를 통해 신호 보내기
+        
+class ExecutorThread(QThread): #멀티노드쓰레드 
+    def __init__(self, executor):
+        super().__init__()
+        self.executor = executor
+
+    def run(self):
+        self.executor.spin()
 #---------------------------------- Qt WindowClass --------------------------------------------------------------- 
 
 from_class = uic.loadUiType("Turtles.ui")[0] 
@@ -460,9 +483,8 @@ class WindowClass(QMainWindow, from_class) :
         self.model = YOLO('yolov8n.pt')
 
         #databases 연결
-        self.data_manage = DBManager("192.168.100.85", "0000", 3306, "turtles", "TurtlesDB")
+        self.data_manage = DBManager("192.168.0.86", "0000", 3306, "turtles", "TurtlesDB")
         self.animal_df = self.data_manage.getAnimal()
-        # self.camera_df = self.data_manage.getCameraPath()
         self.camera_df = self.get_file_info()
         self.food_df = self.data_manage.getFood()
         self.schedule_df= self.data_manage.getFoodRobotSchedule()
@@ -530,6 +552,9 @@ class WindowClass(QMainWindow, from_class) :
     
         #robot thread  
         self.robot_thread.update.connect(self.updateRobotThread)
+        
+        self.remote_start_button.clicked.connect(self.remote_button_clicked)
+        
 
         # teleop_button connect
         self.up_button.clicked.connect(self.foodrobot_up_button_clicked)
@@ -609,12 +634,15 @@ class WindowClass(QMainWindow, from_class) :
         self.load_combobox(self.food_df, 'registered_date', self.search_registered_date_box)
         self.load_combobox(self.food_df, 'expiry_date', self.search_expiry_date_box)
         
-        
         #camera_df 컬럼 데이터 
         self.load_combobox(self.camera_df, 'cam_type', self.select_camera_box_video)
         self.load_combobox(self.camera_df, 'file_type', self.select_camera_type_box)
         self.load_combobox(self.camera_df, 'captured_date', self.captured_date_start)
         self.load_combobox(self.camera_df, 'captured_date', self.captured_date_end)
+        
+        self.load_combobox(self.log_df, 'Type', self.log_type_box)
+        self.load_combobox(self.log_df, 'Date', self.log_start)
+        self.log_start.currentIndexChanged.connect(self.update_log_date_end)
         
         self.search_button_animal.clicked.connect(self.animal_search)
         self.search_button_food.clicked.connect(self.food_search)
@@ -677,7 +705,7 @@ class WindowClass(QMainWindow, from_class) :
         
         self.feedingtime_display_label.setText(str(self.schedule_num)) # 
         self.record_label.hide()
-
+        
         if torch.cuda.is_available():
             print("GPU 사용가능 여부를 확인중입니다......")
         # GPU를 사용하도록 설정
@@ -686,11 +714,110 @@ class WindowClass(QMainWindow, from_class) :
         else:
         # CPU를 사용하도록 설정
             self.device = torch.device("cpu")
-            print("GPU를 사용할 수 없습니다. CPU를 사용합니다.")
+            print("GPU를 사용할 수 없습니다. CPU를 사용합니다.")  
+                  
+        yaml_file_path = "map_turtles_3.yaml"
+        # YAML 파일 읽기
+        with open(yaml_file_path, "r") as file:
+            map_yaml_data = yaml.safe_load(file)
+        self.pixmap = QPixmap(map_yaml_data['image'])
+        self.Map.setPixmap(self.pixmap)
+        self.Map.setScaledContents(True)
+        self.height = self.pixmap.size().height()
+        self.width = self.pixmap.size().width()
+        self.image_scale = 6
+        #self.pixmap = self.pixmap.transformed(QTransform().scale(-1, -1))
+        self.Map.setPixmap(self.pixmap.scaled(self.width * self.image_scale, self.height * self.image_scale, Qt.KeepAspectRatio))
+        self.map_resolution = map_yaml_data['resolution']
+        self.map_origin = map_yaml_data['origin'][:2]   
+        self.search_camera_table.cellClicked.connect(self.on_click)
+
+        # Initialize Teleop node
+        # self.teleop_node = Teleop()
+
+        # self.pose_signal_emitter = PoseSignalEmitter()
+        # self.pose_subscriber_node = PoseSubscriber(self.pose_signal_emitter)
+        # self.pose_signal_emitter.pose_signal.connect(self.update_robot_position)
+
+
+        # self.executor = MultiThreadedExecutor()
+        # self.executor.add_node(self.teleop_node)
+        # self.executor.add_node(self.pose_subscriber_node)
+        # self.executor_thread = ExecutorThread(self.executor)
+        # self.executor_thread.start()
+        self.is_remote_start = False
+        
+        
+    def remote_button_clicked(self):
+        if not self.is_remote_start:
+            self.remote_start_button.setText("Remote control Stop")
+            self.is_remote_start = True
+            self.remoteStart()
+        else:
+            self.remote_start_button.setText("Remote control start")
+            self.is_remote_start = False
+            self.remoteStop()
+        
+            
+
+    def remoteStart(self):
+        status=self.is_remote_start
+        self.up_button.setEnabled(status);self.down_button.setEnabled(status)
+        self.left_button.setEnabled(status);self.right_button.setEnabled(status)
+        self.return_button.setEnabled(status);self.resume_work_button.setEnabled(status)
+        self.foodtrailer_servo_open_button.setEnabled(status);self.foodtrailer_servo_close_button.setEnabled(status)
+         
+        
+    def remoteStop(self):
+        status=self.is_remote_start
+        self.up_button.setEnabled(status);self.down_button.setEnabled(status)
+        self.left_button.setEnabled(status);self.right_button.setEnabled(status)
+        self.return_button.setEnabled(status);self.resume_work_button.setEnabled(status)
+        self.foodtrailer_servo_open_button.setEnabled(status);self.foodtrailer_servo_close_button.setEnabled(status)
+                      
     
+    def update_robot_position(self, pose_msg):
+        #self.pose_subscriber_node.amcl_pose = pose_msg
+        pose_subscriber_node.amcl_pose = pose_msg
+        self.updateMap()
+
+    def updateMap(self):
+        #if self.pose_subscriber_node.amcl_pose is None:
+        if pose_subscriber_node.amcl_pose is None:
+            
+            print("can't load map")
+            return
+        
+        # 새로운 QPixmap 객체 생성
+        scaled_pixmap = self.pixmap.scaled(self.width * self.image_scale, self.height * self.image_scale, Qt.KeepAspectRatio)
+        painter = QPainter(scaled_pixmap)
+        
+        self.font = QFont()
+        self.font.setBold(True)
+        self.font.setPointSize(15)
+        painter.setFont(self.font)
+        
+        x, y = self.calc_grid_position(
+            # self.pose_subscriber_node.amcl_pose.pose.pose.position.x, 
+            # self.pose_subscriber_node.amcl_pose.pose.pose.position.y)
+            pose_subscriber_node.amcl_pose.pose.pose.position.x, 
+            pose_subscriber_node.amcl_pose.pose.pose.position.y)
+        
+        painter.setPen(QPen(Qt.red, 20, Qt.SolidLine))
+        painter.drawPoint(int(x * self.image_scale), int(y * self.image_scale))
+        painter.drawText(int(x * self.image_scale + 13), int(y * self.image_scale + 5), '1')
+        
+        painter.end()
+        
+        self.Map.setPixmap(scaled_pixmap)
+
+
+    def calc_grid_position(self, x, y):
+        pos_x = (x - self.map_origin[0]) / self.map_resolution
+        pos_y = self.height - (y - self.map_origin[1]) / self.map_resolution  # Y축 반전 처리
+        return pos_x, pos_y
 
     def displayLogData(self):
-
         with open(self.log_file_path, 'r') as file:
             log_lines = file.readlines()
 
@@ -699,25 +826,75 @@ class WindowClass(QMainWindow, from_class) :
         log_lines = [line.strip() for line in log_lines]
         for val in log_lines:
             split_val = val.split(' - ')
+            time_part = split_val[0]
+            date = time_part.split()[0]
+            split_val.append(date)
             log_data_list.append(split_val)
-
+            
+              
         self.log_table.setRowCount(len(log_data_list))
         for idx, val in enumerate(log_data_list):
             self.log_table.setItem(idx, 0, QTableWidgetItem(val[1]))  # 첫 번째 열에 IP 설정
             self.log_table.setItem(idx, 1, QTableWidgetItem(val[0]))  # 두 번째 열에 Port 설정  
             self.log_table.setItem(idx, 2, QTableWidgetItem(val[2]))  # 두 번째 열에 Port 설정  
-
+        
+        self.log_df = pd.DataFrame(log_data_list, columns=['Time', 'Type', 'Message','Date']) # 데이터프레임으로도 저장
 
     def display_image_in_barn(self, file_path):
         pixmap = QPixmap(file_path)
         self.position_map_label.setPixmap(pixmap.scaled(self.position_map_label.size()))
 
+    def update_log_date_end(self):
+        selected_start_date = self.log_start.currentText()
+        self.captured_date_end.clear()
+        
+        if selected_start_date != 'all':
+            self.log_end.addItem('all')
+            filtered_dates = self.log_df[self.log_df['Date'] >= selected_start_date]['Date'].unique()
+            sorted_filtered_dates = sorted(filtered_dates)
+            self.log_end.addItems(map(str, sorted_filtered_dates))
+        else:
+            self.log_end.addItem('all')   
 
     def log_search_button_clicked(self):
         print("log_search clicked")
-        self.ros2ServiceCallNavTo(self.point_list[1])
+        
+        # 필터링 조건 설정
+        log_type = self.log_type_box.currentText()
+        start_date_str = self.log_start.currentText()
+        end_date_str = self.log_end.currentText()
 
-        self.search_camera_table.cellClicked.connect(self.on_click)
+        # 데이터프레임 복사
+        filtered_df = self.log_df.copy()
+
+        # 데이터프레임의 열 이름 출력 (디버깅 용도)
+        print("Columns in log_df:", self.log_df.columns)
+
+        # 타입 필터링 (데이터프레임에 'type' 열이 있는지 확인)
+        if 'Type' in filtered_df.columns:
+            if log_type != 'all':
+                filtered_df = filtered_df[filtered_df['Type'].astype(str) == log_type]
+
+        # 'Date' 열을 datetime 형식으로 변환
+        if 'Date' in filtered_df.columns:
+            filtered_df['Date'] = pd.to_datetime(filtered_df['Date']).dt.date
+
+        # 날짜 필터링
+        if start_date_str != 'all':
+            start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+            filtered_df = filtered_df[filtered_df['Date'] >= start_date]
+        
+        if end_date_str != 'all':
+            end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+            filtered_df = filtered_df[filtered_df['Date'] <= end_date]
+                # 칼럼 순서 변경 및 'Date' 칼럼 삭제
+        filtered_df = filtered_df[['Type', 'Time', 'Message']]
+        filtered_df = filtered_df.rename(columns={'Time': 'Occured Time', 'Message': 'Details'})
+
+        # 결과를 테이블에 로드
+        self.load_data_to_table(self.log_table, filtered_df)
+
+
         
     def on_click(self, row, column):
         # Get the file path from the table
@@ -1077,11 +1254,7 @@ class WindowClass(QMainWindow, from_class) :
         self.data_manage.updateFacilitySetting(new_settings)        
         self.facility_setting_df=self.data_manage.getFacilitySetting()
         self.load_data_to_table(self.facility_table,self.facility_setting_df)
-            # 버튼 클릭 시, 테이블명을 인수로 전달
-        
-        
-          
-        
+            # 버튼 클릭 시, 테이블명을 인수로 전달       
         
     def register_new_animal(self):
         rfid_uid=self.RFID_edit.text()
@@ -1202,13 +1375,9 @@ class WindowClass(QMainWindow, from_class) :
         if end_date_str != 'all':
             end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
             filtered_df = filtered_df[filtered_df['captured_date'] <= end_date]
-
         # 결과를 테이블에 로드
         self.load_data_to_table(self.search_camera_table, filtered_df)
- 
-    
    
-        
     def load_combobox(self, df, column_name, combobox):
         combobox.clear()
         unique_values = np.sort(df[column_name].unique())
@@ -1700,7 +1869,8 @@ class WindowClass(QMainWindow, from_class) :
         for robot in self.robot_list:
             if robot.status == Status.STATUS_STANDBY.value:
                 self.robot_status_label.setText("STANDBY")
-
+                self.robot_A_status.setText("STANDBY")
+            
                 if self.isServiceCalled() == True:
                     robot.setStatus(Status.STATUS_NAV_ARUCO.value)
 
@@ -1720,6 +1890,7 @@ class WindowClass(QMainWindow, from_class) :
 
             elif robot.status == Status.STATUS_NAV_ARUCO.value:
                 self.robot_status_label.setText("NAV_ARUCO")
+                self.robot_A_status.setText("NAV_ARUCO")
 
                 if self.isServiceCallDone() == True:
                     robot.setStatus(Status.STATUS_STANDBY.value)
@@ -1728,6 +1899,7 @@ class WindowClass(QMainWindow, from_class) :
 
             elif robot.status == Status.STATUS_FOOD_CHARGE.value:
                 self.robot_status_label.setText("FOOD_CHARGE")
+                self.robot_A_status.setText("FOOD_CHARGE")
 
                 if self.isFoodChargeDone() == True:
                     robot.setStatus(Status.STATUS_STANDBY.value)
@@ -1736,6 +1908,7 @@ class WindowClass(QMainWindow, from_class) :
                     
             elif robot.status == Status.STATUS_MANUAL_MOVE.value:
                 self.robot_status_label.setText("MANUAL_MOVE")
+                self.robot_A_status.setText("MANUAL_MOVE")
 
                 if self.isArucoDistanceSatisfied() == True:
                     robot.setStatus(Status.STATUS_STANDBY.value)
@@ -1744,6 +1917,7 @@ class WindowClass(QMainWindow, from_class) :
 
             elif robot.status == Status.STATUS_FOOD_DISTRIBUTE.value:
                 self.robot_status_label.setText("FOOD_DISTRIBUTE")
+                self.robot_A_status.setText("FOOD_DISTRIBUTE")
 
                 if self.isFoodDistributeDone() == True:
                     robot.setStatus(Status.STATUS_STANDBY.value)
@@ -1751,6 +1925,7 @@ class WindowClass(QMainWindow, from_class) :
 
             elif robot.status == Status.STATUS_RETURN.value:
                 self.robot_status_label.setText("RETURN")
+                self.robot_A_status.setText("RETURN")
 
                 if self.isArucoStation() == True:
                     robot.setStatus(Status.STATUS_STANDBY.value)
@@ -1913,24 +2088,36 @@ class WindowClass(QMainWindow, from_class) :
         self.task_list.append(temp_task)
 
     def foodrobot_up_button_clicked(self):
+        # self.teleop_node.twist.linear.x = 3.0
+        # self.teleop_node.twist.angular.z = 0.0
+        # self.teleop_node.publishTwist()
         teleop_node.twist.linear.x = 3.0
         teleop_node.twist.angular.z = 0.0
         teleop_node.publishTwist()
     
     def foodrobot_down_button_clicked(self):
+        # self.teleop_node.twist.linear.x = -3.0
+        # self.teleop_node.twist.angular.z = 0.0
+        # self.teleop_node.publishTwist()
         teleop_node.twist.linear.x = -3.0
         teleop_node.twist.angular.z = 0.0
         teleop_node.publishTwist()
 
     def foodrobot_left_button_clicked(self):
+        # self.teleop_node.twist.linear.x = 0.0
+        # self.teleop_node.twist.angular.z = 3.0
+        # self.teleop_node.publishTwist()
         teleop_node.twist.linear.x = 0.0
         teleop_node.twist.angular.z = 3.0
         teleop_node.publishTwist()
 
     def foodrobot_right_button_clicked(self):
+        # self.teleop_node.twist.linear.x = 0.0
+        # self.teleop_node.twist.angular.z = -3.0
+        # self.teleop_node.publishTwist()    
         teleop_node.twist.linear.x = 0.0
         teleop_node.twist.angular.z = -3.0
-        teleop_node.publishTwist()    
+        teleop_node.publishTwist()   
 
     def foodtrailer_servo_open_button_clicked(self):
         self.send_to_rasp("FT1,1")
@@ -2057,7 +2244,6 @@ class WindowClass(QMainWindow, from_class) :
 
     
     def nav_to_station1_button_clicked(self):
-        
         service_name = '/nav_service'
         cli = self.service_client_node.create_client(NavToPose, service_name)
         req = NavToPose.Request()
@@ -2141,6 +2327,7 @@ class WindowClass(QMainWindow, from_class) :
     def logPageButtonClicked(self):
         self.stackedWidget.setCurrentIndex(Pages.PAGE_LOG.value)
         self.displayLogData()
+        self.load_combobox
             
     def settingPageButtonClicked(self):
         self.stackedWidget.setCurrentIndex(Pages.PAGE_SETTING.value)
@@ -2165,10 +2352,11 @@ class WindowClass(QMainWindow, from_class) :
 
     def controlRobotPage(self,robot_name):
         self.stackedWidget.setCurrentIndex(Pages.PAGE_CONTROL_ROBOT.value)
-        self.return_button.setEnabled(False)
-        self.resume_work_button.setEnabled(False)
-        self.foodtrailer_servo_open_button.setEnabled(False)
-        self.foodtrailer_servo_close_button.setEnabled(False)
+        self.up_button.setEnabled(False);self.down_button.setEnabled(False)
+        self.left_button.setEnabled(False);self.right_button.setEnabled(False)
+        self.return_button.setEnabled(False);self.resume_work_button.setEnabled(False)
+        self.foodtrailer_servo_open_button.setEnabled(False);self.foodtrailer_servo_close_button.setEnabled(False)
+        self.emergency_stop_button.setEnabled(False) 
         self.robot_name_label.setText(robot_name)
         
     def controlFacilitiesPageButtonClicked(self):
@@ -2255,9 +2443,19 @@ class WindowClass(QMainWindow, from_class) :
         
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    teleop_node = Teleop()
-    ros_thread = RosThread(teleop_node)
-    ros_thread.start()
+    # teleop_node = Teleop()
+    # ros_thread = RosThread(teleop_node)
+    # ros_thread.start()
     myWindows = WindowClass()
+    teleop_node = Teleop()
+    pose_signal_emitter = PoseSignalEmitter()
+    pose_subscriber_node = PoseSubscriber(pose_signal_emitter)
+    pose_signal_emitter.pose_signal.connect(myWindows.update_robot_position)
+    executor = MultiThreadedExecutor()
+    executor.add_node(teleop_node)
+    executor.add_node(pose_subscriber_node)
+    executor_thread = ExecutorThread(executor)
+    executor_thread.start()
+    
     myWindows.show()
     sys.exit(app.exec_())
