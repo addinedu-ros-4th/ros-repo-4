@@ -496,7 +496,7 @@
      <enum>QFrame::NoFrame</enum>
     </property>
     <property name="currentIndex">
-     <number>3</number>
+     <number>18</number>
     </property>
     <widget class="QWidget" name="home_page">
      <widget class="QLabel" name="label">
@@ -1365,7 +1365,7 @@
        <rect>
         <x>40</x>
         <y>100</y>
-        <width>621</width>
+        <width>601</width>
         <height>281</height>
        </rect>
       </property>
@@ -1384,7 +1384,7 @@
         <rect>
          <x>10</x>
          <y>40</y>
-         <width>600</width>
+         <width>581</width>
          <height>231</height>
         </rect>
        </property>
@@ -1404,7 +1404,7 @@
        <rect>
         <x>40</x>
         <y>390</y>
-        <width>611</width>
+        <width>601</width>
         <height>151</height>
        </rect>
       </property>
@@ -1551,9 +1551,9 @@
      <widget class="QGroupBox" name="groupBox_32">
       <property name="geometry">
        <rect>
-        <x>670</x>
+        <x>650</x>
         <y>100</y>
-        <width>591</width>
+        <width>611</width>
         <height>721</height>
        </rect>
       </property>
@@ -1570,10 +1570,10 @@
       <widget class="QLabel" name="Map">
        <property name="geometry">
         <rect>
-         <x>30</x>
-         <y>90</y>
-         <width>531</width>
-         <height>571</height>
+         <x>10</x>
+         <y>140</y>
+         <width>591</width>
+         <height>471</height>
         </rect>
        </property>
        <property name="styleSheet">
@@ -1606,7 +1606,7 @@
       <property name="title">
        <string>Food Robot A</string>
       </property>
-      <widget class="QLabel" name="A_order_1">
+      <widget class="QLabel" name="turtleA">
        <property name="geometry">
         <rect>
          <x>20</x>
@@ -1724,7 +1724,7 @@ border-radius: 20px;</string>
         <set>Qt::AlignCenter</set>
        </property>
       </widget>
-      <widget class="QLabel" name="label_5">
+      <widget class="QLabel" name="A_order">
        <property name="geometry">
         <rect>
          <x>160</x>
@@ -1751,7 +1751,7 @@ color: rgb(192, 28, 40);</string>
         <set>Qt::AlignCenter</set>
        </property>
       </widget>
-      <widget class="QLabel" name="A_order_2">
+      <widget class="QLabel" name="A_order2">
        <property name="geometry">
         <rect>
          <x>160</x>
@@ -1777,7 +1777,7 @@ color: rgb(192, 28, 40);</string>
         <set>Qt::AlignCenter</set>
        </property>
       </widget>
-      <widget class="QLabel" name="A_order_3">
+      <widget class="QLabel" name="A_order3">
        <property name="geometry">
         <rect>
          <x>160</x>
@@ -1823,7 +1823,7 @@ color: rgb(192, 28, 40);</string>
       <property name="title">
        <string>Food Robot B</string>
       </property>
-      <widget class="QLabel" name="robotB">
+      <widget class="QLabel" name="turtleB">
        <property name="geometry">
         <rect>
          <x>20</x>
@@ -3584,6 +3584,13 @@ rgb(255, 210, 30)</string>
            <height>25</height>
           </rect>
          </property>
+         <property name="font">
+          <font>
+           <pointsize>15</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
          <item>
           <property name="text">
            <string>food</string>
@@ -3621,6 +3628,13 @@ rgb(255, 210, 30)</string>
            <width>101</width>
            <height>25</height>
           </rect>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>15</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
          </property>
          <item>
           <property name="text">
@@ -5833,7 +5847,7 @@ Others</string>
       <property name="geometry">
        <rect>
         <x>650</x>
-        <y>10</y>
+        <y>30</y>
         <width>591</width>
         <height>601</height>
        </rect>
@@ -6843,9 +6857,9 @@ Others</string>
       <property name="geometry">
        <rect>
         <x>50</x>
-        <y>10</y>
-        <width>451</width>
-        <height>671</height>
+        <y>20</y>
+        <width>431</width>
+        <height>641</height>
        </rect>
       </property>
       <property name="font">
@@ -6861,7 +6875,7 @@ Others</string>
       <widget class="QLabel" name="label_196">
        <property name="geometry">
         <rect>
-         <x>90</x>
+         <x>100</x>
          <y>60</y>
          <width>91</width>
          <height>61</height>
@@ -6884,9 +6898,9 @@ Others</string>
       <widget class="QComboBox" name="set_room_box">
        <property name="geometry">
         <rect>
-         <x>210</x>
+         <x>220</x>
          <y>70</y>
-         <width>151</width>
+         <width>131</width>
          <height>41</height>
         </rect>
        </property>
@@ -6921,10 +6935,10 @@ Others</string>
       <widget class="QTableWidget" name="feeding_table">
        <property name="geometry">
         <rect>
-         <x>80</x>
+         <x>90</x>
          <y>130</y>
-         <width>291</width>
-         <height>521</height>
+         <width>261</width>
+         <height>491</height>
         </rect>
        </property>
        <property name="font">
@@ -6950,7 +6964,7 @@ Others</string>
       <property name="geometry">
        <rect>
         <x>170</x>
-        <y>700</y>
+        <y>690</y>
         <width>171</width>
         <height>61</height>
        </rect>
@@ -7062,7 +7076,7 @@ Others</string>
       <property name="title">
        <string>Log Check</string>
       </property>
-      <widget class="QComboBox" name="captured_date_end_3">
+      <widget class="QComboBox" name="log_end">
        <property name="geometry">
         <rect>
          <x>510</x>
@@ -7071,8 +7085,15 @@ Others</string>
          <height>41</height>
         </rect>
        </property>
+       <property name="font">
+        <font>
+         <pointsize>15</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
       </widget>
-      <widget class="QComboBox" name="captured_date_start_4">
+      <widget class="QComboBox" name="log_type_box">
        <property name="geometry">
         <rect>
          <x>260</x>
@@ -7081,8 +7102,15 @@ Others</string>
          <height>41</height>
         </rect>
        </property>
+       <property name="font">
+        <font>
+         <pointsize>15</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
       </widget>
-      <widget class="QComboBox" name="captured_date_start_3">
+      <widget class="QComboBox" name="log_start">
        <property name="geometry">
         <rect>
          <x>260</x>
@@ -7090,6 +7118,13 @@ Others</string>
          <width>171</width>
          <height>41</height>
         </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>15</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
        </property>
       </widget>
       <widget class="QLabel" name="label_198">
