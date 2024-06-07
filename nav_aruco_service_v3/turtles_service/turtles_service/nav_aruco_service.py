@@ -20,7 +20,7 @@ class NavArucoService(Node):
         self.detected_count = 0  # 탐지 횟수를 추적하는 변수 추가
         self.detection_active = False  # 탐지 활성화 플래그 추가
         self.aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_6X6_250)
-        self.aruco_params = cv2.aruco.DetectorParameters()
+        self.aruco_params = cv2.aruco.DetectorParameters_create()
 
         self.image_queue = []
         self.image_queue_lock = threading.Lock()
@@ -117,26 +117,16 @@ class NavArucoService(Node):
                         distance = np.linalg.norm(tvec_corrected)
                         self.get_logger().info(f'Marker ID: {ids[i][0]}, Position: {tvec_corrected}, Distance: {distance:.15f}')
                         
-                        # 로봇 기준 좌표를 맵 좌표로 변환
+                        # Calculate the new robot position to have the marker 1.25 meters away
                         if self.robot_position is not None:
-                            self.get_logger().info(f'Using robot position: {self.robot_position}')
-                            map_coords = self.transform_robot_to_map(tvec_corrected)
-                            self.get_logger().info(f'Marker ID: {ids[i][0]}, Map Position: {map_coords}')
-                            
-                            # Calculate the new robot position to have the marker 0.9 meters away
-                            desired_distance = 0.85
-                            new_map_position = self.calculate_new_map_position(map_coords, desired_distance)
-                            self.get_logger().info(f'New map position to achieve 0.9m distance: {new_map_position}')
+                            new_map_position = self.calculate_new_map_position(tvec_corrected, 1.1)
+                            self.get_logger().info(f'New map position to achieve 1.25m distance: {new_map_position}')
                             
                             # Publish the new position
-                            new_position_msg = Point()
-                            new_position_msg.x = new_map_position[0]
-                            new_position_msg.y = new_map_position[1]
-                            new_position_msg.z = new_map_position[2]
-                            self.new_position_publisher.publish(new_position_msg)
+                            self.publish_new_position(new_map_position)
                     
                     self.detected_count += 1
-                    if self.detected_count >= 3:  # 탐지 횟수가 3회 이상일 경우 추가 처리(예: 탐지 중단)
+                    if self.detected_count >= 1:  # 탐지 횟수가 3회 이상일 경우 추가 처리(예: 탐지 중단)
                         self.get_logger().info('3 Aruco markers detected, stopping detection.')
                         self.detection_active = False
 
@@ -145,25 +135,27 @@ class NavArucoService(Node):
                     break
             time.sleep(0.1)
 
-    def transform_robot_to_map(self, tvec):
-        if self.robot_position is None:
-            self.get_logger().error("Robot position is not set.")
-            return tvec
+    def publish_new_position(self, new_position):
+        new_position_msg = Point()
+        new_position_msg.x = new_position[0]
+        new_position_msg.y = new_position[1]
+        new_position_msg.z = 0.0
 
-        # 로봇의 현재 위치를 맵 좌표계로 변환
-        robot_position = np.array(self.robot_position)
-        
-        # 아르코 마커의 좌표를 맵 좌표계로 변환
-        map_coords = robot_position + tvec
-        return map_coords
+        self.new_position_publisher.publish(new_position_msg)
+        self.get_logger().info(f'Published new position: {new_position}')
 
     def calculate_new_map_position(self, aruco_position, desired_distance):
-        # 현재 아르코 마커 위치에서 로봇이 이동해야 할 방향 벡터 계산
-        direction_vector = aruco_position - np.array(self.robot_position)
-        direction_vector /= np.linalg.norm(direction_vector)
-        
-        # 로봇이 아르코 마커로부터 desired_distance 만큼 떨어진 위치로 이동
-        new_position = aruco_position - direction_vector * desired_distance
+        # 현재 ArUco 마커와의 거리
+        current_distance = aruco_position[2]  # Z 좌표가 거리
+
+        # 목표 거리와의 차이
+        distance_diff = current_distance - desired_distance
+
+        # 새로운 로봇의 X 좌표 계산
+        new_x_position = self.robot_position[0] + distance_diff
+
+        # 새로운 목표 위치 계산 (맵 좌표계에서 로봇의 Y, Z 좌표는 그대로 사용)
+        new_position = [new_x_position, self.robot_position[1], self.robot_position[2]]
         return np.round(new_position, 15)  # 소수점 15자리까지 반올림
 
     def start_detection_callback(self, request, response):
@@ -173,7 +165,7 @@ class NavArucoService(Node):
         self.robot_position = [request.x, request.y, request.z]
         self.get_logger().info(f'Robot position set to: {self.robot_position}')  # 디버깅 메시지 추가
         # 탐지 활성화는 로봇이 도착한 후에 수행
-        time.sleep(5)  # 로봇이 도착할 시간을 기다림 (예시: 2초 대기)
+        time.sleep(5)  # 로봇이 도착할 시간을 기다림 (예시: 5초 대기)
         self.detection_active = True
         response.success = True
         response.message = "Aruco detection started successfully after reaching the destination"

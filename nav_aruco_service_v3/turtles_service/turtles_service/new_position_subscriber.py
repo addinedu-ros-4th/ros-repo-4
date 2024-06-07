@@ -1,7 +1,8 @@
 import rclpy
 from rclpy.node import Node
-from geometry_msgs.msg import Point, Twist
-import math
+from rclpy.action import ActionClient
+from nav2_msgs.action import NavigateToPose
+from geometry_msgs.msg import Point, PoseStamped
 
 class NewPositionSubscriber(Node):
 
@@ -12,49 +13,64 @@ class NewPositionSubscriber(Node):
             'new_position',
             self.listener_callback,
             10)
-        self.publisher = self.create_publisher(Twist, '/base_controller/cmd_vel_unstamped', 10)
-        self.target_position = None
-        self.current_position = Point()  # 현재 위치를 저장할 변수 추가
-        self.moving = False
-
-        # 타이머 콜백을 사용하여 주기적으로 이동 명령을 업데이트 (주기 1초로 변경)
-        self.timer = self.create_timer(1.0, self.navigate_to_pose)
+        self.action_client = ActionClient(self, NavigateToPose, '/navigate_to_pose')
+        self.target_reached = False
+        self.current_goal_position = None
 
     def listener_callback(self, msg):
         self.get_logger().info(f'New position received: x={msg.x}, y={msg.y}, z={msg.z}')
-        self.target_position = msg
-        self.moving = True
+        self.current_goal_position = [msg.x, msg.y, msg.z]
 
-    def navigate_to_pose(self):
-        if self.target_position is None or not self.moving:
+        # 목표 위치 수신 시 target_reached 플래그 초기화
+        self.target_reached = False
+
+        # 새로운 목표 위치로 이동
+        self.navigate_to_pose(msg.x, msg.y, msg.z)
+
+    def navigate_to_pose(self, x, y, z):
+        if self.target_reached:
+            self.get_logger().info('Already navigating to pose')
             return
 
-        twist_msg = Twist()
+        self.get_logger().info('Navigating to new position...')
+        goal_msg = self.create_goal_pose(x, y, z, 0.0, 0.0, 0.0, 1.0)
 
-        # 목표 위치까지의 거리 계산 (x 축만 사용)
-        distance = abs(self.target_position.x - self.current_position.x)
-        if distance < 0.05:  # 목표 위치에 5cm 이내로 도달하면 멈춤
-            self.stop_robot()
-            self.get_logger().info('Reached the target position.')
-            self.target_position = None  # 목표 위치 초기화
-            self.moving = False  # 이동 완료 후 플래그 초기화
+        self.action_client.wait_for_server()
+        send_goal_future = self.action_client.send_goal_async(goal_msg)
+        send_goal_future.add_done_callback(self.goal_response_callback)
+
+    def goal_response_callback(self, future):
+        goal_handle = future.result()
+        if not goal_handle.accepted:
+            self.get_logger().info('Goal rejected')
+            self.target_reached = False
             return
+        self.get_logger().info('Goal accepted')
+        get_result_future = goal_handle.get_result_async()
+        get_result_future.add_done_callback(self.get_result_callback)
 
-        # 선형 속도 계산 (비례 제어)
-        twist_msg.linear.x = min(0.5, distance)  # 최대 속도 0.5 m/s로 제한
+    def get_result_callback(self, future):
+        try:
+            result = future.result().result
+            self.get_logger().info(f'Result: {result}')
+            self.target_reached = True
+            self.get_logger().info('Target reached.')
+        except Exception as e:
+            self.get_logger().error(f'Error in getting result: {e}')
+            self.target_reached = False
 
-        self.publisher.publish(twist_msg)
-        self.get_logger().info(f'Publishing cmd_vel to move towards new position: linear.x={twist_msg.linear.x}')
-
-        # 현재 위치 업데이트 (간단히 하기 위해 이동 속도에 비례하여 업데이트)
-        self.current_position.x += twist_msg.linear.x * 1.0  # 주기를 1초로 설정했으므로 1.0을 곱함
-
-    def stop_robot(self):
-        twist_msg = Twist()
-        twist_msg.linear.x = 0.0
-        twist_msg.angular.z = 0.0
-        self.publisher.publish(twist_msg)
-        self.get_logger().info('Stopping the robot.')
+    def create_goal_pose(self, x, y, z, ox, oy, oz, ow):
+        goal_msg = NavigateToPose.Goal()
+        goal_msg.pose = PoseStamped()
+        goal_msg.pose.header.frame_id = 'map'
+        goal_msg.pose.pose.position.x = x
+        goal_msg.pose.pose.position.y = y
+        goal_msg.pose.pose.position.z = z
+        goal_msg.pose.pose.orientation.x = ox
+        goal_msg.pose.pose.orientation.y = oy
+        goal_msg.pose.pose.orientation.z = oz
+        goal_msg.pose.pose.orientation.w = ow
+        return goal_msg
 
 def main(args=None):
     rclpy.init(args=args)
@@ -63,10 +79,8 @@ def main(args=None):
         rclpy.spin(new_position_subscriber)
     except KeyboardInterrupt:
         pass
-    finally:
-        new_position_subscriber.stop_robot()
-        new_position_subscriber.destroy_node()
-        rclpy.shutdown()
+    new_position_subscriber.destroy_node()
+    rclpy.shutdown()
 
 if __name__ == '__main__':
     main()
