@@ -27,13 +27,14 @@ class RobotArucoNode(Node):
         self.cap = cv2.VideoCapture(0)  # 로봇의 카메라를 통해 영상 캡처
         self.detecting = False
         self.robot_position = None  # 로봇의 현재 위치를 저장할 변수
-        self.desired_distance = 1.25  # 초기값으로 설정, 나중에 서비스 요청에서 설정됨
+        self.desired_distance = 0.0  # 초기화
 
     def start_detection_callback(self, request, response):
         self.get_logger().info(f'Starting detection for Aruco ID: {request.aruco_id} with desired distance {request.distance}')
         self.robot_position = np.array([request.x, request.y, request.z])  # 로봇의 현재 위치 저장
-        self.desired_distance = request.distance  # 서비스 요청에서 받은 원하는 거리 저장
+        self.desired_distance = request.distance  # 요청에서 받은 desired_distance를 저장
         self.detecting = True
+        self.get_logger().info(f'Set robot position to: {self.robot_position}, desired distance to: {self.desired_distance}')
         self.process_images(request.aruco_id)
         response.success = True
         response.message = "Aruco detection started successfully"
@@ -59,7 +60,7 @@ class RobotArucoNode(Node):
                 if self.robot_position is not None:
                     # ArUco 마커의 z 좌표를 사용하여 로봇의 새로운 x 좌표 계산
                     current_distance = tvec[0][0][2]  # ArUco 마커의 z 좌표
-                    distance_diff = current_distance - self.desired_distance
+                    distance_diff = current_distance - self.desired_distance  # 수정된 부분
                     
                     # 새로운 로봇의 x 좌표 계산
                     new_x_position = self.robot_position[0] + distance_diff
@@ -76,10 +77,6 @@ class RobotArucoNode(Node):
                     self.get_logger().error('Robot position not set')
 
                 self.detecting = False  # Stop detection after one successful capture
-
-            # cv2.imshow('Frame', frame)
-            # if cv2.waitKey(1) & 0xFF == ord('q'):
-            #     break
 
     def shutdown(self):
         self.cap.release()
