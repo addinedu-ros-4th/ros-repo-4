@@ -1,0 +1,8 @@
+#Request
+int64 request_num
+---
+#Result
+string result
+---
+#Feedback
+int64 current_num
