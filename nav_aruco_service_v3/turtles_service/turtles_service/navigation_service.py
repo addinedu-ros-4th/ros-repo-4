@@ -57,7 +57,9 @@ class NavService(Node):
         
     def feedback_callback(self,feedback_msg):
         feedback = feedback_msg.feedback
-        self.get_logger().info('Feedback : {0}'.format(feedback.current_pose))
+        self.get_logger().info('Feedback : {0}'.format(feedback.current_pose.pose.position))
+        self.get_logger().info('Feedback : {0}'.format(feedback.current_pose.pose.orientation))
+
 
 def main(args=None):
     rclpy.init(args=args)
