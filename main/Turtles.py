@@ -39,6 +39,7 @@ from rclpy.node import Node
 from geometry_msgs.msg import Twist
 from turtles_service_msgs.srv import ArucoNavigateTo
 from turtles_service_msgs.srv import NavToPose
+from turtles_service_msgs.msg import ActionClientResult
 from rclpy.executors import MultiThreadedExecutor
 from geometry_msgs.msg import PoseWithCovarianceStamped
 from rclpy.qos import QoSProfile, QoSDurabilityPolicy, QoSReliabilityPolicy, QoSHistoryPolicy
@@ -172,7 +173,23 @@ class RosThread(QThread):
         self.msleep(100) #추가 안하면 UI에 딜레이 발생
         rp.spin(self.node)
             
-    
+class RosSignalCheckThread(QThread):
+    # 이 신호는 스레드에서 메인 스레드로 메시지를 보낼 때 사용됩니다.
+    update_signal = pyqtSignal()
+    def __init__(self):
+        super().__init__()
+        self.subscriber_node = rp.create_node('action_client_check_node')
+        self.subscriber = self.subscriber_node.create_subscription(ActionClientResult, '/pub_action_result',self.callback, 10)
+
+    def run(self):
+        time.sleep(1)  # 1초 대기
+        # self.update_signal.emit()
+        rp.spin(self.subscriber_node)
+
+    def callback(self,data):
+        print("callback-----")
+        print(data.result)
+
 class CameraThread(QThread):
     update = QtCore.pyqtSignal()
 
@@ -205,7 +222,6 @@ class RobotThread(QThread):
     
     def stop(self):
         self.moving = False
-    
 
 class ServerThread(QThread):
     new_connection = pyqtSignal(str, int)
@@ -456,6 +472,8 @@ class WindowClass(QMainWindow, from_class) :
         self.record.update.connect(self.updateRecording)
         self.btnCapture.clicked.connect(self.capture)   #     
 
+        self.startThreadForRosCheck()
+
         #robot task 리스트
         self.task_list = []
         self.point_list = []
@@ -574,9 +592,9 @@ class WindowClass(QMainWindow, from_class) :
         self.save_button.clicked.connect(self.save_button_clicked)
 
         #ros 
-        self.service_client_node = rp.create_node('client_test')
-        self.service_name_nav = '/navigate_to_pose'
-        self.cli = self.service_client_node.create_client(ArucoNavigateTo, self.service_name_nav)
+        self.service_client_node = rp.create_node('turtles_main_node')
+        self.service_name_nav = '/navigation_service'
+        self.cli = self.service_client_node.create_client(NavToPose, self.service_name_nav)
         self.future = None
         self.req = NavToPose.Request()
         self.service_call_flag = False
@@ -746,6 +764,12 @@ class WindowClass(QMainWindow, from_class) :
         # self.executor_thread = ExecutorThread(self.executor)
         # self.executor_thread.start()
     
+        
+    def startThreadForRosCheck(self):
+        self.thread = RosSignalCheckThread()
+        # self.thread.update_signal.connect(self.updateRosCheck)
+        self.thread.start()
+
         
     def remote_button_clicked(self):
         if not self.is_remote_start:
@@ -1089,6 +1113,9 @@ class WindowClass(QMainWindow, from_class) :
         
         
     def show_notification_dialog(self):
+        #test용 코드--------
+        self.ros2ServiceCallNavTo(self.point_list[0])
+        #--------
         dialog = QDialog(self)
         dialog.setWindowTitle('Notifications')
         dialog.resize(400, 500)  # 팝업 크기 조정
@@ -2051,8 +2078,8 @@ class WindowClass(QMainWindow, from_class) :
         
         self.req.x = pt['x']
         self.req.y = pt['y']
-        self.req.z = pt['z']
-        self.req.w = pt['w']
+        self.req.ori_z = pt['ori_z']
+        self.req.ori_w = pt['ori_w']
 
         # self.req.aruco_id = pt['aruco_id']
         # self.req.mode = pt['mode']
@@ -2062,10 +2089,7 @@ class WindowClass(QMainWindow, from_class) :
         self.service_call_flag = True
         self.future = self.cli.call_async(self.req)
 
-        try:
-            rp.spin_once(self.service_client_node)
-        except Exception as e:
-            print("error in service call")
+        
 
         
     def sendToFoodTank(self, pt,tank_num = 1):
@@ -2121,33 +2145,21 @@ class WindowClass(QMainWindow, from_class) :
         self.task_list.append(temp_task)
 
     def foodrobot_up_button_clicked(self):
-        # self.teleop_node.twist.linear.x = 3.0
-        # self.teleop_node.twist.angular.z = 0.0
-        # self.teleop_node.publishTwist()
         teleop_node.twist.linear.x = 3.0
         teleop_node.twist.angular.z = 0.0
         teleop_node.publishTwist()
     
     def foodrobot_down_button_clicked(self):
-        # self.teleop_node.twist.linear.x = -3.0
-        # self.teleop_node.twist.angular.z = 0.0
-        # self.teleop_node.publishTwist()
         teleop_node.twist.linear.x = -3.0
         teleop_node.twist.angular.z = 0.0
         teleop_node.publishTwist()
 
     def foodrobot_left_button_clicked(self):
-        # self.teleop_node.twist.linear.x = 0.0
-        # self.teleop_node.twist.angular.z = 3.0
-        # self.teleop_node.publishTwist()
         teleop_node.twist.linear.x = 0.0
         teleop_node.twist.angular.z = 3.0
         teleop_node.publishTwist()
 
-    def foodrobot_right_button_clicked(self):
-        # self.teleop_node.twist.linear.x = 0.0
-        # self.teleop_node.twist.angular.z = -3.0
-        # self.teleop_node.publishTwist()    
+    def foodrobot_right_button_clicked(self):   
         teleop_node.twist.linear.x = 0.0
         teleop_node.twist.angular.z = -3.0
         teleop_node.publishTwist()   
