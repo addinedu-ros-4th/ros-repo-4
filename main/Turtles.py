@@ -20,7 +20,8 @@ from ultralytics import YOLO
 import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
 import torchvision.transforms as transforms
-
+from pyzbar import pyzbar 
+from pyzbar.pyzbar import decode
 from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
@@ -747,6 +748,26 @@ class WindowClass(QMainWindow, from_class) :
         #register employee parameter
         self.is_camera_on_flag = False
         
+        self.cap = cv2.VideoCapture(0)
+
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.update_frame)
+        self.timer.start(30)
+
+    def update_frame(self):
+        ret, frame = self.cap.read()
+        if not ret:
+            return
+
+        # OpenCV의 BGR 이미지를 PyQt5의 QImage로 변환
+        height, width, channel = frame.shape
+        bytes_per_line = 3 * width
+        q_img = QImage(frame.data, width, height, bytes_per_line, QImage.Format_RGB888).rgbSwapped()
+
+        # QImage를 QPixmap으로 변환하여 QLabel에 표시
+        pixmap = QPixmap.fromImage(q_img)
+        self.qr_label.setPixmap(pixmap)
+      
         
     def remote_button_clicked(self):
         if not self.is_remote_start:
@@ -1720,45 +1741,70 @@ class WindowClass(QMainWindow, from_class) :
     def comboChanged(self):
         self.cam_num = self.select_camera_box.currentIndex()
 
-    def updateCameraView(self):
-        
-        if self.stackedWidget.currentIndex() != 4:
-            return
-
+    def updateCameraView(self):   
         retval_list = []
         image_list = []
-
         for idx,cam in enumerate(self.camera_list):
             if cam.isOpened():
                 retval, image = cam.read()
-                
                 retval_list.append(retval)
-                image_list.append(image)
-
-
-        if self.cam_num < len(image_list):
-
-            if retval_list[self.cam_num]:
-                self.image = cv2.cvtColor(image_list[self.cam_num],cv2.COLOR_BGR2RGB)
-
-                # if self.cam_num != 0:    # Entrance 카메라를 제외하고 나머지는 cow yolo 인식 처리 하기 
-                self.updateDetectedListWithYolo(self.image)
-                self.image = self.drawRedBox(self.image)
-                self.image = self.checkRemainedFood(self.image)
-
-                # self.updateHarmfulAnimalDetectedListWithYolo(self.image)
-                # self.image = self.drawBlueBox(self.image,self.yolo_harmful_animal_detect_class, self.yolo_harmful_animal_detect_class_coordinate)
-                
-                #이미지 화면에 띄우기
+                image_list.append(image)    
+                            
+        if self.stackedWidget.currentIndex() == 14: #바코드 인식 페이지
+            if len(image_list) !=0:
+                #웹캠띄우는코드 
+                self.image = cv2.cvtColor(image_list[0],cv2.COLOR_BGR2RGB)
                 h,w,c = self.image.shape
                 qimage = QImage(self.image.data, w, h, w*c, QImage.Format_RGB888)
 
                 self.pixmap = self.pixmap.fromImage(qimage)
                 self.pixmap = self.pixmap.scaled(self.monitor_camera_label.width(), self.monitor_camera_label.height())
+                self.monitor_camera_label2.setPixmap(self.pixmap)
+                
+                # QR 코드 인식
+                self.last_barcode_data = ""
+                decoded_objects = pyzbar.decode(self.image)
+                for obj in decoded_objects:
+                    barcode_data = obj.data.decode('utf-8')
+                    print("QR 코드 정보:", barcode_data)
+                    # 새로운 바코드가 인식되면 정보를 업데이트
+                    if barcode_data != self.last_barcode_data:
+                        self.last_barcode_data = barcode_data
+                        # 바코드 데이터를 쉼표로 분할하여 각 항목을 추출
+                        barcode_items = barcode_data.split(',')
+                        if len(barcode_items) >= 4:
+                            # 각 항목을 QLineEdit에 표시
+                            self.barcode_edit.setText(barcode_items[0])
+                            self.brand_name_edit.setText(barcode_items[1])
+                            self.feed_weight_edit.setText(barcode_items[2])
+                            self.expiry_date_edit.setText(barcode_items[3])
+                                             
+        elif self.stackedWidget.currentIndex() == 4: #카메라 페이지 
+            if self.cam_num < len(image_list):
 
-                self.monitor_camera_label.setPixmap(self.pixmap)
-            else:
-                print(f"Camera cannot be opened")
+                if retval_list[self.cam_num]:
+                    self.image = cv2.cvtColor(image_list[self.cam_num],cv2.COLOR_BGR2RGB)
+
+                    # if self.cam_num != 0:    # Entrance 카메라를 제외하고 나머지는 cow yolo 인식 처리 하기 
+                    self.updateDetectedListWithYolo(self.image)
+                    self.image = self.drawRedBox(self.image)
+                    self.image = self.checkRemainedFood(self.image)
+
+                    # self.updateHarmfulAnimalDetectedListWithYolo(self.image)
+                    # self.image = self.drawBlueBox(self.image,self.yolo_harmful_animal_detect_class, self.yolo_harmful_animal_detect_class_coordinate)
+                    
+                    #이미지 화면에 띄우기
+                    h,w,c = self.image.shape
+                    qimage = QImage(self.image.data, w, h, w*c, QImage.Format_RGB888)
+
+                    self.pixmap = self.pixmap.fromImage(qimage)
+                    self.pixmap = self.pixmap.scaled(self.monitor_camera_label.width(), self.monitor_camera_label.height())
+
+                    self.monitor_camera_label.setPixmap(self.pixmap)
+                else:
+                    print(f"Camera cannot be opened")            
+
+
 
     def cameraStart(self):
         self.camera.running = True

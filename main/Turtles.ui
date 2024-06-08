@@ -4958,10 +4958,10 @@ rgb(255, 210, 30)</string>
      <widget class="QGroupBox" name="groupBox_6">
       <property name="geometry">
        <rect>
-        <x>340</x>
-        <y>130</y>
+        <x>330</x>
+        <y>360</y>
         <width>601</width>
-        <height>451</height>
+        <height>351</height>
        </rect>
       </property>
       <property name="title">
@@ -4971,9 +4971,9 @@ rgb(255, 210, 30)</string>
        <property name="geometry">
         <rect>
          <x>20</x>
-         <y>28</y>
+         <y>0</y>
          <width>251</width>
-         <height>331</height>
+         <height>281</height>
         </rect>
        </property>
        <property name="orientation">
@@ -4988,7 +4988,7 @@ rgb(255, 210, 30)</string>
          </font>
         </property>
         <property name="text">
-         <string>Barcode ID :</string>
+         <string>QR ID :</string>
         </property>
         <property name="textFormat">
          <enum>Qt::AutoText</enum>
@@ -5047,9 +5047,9 @@ rgb(255, 210, 30)</string>
        <property name="geometry">
         <rect>
          <x>310</x>
-         <y>130</y>
+         <y>90</y>
          <width>200</width>
-         <height>51</height>
+         <height>41</height>
         </rect>
        </property>
        <property name="font">
@@ -5066,9 +5066,9 @@ rgb(255, 210, 30)</string>
        <property name="geometry">
         <rect>
          <x>310</x>
-         <y>220</y>
+         <y>160</y>
          <width>200</width>
-         <height>51</height>
+         <height>41</height>
         </rect>
        </property>
        <property name="font">
@@ -5085,7 +5085,7 @@ rgb(255, 210, 30)</string>
        <property name="geometry">
         <rect>
          <x>520</x>
-         <y>220</y>
+         <y>190</y>
          <width>71</width>
          <height>41</height>
         </rect>
@@ -5108,9 +5108,9 @@ rgb(255, 210, 30)</string>
        <property name="geometry">
         <rect>
          <x>310</x>
-         <y>300</y>
+         <y>230</y>
          <width>200</width>
-         <height>51</height>
+         <height>41</height>
         </rect>
        </property>
        <property name="font">
@@ -5127,9 +5127,9 @@ rgb(255, 210, 30)</string>
        <property name="geometry">
         <rect>
          <x>310</x>
-         <y>50</y>
+         <y>20</y>
          <width>200</width>
-         <height>51</height>
+         <height>41</height>
         </rect>
        </property>
        <property name="font">
@@ -5144,12 +5144,15 @@ rgb(255, 210, 30)</string>
        <property name="alignment">
         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
        </property>
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
       </widget>
       <widget class="QLabel" name="label_109">
        <property name="geometry">
         <rect>
          <x>20</x>
-         <y>350</y>
+         <y>280</y>
          <width>251</width>
          <height>80</height>
         </rect>
@@ -5172,9 +5175,9 @@ rgb(255, 210, 30)</string>
        <property name="geometry">
         <rect>
          <x>310</x>
-         <y>370</y>
+         <y>300</y>
          <width>200</width>
-         <height>51</height>
+         <height>41</height>
         </rect>
        </property>
        <property name="font">
@@ -5195,9 +5198,9 @@ rgb(255, 210, 30)</string>
       <property name="geometry">
        <rect>
         <x>540</x>
-        <y>610</y>
+        <y>730</y>
         <width>161</width>
-        <height>81</height>
+        <height>71</height>
        </rect>
       </property>
       <property name="font">
@@ -5217,8 +5220,8 @@ rgb(255, 210, 30)</string>
      <widget class="QLabel" name="label_35">
       <property name="geometry">
        <rect>
-        <x>10</x>
-        <y>60</y>
+        <x>0</x>
+        <y>20</y>
         <width>1261</width>
         <height>51</height>
        </rect>
@@ -5231,10 +5234,26 @@ rgb(255, 210, 30)</string>
        </font>
       </property>
       <property name="text">
-       <string>사료 포대의 바코드를 인식해주세요</string>
+       <string>사료 포대의 QR 코드를 인식해주세요</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+     <widget class="QLabel" name="monitor_camera_label2">
+      <property name="geometry">
+       <rect>
+        <x>330</x>
+        <y>80</y>
+        <width>591</width>
+        <height>261</height>
+       </rect>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::Box</enum>
+      </property>
+      <property name="text">
+       <string/>
       </property>
      </widget>
     </widget>
