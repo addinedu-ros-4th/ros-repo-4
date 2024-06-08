@@ -39,8 +39,8 @@ import rclpy as rp
 from rclpy.node import Node
 from geometry_msgs.msg import Twist
 from turtles_service_msgs.srv import ArucoNavigateTo
-from turtles_service_msgs.srv import NavToPose
-from turtles_service_msgs.msg import ActionClientResult
+# from turtles_service_msgs.srv import NavToPose
+# from turtles_service_msgs.msg import ActionClientResult
 from rclpy.executors import MultiThreadedExecutor
 from geometry_msgs.msg import PoseWithCovarianceStamped
 from rclpy.qos import QoSProfile, QoSDurabilityPolicy, QoSReliabilityPolicy, QoSHistoryPolicy
@@ -473,7 +473,7 @@ class WindowClass(QMainWindow, from_class) :
         self.record.update.connect(self.updateRecording)
         self.btnCapture.clicked.connect(self.capture)   #     
 
-        self.startThreadForRosCheck()
+        # self.startThreadForRosCheck()
 
         #robot task 리스트
         self.task_list = []
@@ -583,6 +583,8 @@ class WindowClass(QMainWindow, from_class) :
         #food trailer servo 버튼 연결
         self.foodtank_servo_open_button.clicked.connect(self.foodtank_servo_open_button_clicked)
         self.foodtank_servo_close_button.clicked.connect(self.foodtank_servo_close_button_clicked)
+        self.foodtank_servo_open_button_2.clicked.connect(self.foodtank_servo_open_button_clicked_2)
+        self.foodtank_servo_close_button_2.clicked.connect(self.foodtank_servo_close_button_clicked_2)
         self.foodtrailer_servo_open_button.clicked.connect(self.foodtrailer_servo_open_button_clicked)
         self.foodtrailer_servo_close_button.clicked.connect(self.foodtrailer_servo_close_button_clicked)
 
@@ -593,12 +595,12 @@ class WindowClass(QMainWindow, from_class) :
         self.save_button.clicked.connect(self.save_button_clicked)
 
         #ros 
-        self.service_client_node = rp.create_node('turtles_main_node')
-        self.service_name_nav = '/navigation_service'
-        self.cli = self.service_client_node.create_client(NavToPose, self.service_name_nav)
-        self.future = None
-        self.req = NavToPose.Request()
-        self.service_call_flag = False
+        # self.service_client_node = rp.create_node('turtles_main_node')
+        # self.service_name_nav = '/navigation_service'
+        # # self.cli = self.service_client_node.create_client(NavToPose, self.service_name_nav)
+        # self.future = None
+        # # self.req = NavToPose.Request()
+        # self.service_call_flag = False
 
         self.layout = QVBoxLayout()
         self.setTableWidget(self.feeding_table) 
@@ -1927,9 +1929,9 @@ class WindowClass(QMainWindow, from_class) :
         #     print("현재 시간은 수정된 시간과 같습니다.")
 
     def isServiceCalled(self):
-        if self.service_call_flag:
-                print("service call")
-                return True
+        # if self.service_call_flag:
+        #         print("service call")
+        #         return True
         return False
     
     def isNavArucoFinished(self):
@@ -2214,18 +2216,33 @@ class WindowClass(QMainWindow, from_class) :
 
     def foodtank_servo_open_button_clicked(self):
         # print(ServerThread.client_socket_list)
-        self.send("FT1,1")
+        self.send_tank_1("FT1,1")
         print("FT1,1 send")
 
     def foodtank_servo_close_button_clicked(self):
-        self.send("FT1,0")
+        self.send_tank_1("FT1,0")
         print("FT1,0 send")
 
-    def send(self, data=""):
+    def foodtank_servo_open_button_clicked_2(self):
+        # print(ServerThread.client_socket_list)
+        self.send_tank_2("FT1,1")
+        print("FT1,1 send")
+
+    def foodtank_servo_close_button_clicked_2(self):
+        self.send_tank_2("FT1,0")
+        print("FT1,0 send")
+
+    def send_tank_1(self, data=""):
         #send
         # response = str(data)
         print(data)
         ServerThread.client_socket_list[1].send(data.encode("utf-8"))
+
+    def send_tank_2(self, data=""):
+        #send
+        # response = str(data)
+        print(data)
+        ServerThread.client_socket_list[2].send(data.encode("utf-8"))
 
     def send_to_rasp(self, data=""):
         #send

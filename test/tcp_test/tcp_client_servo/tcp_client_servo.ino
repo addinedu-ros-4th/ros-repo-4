@@ -97,12 +97,12 @@ void loop() {
   if(op_cl == "0") 
   {
     Serial.println("0");
-    servo.write(60); // FoodTank close
+    servo.write(60); // FoodTank_1 close 60  FoodTank_2 180
   }
   else if (op_cl == "1") 
   {
     Serial.println("1");
-    servo.write(180); // FoodTank open
+    servo.write(180); // FoodTank_1 open 180 FoodTank_2 60
   }
 
 
