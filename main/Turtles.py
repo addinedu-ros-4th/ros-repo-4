@@ -36,6 +36,7 @@ import rclpy as rp
 from rclpy.node import Node
 from geometry_msgs.msg import Twist
 from turtles_service_msgs.srv import ArucoNavigateTo
+from turtles_service_msgs.srv import NavToPose
 from rclpy.executors import MultiThreadedExecutor
 from geometry_msgs.msg import PoseWithCovarianceStamped
 from rclpy.qos import QoSProfile, QoSDurabilityPolicy, QoSReliabilityPolicy, QoSHistoryPolicy
@@ -460,7 +461,7 @@ class WindowClass(QMainWindow, from_class) :
         self.model = YOLO('yolov8n.pt')
 
         #databases 연결
-        self.data_manage = DBManager("192.168.100.85", "0000", 3306, "turtles", "TurtlesDB")
+        self.data_manage = DBManager("192.168.1.101", "0000", 3306, "turtles", "TurtlesDB")
         self.animal_df = self.data_manage.getAnimal()
         # self.camera_df = self.data_manage.getCameraPath()
         self.camera_df = self.get_file_info()
@@ -553,7 +554,7 @@ class WindowClass(QMainWindow, from_class) :
         self.service_name_nav = '/navigate_to_pose'
         self.cli = self.service_client_node.create_client(ArucoNavigateTo, self.service_name_nav)
         self.future = None
-        self.req = ArucoNavigateTo.Request()
+        self.req = NavToPose.Request()
         self.service_call_flag = False
 
         self.layout = QVBoxLayout()
@@ -1845,12 +1846,13 @@ class WindowClass(QMainWindow, from_class) :
         self.req.x = pt['x']
         self.req.y = pt['y']
         self.req.z = pt['z']
-        self.req.aruco_id = pt['aruco_id']
-        self.req.mode = pt['mode']
+        self.req.w = pt['w']
+
+        # self.req.aruco_id = pt['aruco_id']
+        # self.req.mode = pt['mode']
         
         print(self.req)
 
-        print("end")
         self.service_call_flag = True
         self.future = self.cli.call_async(self.req)
 
