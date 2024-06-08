@@ -461,7 +461,7 @@ class WindowClass(QMainWindow, from_class) :
         self.model = YOLO('yolov8n.pt')
 
         #databases 연결
-        self.data_manage = DBManager("192.168.1.101", "0000", 3306, "turtles", "TurtlesDB")
+        self.data_manage = DBManager("192.168.0.86", "0000", 3306, "turtles", "TurtlesDB")
         self.animal_df = self.data_manage.getAnimal()
         # self.camera_df = self.data_manage.getCameraPath()
         self.camera_df = self.get_file_info()
