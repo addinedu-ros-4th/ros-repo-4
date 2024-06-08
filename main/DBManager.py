@@ -14,7 +14,7 @@ class DBManager:
         )
     def getSchedulenums(self):
         cursor = self.local.cursor()
-        sql = "SELECT COUNT(DISTINCT time) AS total_unique_times FROM food_scheduled_time;"
+        sql = "SELECT COUNT(DISTINCT time) AS total_unique_times FROM food_scheduled_time_robotA;"
         cursor.execute(sql)
         schedule_result = cursor.fetchone()  # fetchone으로 하나의 행을 가져옵니다.
         total_unique_times = schedule_result[0]  # 튜플의 첫 번째 요소로 접근하여 total_unique_times 값을 가져옵니다.
@@ -187,7 +187,7 @@ class DBManager:
     
     def clearFoodScheduledTimes(self,room_number ):
         cursor = self.local.cursor()
-        cursor.execute(f"DELETE FROM food_scheduled_time where room = {room_number}")
+        cursor.execute(f"DELETE FROM food_scheduled_time_robotA where room = {room_number}")
         self.local.commit()
         
     def clearScheduledTimes(self, table_name):
@@ -230,7 +230,7 @@ class DBManager:
 
     def get_reserved_times(self, room):
         cursor = self.local.cursor()
-        query = "SELECT time FROM food_scheduled_time WHERE room = %s"
+        query = "SELECT time FROM food_scheduled_time_robotA WHERE room = %s"
         result = cursor.execute(query, (room,))
         return cursor.fetchall()
 
@@ -243,7 +243,7 @@ class DBManager:
     
     def insert_food_schedule(self, room, time):
         cursor = self.local.cursor()
-        query = "INSERT INTO food_scheduled_time (room, time) VALUES (%s, %s)"
+        query = "INSERT INTO food_scheduled_time_robotA (room, time) VALUES (%s, %s)"
         cursor.execute(query, (room, time))
         self.local.commit()
 

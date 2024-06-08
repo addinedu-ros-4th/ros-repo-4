@@ -14,6 +14,7 @@ class NavService(Node):
         self.target_reached = False
         self.current_goal_position = None
         self.current_mode = None  # 추가: 현재 모드를 저장할 변수
+        self.current_distance = None  # 추가: distance 값을 저장할 변수
 
     def service_callback(self, request: ArucoNavigateTo.Request, response: ArucoNavigateTo.Response):
         if self.target_reached:
@@ -24,9 +25,10 @@ class NavService(Node):
         self.get_logger().info('Service called: Navigating to pose...')
         goal_msg = self.create_goal_pose(request.x, request.y, request.z, 0.0, 0.0, 0.0, 1.0)
         
-        # Save the goal position
+        # Save the goal position and other parameters
         self.current_goal_position = [request.x, request.y, request.z]
-        self.current_mode = request.mode  # 추가: 요청된 모드를 저장
+        self.current_mode = request.mode
+        self.current_distance = request.distance  # 요청에서 받은 distance 값을 저장
 
         self.action_client.wait_for_server()
         send_goal_future = self.action_client.send_goal_async(goal_msg)
@@ -53,7 +55,7 @@ class NavService(Node):
             self.target_reached = True
             if self.current_mode == "NAVIGATION_WITH_ARUCO":
                 self.get_logger().info('Target reached. Starting Aruco detection.')
-                self.start_aruco_detection(aruco_id)
+                self.start_aruco_detection(aruco_id, self.current_distance)  # distance 값을 넘겨줌
             else:
                 self.get_logger().info('Target reached. No Aruco detection required.')
                 self.target_reached = False  # Reset for next navigation
@@ -61,12 +63,13 @@ class NavService(Node):
             self.get_logger().error(f'Error in getting result: {e}')
             self.target_reached = False
 
-    def start_aruco_detection(self, aruco_id):
+    def start_aruco_detection(self, aruco_id, distance):
         client = self.create_client(ArucoNavigateTo, 'start_aruco_detection')
         while not client.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('Aruco detection service not available, waiting again...')
         request = ArucoNavigateTo.Request()
         request.aruco_id = aruco_id
+        request.distance = distance  # distance 값을 설정
 
         # 로봇의 현재 목표 위치를 서비스 요청에 포함
         if self.current_goal_position:
