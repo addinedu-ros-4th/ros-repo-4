@@ -6,3 +6,7 @@
 
 3. 암호화 복호화 라이브러리 설치        
   ``` pip install pycryptodome```
+
+4.qr스캔 라이브러리 설치
+ ``` pip install pyzbar```
+
