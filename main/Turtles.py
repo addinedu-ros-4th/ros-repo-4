@@ -746,7 +746,6 @@ class WindowClass(QMainWindow, from_class) :
         # self.executor_thread = ExecutorThread(self.executor)
         # self.executor_thread.start()
     
-      
         
     def remote_button_clicked(self):
         if not self.is_remote_start:
@@ -758,8 +757,6 @@ class WindowClass(QMainWindow, from_class) :
             self.is_remote_start = False
             self.remoteStop()
         
-            
-
     def remoteStart(self):
         status=self.is_remote_start
         self.up_button.setEnabled(status);self.down_button.setEnabled(status)
