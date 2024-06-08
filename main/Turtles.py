@@ -6,7 +6,6 @@ import select
 import struct 
 import pickle
 import torch
-import cv2
 import os
 import cv2
 import atexit
@@ -33,6 +32,8 @@ from PyQt5.QtCore import Qt, QRect
 from PyQt5.QtMultimediaWidgets import QVideoWidget
 from PyQt5.QtCore import QThread, pyqtSignal,Qt,QDate
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
+# import face_recognition
+
 
 import rclpy as rp
 from rclpy.node import Node
@@ -639,6 +640,8 @@ class WindowClass(QMainWindow, from_class) :
         self.load_combobox(self.camera_df, 'captured_date', self.captured_date_start)
         self.load_combobox(self.camera_df, 'captured_date', self.captured_date_end)
         
+
+        
         self.load_combobox(self.log_df, 'Type', self.log_type_box)
         self.load_combobox(self.log_df, 'Date', self.log_start)
         self.log_start.currentIndexChanged.connect(self.update_log_date_end)
@@ -730,6 +733,7 @@ class WindowClass(QMainWindow, from_class) :
         self.map_resolution = map_yaml_data['resolution']
         self.map_origin = map_yaml_data['origin'][:2]   
         self.search_camera_table.cellClicked.connect(self.on_click)
+        # self.registered_employee_table.cellClicked.connect(self.on_click)
 
         # Initialize Teleop node
         # self.teleop_node = Teleop()
@@ -747,6 +751,7 @@ class WindowClass(QMainWindow, from_class) :
         self.is_remote_start = False
         #register employee parameter
         self.is_camera_on_flag = False
+        self.employee_register_button.setEnabled(False)
         
         self.cap = cv2.VideoCapture(0)
 
@@ -1326,24 +1331,28 @@ class WindowClass(QMainWindow, from_class) :
         unused_numbers = [num for num in all_numbers if num not in used_numbers]
         self.harmful_animal_index_box.clear()
         for num in unused_numbers:
-            self.harmful_animal_index_box.addItem(str(num))    
+            self.harmful_animal_index_box.addItem(str(num))
+
+    def show_employee_face(sefl):
+        self.show_employee_label()
                 
     def register_new_employee(self):
-
+        self.employee_face()
         employee_name = self.employee_name_edit.text()
-        registered_date = self.registered_date_employee.text()        
+        registered_date = self.registered_date_employee.text()
         self.data_manage.register_employee(employee_name, registered_date)
         self.employee_df= self.data_manage.getEmployeeData()
         self.load_data_to_table(self.registered_employee_table, self.employee_df)
-
 
     def change_button_text(self):
         if self.is_camera_on_flag == False:
             self.employee_register_camera_button.setText("Camera Off")
             self.is_camera_on_flag = True
+            self.employee_register_button.setEnabled(True)
         elif self.is_camera_on_flag == True:
             self.employee_register_camera_button.setText("Camera On")
             self.is_camera_on_flag = False
+            self.employee_register_button.setEnabled(False)
 
     def update_captured_date_end(self):
         selected_start_date = self.captured_date_start.currentText()
@@ -1695,12 +1704,25 @@ class WindowClass(QMainWindow, from_class) :
         if not os.path.exists('captures'):
             os.makedirs('captures')
         now = datetime.now().strftime('%Y%m%d_%H%M%S')
-        self.cam_type=self.select_camera_box.currentText()
+        self.cam_type = self.select_camera_box.currentText()
         filename = 'captures/' + self.cam_type+ '_' +now + '.png'
         # BGR to RGB conversion
         rgb_image = cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
 
         cv2.imwrite(filename, rgb_image)
+
+    def employee_face(self): # employee_face img save
+        if not os.path.exists('faces'):
+            os.makedirs('faces')
+        now = datetime.now().strftime('%Y%m%d_%H%M%S')
+        self.empolyee_type = 'employee'
+        filename = 'faces/' + self.empolyee_type+ '_' +now + '.png'
+        # BGR to RGB conversion
+        rgb_image = cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
+
+        cv2.imwrite(filename, rgb_image)
+
+        print("직원 얼굴 등록 완료")
         
     def updateRecording(self):
         rgb_image = cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
@@ -1773,13 +1795,28 @@ class WindowClass(QMainWindow, from_class) :
                         # 바코드 데이터를 쉼표로 분할하여 각 항목을 추출
                         barcode_items = barcode_data.split(',')
                         if len(barcode_items) >= 4:
-                            # 각 항목을 QLineEdit에 표시
+                            # 각 항목을 QLineEdit에 표시tur
                             self.barcode_edit.setText(barcode_items[0])
                             self.brand_name_edit.setText(barcode_items[1])
                             self.feed_weight_edit.setText(barcode_items[2])
                             self.expiry_date_edit.setText(barcode_items[3])
-                                             
-        elif self.stackedWidget.currentIndex() == 4: #카메라 페이지 
+
+        if self.stackedWidget.currentIndex() == 18: #사용자 등록 페이지
+            if len(image_list) !=0:
+                #웹캠띄우는코드 
+                self.image = cv2.cvtColor(image_list[0],cv2.COLOR_BGR2RGB)
+                h,w,c = self.image.shape
+                qimage = QImage(self.image.data, w, h, w*c, QImage.Format_RGB888)
+
+                self.pixmap = self.pixmap.fromImage(qimage)
+                self.pixmap = self.pixmap.scaled(self.monitor_camera_label.width(), self.monitor_camera_label.height())
+                if self.is_camera_on_flag == True:
+                    self.employee_cam_label.setPixmap(self.pixmap)
+
+                    
+                
+                                            
+        if self.stackedWidget.currentIndex() == 4: #카메라 페이지 
             if self.cam_num < len(image_list):
 
                 if retval_list[self.cam_num]:
@@ -2176,7 +2213,7 @@ class WindowClass(QMainWindow, from_class) :
         teleop_node.publishTwist()   
 
     def foodtrailer_servo_open_button_clicked(self):
-        self.send_to_rasp("FT1,1")
+        self.send_to_rasp("FT1,0")
         print("FT1,1 send")
 
     def foodtrailer_servo_close_button_clicked(self):
@@ -2184,6 +2221,7 @@ class WindowClass(QMainWindow, from_class) :
         print("FT1,0 send")
 
     def foodtank_servo_open_button_clicked(self):
+        # print(ServerThread.client_socket_list)
         self.send("FT1,1")
         print("FT1,1 send")
 
@@ -2195,7 +2233,7 @@ class WindowClass(QMainWindow, from_class) :
         #send
         # response = str(data)
         print(data)
-        ServerThread.client_socket_list.send(data.encode("utf-8"))
+        ServerThread.client_socket_list[1].send(data.encode("utf-8"))
 
     def send_to_rasp(self, data=""):
         #send
