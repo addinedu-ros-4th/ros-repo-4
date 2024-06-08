@@ -452,7 +452,6 @@ class WindowClass(QMainWindow, from_class) :
 
         self.btnRecord.clicked.connect(self.clickRecord)
         self.record.update.connect(self.updateRecording)
-        self.count = 0
         self.btnCapture.clicked.connect(self.capture)   #     
 
         #robot task 리스트
@@ -493,7 +492,6 @@ class WindowClass(QMainWindow, from_class) :
         self.harmful_animal_df = self.data_manage.getHarmfulAnimal()
         self.facility_setting_df = self.data_manage.getFacilitySetting()
         self.robot_thread = RobotThread(parent=self)
-        self.count = 0
         self.server_thread = None
         self.client_df = pd.DataFrame(columns=['IP', 'Port'])
         self.robotThreadStart()
@@ -650,14 +648,14 @@ class WindowClass(QMainWindow, from_class) :
         self.captured_date_start.currentIndexChanged.connect(self.update_captured_date_end)
         self.search_button_video.clicked.connect(self.camera_search)
         self.employee_register_button.clicked.connect(self.register_new_employee)
+        self.employee_register_camera_button.clicked.connect(self.change_button_text)
+
         self.add_harmful_animal_button.clicked.connect(self.register_new_harmful_animal)
         #self.delete_harmful_animal_button.clicked.connect(self.delete_harmful_animal)
         self.refresh_combo_box()
         self.register_button_food.clicked.connect(self.register_new_food)
         self.register_button_animal.clicked.connect(self.register_new_animal)
         self.update_button.clicked.connect(self.update_facility_setting)
-        
-
         
         self.set_food_button.clicked.connect(self.on_set_food_button_click)
         self.populate_table()
@@ -746,6 +744,8 @@ class WindowClass(QMainWindow, from_class) :
         # self.executor_thread = ExecutorThread(self.executor)
         # self.executor_thread.start()
         self.is_remote_start = False
+        #register employee parameter
+        self.is_camera_on_flag = False
         
         
     def remote_button_clicked(self):
@@ -1308,12 +1308,22 @@ class WindowClass(QMainWindow, from_class) :
             self.harmful_animal_index_box.addItem(str(num))    
                 
     def register_new_employee(self):
+
         employee_name = self.employee_name_edit.text()
         registered_date = self.registered_date_employee.text()        
         self.data_manage.register_employee(employee_name, registered_date)
         self.employee_df= self.data_manage.getEmployeeData()
         self.load_data_to_table(self.registered_employee_table, self.employee_df)
-        
+
+
+    def change_button_text(self):
+        if self.is_camera_on_flag == False:
+            self.employee_register_camera_button.setText("Camera Off")
+            self.is_camera_on_flag = True
+        elif self.is_camera_on_flag == True:
+            self.employee_register_camera_button.setText("Camera On")
+            self.is_camera_on_flag = False
+
     def update_captured_date_end(self):
         selected_start_date = self.captured_date_start.currentText()
         self.captured_date_end.clear()

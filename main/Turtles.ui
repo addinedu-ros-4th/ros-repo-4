@@ -5914,7 +5914,7 @@ Others</string>
       <widget class="QPushButton" name="employee_register_button">
        <property name="geometry">
         <rect>
-         <x>190</x>
+         <x>320</x>
          <y>490</y>
          <width>241</width>
          <height>71</height>
@@ -5968,6 +5968,29 @@ Others</string>
        </property>
        <property name="text">
         <string>Today's date</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="employee_register_camera_button">
+       <property name="geometry">
+        <rect>
+         <x>50</x>
+         <y>490</y>
+         <width>241</width>
+         <height>71</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>18</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="styleSheet">
+        <string notr="true"/>
+       </property>
+       <property name="text">
+        <string>Camera On</string>
        </property>
       </widget>
      </widget>
@@ -7542,7 +7565,7 @@ Others</string>
         </font>
        </property>
        <property name="currentIndex">
-        <number>6</number>
+        <number>3</number>
        </property>
        <widget class="QWidget" name="monitor_page">
         <property name="geometry">
