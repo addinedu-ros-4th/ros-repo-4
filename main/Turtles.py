@@ -745,29 +745,7 @@ class WindowClass(QMainWindow, from_class) :
         # self.executor.add_node(self.pose_subscriber_node)
         # self.executor_thread = ExecutorThread(self.executor)
         # self.executor_thread.start()
-        self.is_remote_start = False
-        #register employee parameter
-        self.is_camera_on_flag = False
-        
-        self.cap = cv2.VideoCapture(0)
-
-        self.timer = QTimer()
-        self.timer.timeout.connect(self.update_frame)
-        self.timer.start(30)
-
-    def update_frame(self):
-        ret, frame = self.cap.read()
-        if not ret:
-            return
-
-        # OpenCV의 BGR 이미지를 PyQt5의 QImage로 변환
-        height, width, channel = frame.shape
-        bytes_per_line = 3 * width
-        q_img = QImage(frame.data, width, height, bytes_per_line, QImage.Format_RGB888).rgbSwapped()
-
-        # QImage를 QPixmap으로 변환하여 QLabel에 표시
-        pixmap = QPixmap.fromImage(q_img)
-        self.qr_label.setPixmap(pixmap)
+    
       
         
     def remote_button_clicked(self):
