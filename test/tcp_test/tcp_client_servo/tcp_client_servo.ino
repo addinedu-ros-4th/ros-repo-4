@@ -4,8 +4,8 @@
 const char* ssid = "AIE_509_2.4G";
 const char* password = "addinedu_class1";
 
-const char* hostip = "192.168.0.14";
-const int hostport = 3000;
+const char* hostip = "192.168.0.47";
+const int hostport = 3002;
 
 int count = 0;
 
@@ -31,7 +31,7 @@ void setup() {
   client.connect(hostip, hostport);
 
   servo.attach(5);
-  servo.write(90); //FoodTank default close
+  servo.write(60); //FoodTank default close
 }
 
 void loop() {
@@ -97,7 +97,7 @@ void loop() {
   if(op_cl == "0") 
   {
     Serial.println("0");
-    servo.write(90); // FoodTank close
+    servo.write(60); // FoodTank close
   }
   else if (op_cl == "1") 
   {
