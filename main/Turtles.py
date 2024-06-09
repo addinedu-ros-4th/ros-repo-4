@@ -501,7 +501,7 @@ class WindowClass(QMainWindow, from_class) :
         self.animal_df = self.data_manage.getAnimal()
         self.camera_df = self.get_file_info()
         self.food_df = self.data_manage.getFood()
-        # self.schedule_df= self.demployee_register_camera_buttonata_manage.getFoodRobotSchedule()
+        self.schedule_df= self.data_manage.getFoodRobotSchedule()
         self.userdata_df = self.data_manage.getUserData()
         self.employee_df = self.data_manage.getEmployeeData()
         self.harmful_animal_df = self.data_manage.getHarmfulAnimal()
