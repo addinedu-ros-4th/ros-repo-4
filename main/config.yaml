@@ -40,3 +40,10 @@ position:
     ori_w: 0.9999
     aruco_id: 5
     mode: NAVIGATION_ONLY
+  point6:
+    x: -0.2715079468998298
+    y: 0.13284975019768563
+    ori_z: 0.9844380241113944
+    ori_w: 0.17573211625554902
+    aruco_id: 5
+    mode: NAVIGATION_ONLY

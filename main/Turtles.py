@@ -497,11 +497,11 @@ class WindowClass(QMainWindow, from_class) :
         self.model = YOLO('yolov8n.pt')
 
         #databases 연결
-        self.data_manage = DBManager("192.168.0.86", "0000", 3306, "turtles", "TurtlesDB")
+        self.data_manage = DBManager("172.30.1.93", "0000", 3306, "turtles", "TurtlesDB")
         self.animal_df = self.data_manage.getAnimal()
         self.camera_df = self.get_file_info()
         self.food_df = self.data_manage.getFood()
-        self.schedule_df= self.demployee_register_camera_buttonata_manage.getFoodRobotSchedule()
+        # self.schedule_df= self.demployee_register_camera_buttonata_manage.getFoodRobotSchedule()
         self.userdata_df = self.data_manage.getUserData()
         self.employee_df = self.data_manage.getEmployeeData()
         self.harmful_animal_df = self.data_manage.getHarmfulAnimal()
@@ -1120,7 +1120,7 @@ class WindowClass(QMainWindow, from_class) :
         
     def show_notification_dialog(self):
         #test용 코드--------
-        self.ros2ServiceCallNavTo(self.point_list[0])
+        self.ros2ServiceCallNavTo(self.point_list[5])
         #--------
         dialog = QDialog(self)
         dialog.setWindowTitle('Notifications')
