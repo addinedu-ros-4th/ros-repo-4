@@ -188,7 +188,7 @@ class RosSignalCheckThread(QThread):
 
     def callback(self,data):
         print("callback-----")
-        print(data.result)
+        print(data.dist_remain)
 
 class CameraThread(QThread):
     update = QtCore.pyqtSignal()
