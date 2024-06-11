@@ -278,8 +278,15 @@ class ServerThread(QThread):
                         data = data[msg_size:]
 
                         frame = pickle.loads(frame_data)
-
-                        img_decoded = cv2.imdecode(frame, cv2.IMREAD_COLOR)
+                        
+                        try:
+                            img_decoded = cv2.imdecode(frame, cv2.IMREAD_COLOR)
+                            if img_decoded is None:
+                                print("Error: imdecode returned None.")
+                            else:
+                                print("Image decoded successfully.")
+                        except cv2.error as e:
+                            print(f"OpenCV error: {e}")
 
                         q_img = self.cv2ToQimage(img_decoded)
                         self.image_signal.emit(q_img,frame)
@@ -503,7 +510,9 @@ class WindowClass(QMainWindow, from_class) :
         self.food_df = self.data_manage.getFood()
         self.schedule_df= self.data_manage.getFoodRobotSchedule()
         self.userdata_df = self.data_manage.getUserData()
-        self.employee_df = self.data_manage.getEmployeeData()
+        # self.employee_df = self.data_manage.getEmployeeData()
+        self.employee_df = self.get_face_file_info()
+        # self.employee_face_df = self.get_face_file_info()
         self.harmful_animal_df = self.data_manage.getHarmfulAnimal()
         self.facility_setting_df = self.data_manage.getFacilitySetting()
         self.robot_thread = RobotThread(parent=self)
@@ -750,7 +759,7 @@ class WindowClass(QMainWindow, from_class) :
         self.map_resolution = map_yaml_data['resolution']
         self.map_origin = map_yaml_data['origin'][:2]   
         self.search_camera_table.cellClicked.connect(self.on_click)
-        # self.registered_employee_table.cellClicked.connect(self.on_click)
+        self.registered_employee_table.cellClicked.connect(self.on_click_2)
 
         # Initialize Teleop node
         # self.teleop_node = Teleop()
@@ -936,10 +945,35 @@ class WindowClass(QMainWindow, from_class) :
         else:
             self.display_label.setText('File does not exist.')
             
+    def on_click_2(self, row, column):
+        # Get the file path from the table
+        file_name = self.registered_employee_table.item(row, 0).text()  # Assuming the file type is in the 1nd column
+        # print("file_name: ", file_name)
+        file_registered_date = self.registered_employee_table.item(row, 1).text()  # Assuming the path is in the 2rd column
+        # print("file_registered_date: ", file_registered_date)
+
+        faces_path = os.path.join(os.getcwd(), 'faces')
+        file_path = os.path.join(faces_path, f"{file_name}_{file_registered_date}.png")  # Assuming .jpg extension
+
+        # print("Full file path: ", file_path)
+
+        if os.path.exists(file_path):
+            self.display_face_image(file_path)
+        else:
+            self.show_employee_label.setText('File does not exist.')
+            
     def display_image(self, file_path):
         pixmap = QPixmap(file_path)
         self.video_label.setPixmap(pixmap)
-        self.stackedWidget2.setCurrentWidget(self.video_label)
+        # self.stackedWidget2.setCurrentWidget(self.video_label) # 이거 넣으면 에러나서 주석 처리함.
+    
+    def display_face_image(self, file_name):
+        pixmap_face = QPixmap(file_name)
+        if not pixmap_face.isNull():
+            self.show_employee_label.setPixmap(pixmap_face)
+            self.show_employee_label.setScaledContents(True)  # Ensure the image fits the label
+        else:
+            self.show_employee_label.setText('Failed to load image.')
 
     def display_video_in_label(self,filename, label):
         cap = cv2.VideoCapture(filename)
@@ -998,8 +1032,30 @@ class WindowClass(QMainWindow, from_class) :
         camera_df = pd.DataFrame(data, columns=['cam_type', 'file_type', 'path', 'captured_date'])
 
         return camera_df
-        
+    
+    def get_face_file_info(self):
+        # 현재 경로에서 faces 폴더 경로 설정
+        faces_path = os.path.join(os.getcwd(), 'faces')
 
+        # faces 폴더 내의 모든 파일 리스트
+        files = os.listdir(faces_path)
+        data = []
+        for file in files:
+            file_name, file_extension = os.path.splitext(file)
+            file_extension = file_extension.lstrip('.')
+            file_parts = file_name.split('_')
+            
+            if len(file_parts) >= 2:  # name과 registered_date를 모두 포함하는지 확인
+                name = file_parts[0]
+                registered_date = file_parts[1]
+                file_name = os.path.join('faces', file)
+                data.append([name, registered_date])
+
+        # 데이터프레임 생성
+        face_df = pd.DataFrame(data, columns=['name', 'registered_date'])
+
+        return face_df
+    
         
     def displayFoodIntake(self):
         # if self.stackedWidget.currentIndex() != Pages.PAGE_MONITOR_BARN.value:
@@ -1337,8 +1393,8 @@ class WindowClass(QMainWindow, from_class) :
         for num in unused_numbers:
             self.harmful_animal_index_box.addItem(str(num))
 
-    def show_employee_face(sefl):
-        self.show_employee_label()
+    # def show_employee_face(sefl):
+    #     self.show_employee_label()
                 
     def register_new_employee(self):
         self.employee_face()
@@ -1718,8 +1774,8 @@ class WindowClass(QMainWindow, from_class) :
     def employee_face(self): # employee_face img save
         if not os.path.exists('faces'):
             os.makedirs('faces')
-        now = datetime.now().strftime('%Y%m%d_%H%M%S')
-        self.empolyee_type = 'employee'
+        now = datetime.now().strftime('%Y-%m-%d')
+        self.empolyee_type = self.employee_name_edit.text()
         filename = 'faces/' + self.empolyee_type+ '_' +now + '.png'
         # BGR to RGB conversion
         rgb_image = cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
@@ -2238,13 +2294,13 @@ class WindowClass(QMainWindow, from_class) :
         #send
         # response = str(data)
         print(data)
-        ServerThread.client_socket_list[2].send(data.encode("utf-8"))
+        ServerThread.client_socket_list.send(data.encode("utf-8"))
 
     def send_to_rasp(self, data=""):
         #send
         # response = str(data)
         print(data)
-        ServerThread.client_socket_list.send(data.encode("utf-8"))
+        ServerThread.client_socket_list[2].send(data.encode("utf-8"))
 
     def closeEvent(self, event):
         #창을 종료할때 task_id 저장해주기
