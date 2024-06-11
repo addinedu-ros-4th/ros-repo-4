@@ -76,13 +76,11 @@ class Pages(Enum):
     PAGE_REGISTER_FOOD = 14
     PAGE_SEARCH_FOOD = 15
     PAGE_DATAMANAGER_VIDEO = 16
-    PAGE_CHOOSE_DATAMANAGER_FACILITIES = 17
-    PAGE_REGISTER_EMPLOYEE = 18
-    PAGE_REGISTER_OTHERS = 19
-    PAGE_SCHEDULE_FOOD = 20
-    PAGE_SCHEDULE_FACILITIES = 21
-    PAGE_LOG = 22
-    PAGE_SETTING = 23
+    PAGE_REGISTER_EMPLOYEE = 17
+    PAGE_SCHEDULE_FOOD = 18
+    PAGE_SCHEDULE_FACILITIES = 19
+    PAGE_LOG = 20
+    PAGE_SETTING = 21
     
 
 class TaskScheduleType(Enum):
@@ -504,7 +502,7 @@ class WindowClass(QMainWindow, from_class) :
         self.model = YOLO('yolov8n.pt')
 
         #databases 연결
-        self.data_manage = DBManager("172.30.1.93", "0000", 3306, "turtles", "TurtlesDB")
+        self.data_manage = DBManager("192.168.0.86", "0000", 3306, "turtles", "TurtlesDB")
         self.animal_df = self.data_manage.getAnimal()
         self.camera_df = self.get_file_info()
         self.food_df = self.data_manage.getFood()
@@ -559,8 +557,6 @@ class WindowClass(QMainWindow, from_class) :
         self.choose_search_button_food.clicked.connect(self.searchFoodButtonClicked)
         self.datamanager_videopage_button.clicked.connect(self.datamanagerVideoPageButtonClicked)
         self.datamanager_facilitiespage_button.clicked.connect(self.chooseDatamanagerFacilitiesPageButtonClicked)
-        self.choose_register_employee_button.clicked.connect(self.registerEmployeeButtonClicked)
-        self.choose_others_button.clicked.connect(self.registerOthersButtonClicked)
         self.schedule_foodpage_button.clicked.connect(self.scheduleFoodPageButtonClicked)
         self.schedule_facilitiespage_button.clicked.connect(self.scheduleFacilitiesPageButtonClicked)
 
@@ -629,15 +625,11 @@ class WindowClass(QMainWindow, from_class) :
         # self.camera_df.rename(columns={'camera_num': 'cam_num'}, inplace=True)
         self.load_data_to_table(self.search_camera_table, self.camera_df)
         self.load_data_to_table(self.registered_employee_table, self.employee_df)
-        self.load_data_to_table(self.harmful_animal_table, self.harmful_animal_df)
-        self.load_data_to_table(self.facility_table,self.facility_setting_df)
         
         self.auto_resize_columns(self.search_animal_table)
         self.auto_resize_columns(self.search_food_table)
         self.auto_resize_columns(self.search_camera_table)
         self.auto_resize_columns(self.registered_employee_table)
-        self.auto_resize_columns(self.harmful_animal_table)
-        self.auto_resize_columns(self.facility_table)
         
         
         # animal_df 컬럼 데이터를 ComboBox에 추가
@@ -679,13 +671,10 @@ class WindowClass(QMainWindow, from_class) :
         self.employee_register_button.clicked.connect(self.register_new_employee)
         self.employee_register_camera_button.clicked.connect(self.change_button_text)
 
-        self.add_harmful_animal_button.clicked.connect(self.register_new_harmful_animal)
 
-        #self.delete_harmful_animal_button.clicked.connect(self.delete_harmful_animal)
-        self.refresh_combo_box()
         self.register_button_food.clicked.connect(self.register_new_food)
         self.register_button_animal.clicked.connect(self.register_new_animal)
-        self.update_button.clicked.connect(self.update_facility_setting)
+        # self.update_button.clicked.connect(self.update_facility_setting)
         
         self.set_food_button.clicked.connect(self.on_set_food_button_click)
         self.populate_table()
@@ -800,7 +789,6 @@ class WindowClass(QMainWindow, from_class) :
         status=self.is_remote_start
         self.up_button.setEnabled(status);self.down_button.setEnabled(status)
         self.left_button.setEnabled(status);self.right_button.setEnabled(status)
-        self.return_button.setEnabled(status);self.resume_work_button.setEnabled(status)
         self.foodtrailer_servo_open_button.setEnabled(status);self.foodtrailer_servo_close_button.setEnabled(status)
          
         
@@ -808,7 +796,6 @@ class WindowClass(QMainWindow, from_class) :
         status=self.is_remote_start
         self.up_button.setEnabled(status);self.down_button.setEnabled(status)
         self.left_button.setEnabled(status);self.right_button.setEnabled(status)
-        self.return_button.setEnabled(status);self.resume_work_button.setEnabled(status)
         self.foodtrailer_servo_open_button.setEnabled(status);self.foodtrailer_servo_close_button.setEnabled(status)
                       
     
@@ -1083,7 +1070,6 @@ class WindowClass(QMainWindow, from_class) :
         self.food_intake_average_label.setPixmap(pixmap)
         label_size = self.food_intake_average_label.size()
         self.food_intake_average_label.setFixedSize(label_size)
-        self.drawTank(self.water_tank_display_label, 70)
         self.drawTank(self.food_tank_A_display_label, 50)
         self.drawTank(self.food_tank_B_display_label, 30)
 
@@ -1329,18 +1315,18 @@ class WindowClass(QMainWindow, from_class) :
         
     
     def update_facility_setting(self):
-        # 업데이트할 새 설정 (예시로 값 지정)
-        new_settings = {
-            'water_tank_warning_level': self.water_tank_warning_level_box.currentText(),
-            'water_tank_charging_level': self.water_tank_charging_level_box.currentText(),
-            'water_container_warning_level':self.water_container_warning_level_box.currentText(),
-            'food_tank_warning_level': self.food_tank_warning_level_box.currentText(),
-            'food_tank_charging_level': self.food_tank_charging_level_box.currentText() 
-        }
-        self.data_manage.updateFacilitySetting(new_settings)        
-        self.facility_setting_df=self.data_manage.getFacilitySetting()
-        self.load_data_to_table(self.facility_table,self.facility_setting_df)
+        # # 업데이트할 새 설정 (예시로 값 지정)
+        # new_settings = {
+        #     'water_tank_warning_level': self.water_tank_warning_level_box.currentText(),
+        #     'water_tank_charging_level': self.water_tank_charging_level_box.currentText(),
+        #     'water_container_warning_level':self.water_container_warning_level_box.currentText(),
+        #     'food_tank_warning_level': self.food_tank_warning_level_box.currentText(),
+        #     'food_tank_charging_level': self.food_tank_charging_level_box.currentText() 
+        # }
+        # self.data_manage.updateFacilitySetting(new_settings)        
+        # self.facility_setting_df=self.data_manage.getFacilitySetting()
             # 버튼 클릭 시, 테이블명을 인수로 전달       
+        pass
         
     def register_new_animal(self):
         rfid_uid=self.RFID_edit.text()
@@ -1375,23 +1361,7 @@ class WindowClass(QMainWindow, from_class) :
         self.load_combobox(self.food_df, 'expiry_date', self.search_expiry_date_box)
         
                         
-    def register_new_harmful_animal(self):
-        animal_name= self.harmful_animal_name_edit.text()
-        index_num = self.harmful_animal_index_box.currentText()
-        self.data_manage.register_harmful_animal(index_num,animal_name)
-        self.harmful_animal_df=self.data_manage.getHarmfulAnimal()
-        self.load_data_to_table(self.harmful_animal_table, self.harmful_animal_df)
-        self.refresh_combo_box()
     
-                
-    def refresh_combo_box(self):
-        # harmful_animal_df 데이터프레임에서 index_num 열의 모든 값 추출
-        used_numbers = self.harmful_animal_df['index_num'].tolist()
-        all_numbers = list(range(1, 11))
-        unused_numbers = [num for num in all_numbers if num not in used_numbers]
-        self.harmful_animal_index_box.clear()
-        for num in unused_numbers:
-            self.harmful_animal_index_box.addItem(str(num))
 
     # def show_employee_face(sefl):
     #     self.show_employee_label()
@@ -2509,7 +2479,6 @@ class WindowClass(QMainWindow, from_class) :
         self.stackedWidget.setCurrentIndex(Pages.PAGE_CONTROL_ROBOT.value)
         self.up_button.setEnabled(False);self.down_button.setEnabled(False)
         self.left_button.setEnabled(False);self.right_button.setEnabled(False)
-        self.return_button.setEnabled(False);self.resume_work_button.setEnabled(False)
         self.foodtrailer_servo_open_button.setEnabled(False);self.foodtrailer_servo_close_button.setEnabled(False)
         self.emergency_stop_button.setEnabled(False) 
         self.robot_name_label.setText(robot_name)
@@ -2580,13 +2549,7 @@ class WindowClass(QMainWindow, from_class) :
         
 
     def chooseDatamanagerFacilitiesPageButtonClicked(self):
-        self.stackedWidget.setCurrentIndex(Pages.PAGE_CHOOSE_DATAMANAGER_FACILITIES.value)
-
-    def registerEmployeeButtonClicked(self):
         self.stackedWidget.setCurrentIndex(Pages.PAGE_REGISTER_EMPLOYEE.value)
-    
-    def registerOthersButtonClicked(self):
-        self.stackedWidget.setCurrentIndex(Pages.PAGE_REGISTER_OTHERS.value)
 
     def scheduleFoodPageButtonClicked(self):
         self.stackedWidget.setCurrentIndex(Pages.PAGE_SCHEDULE_FOOD.value)

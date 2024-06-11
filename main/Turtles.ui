@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1517</width>
+    <width>1541</width>
     <height>868</height>
    </rect>
   </property>
@@ -1421,7 +1421,7 @@
       <widget class="QLabel" name="tankstatus_label_10">
        <property name="geometry">
         <rect>
-         <x>380</x>
+         <x>340</x>
          <y>120</y>
          <width>121</width>
          <height>31</height>
@@ -1445,7 +1445,7 @@
       <widget class="QLabel" name="food_tank_B_display_label">
        <property name="geometry">
         <rect>
-         <x>380</x>
+         <x>340</x>
          <y>40</y>
          <width>121</width>
          <height>80</height>
@@ -1464,7 +1464,7 @@
       <widget class="QLabel" name="food_tank_A_display_label">
        <property name="geometry">
         <rect>
-         <x>240</x>
+         <x>130</x>
          <y>40</y>
          <width>121</width>
          <height>80</height>
@@ -1483,7 +1483,7 @@
       <widget class="QLabel" name="tankstatus_label_9">
        <property name="geometry">
         <rect>
-         <x>240</x>
+         <x>130</x>
          <y>120</y>
          <width>121</width>
          <height>31</height>
@@ -1499,49 +1499,6 @@
        </property>
        <property name="text">
         <string>Food Tank A</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignCenter</set>
-       </property>
-      </widget>
-      <widget class="QLabel" name="water_tank_display_label">
-       <property name="geometry">
-        <rect>
-         <x>100</x>
-         <y>40</y>
-         <width>121</width>
-         <height>80</height>
-        </rect>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">background-color: rgb(246, 245, 244);</string>
-       </property>
-       <property name="text">
-        <string/>
-       </property>
-       <property name="pixmap">
-        <pixmap>../../../../../../Pictures/Screenshots/grap1.png</pixmap>
-       </property>
-      </widget>
-      <widget class="QLabel" name="tankstatus_label_2">
-       <property name="geometry">
-        <rect>
-         <x>100</x>
-         <y>120</y>
-         <width>121</width>
-         <height>31</height>
-        </rect>
-       </property>
-       <property name="font">
-        <font>
-         <family>DejaVu Sans</family>
-         <pointsize>13</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="text">
-        <string>Water Tank</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
@@ -1609,8 +1566,8 @@
       <widget class="QLabel" name="turtleA">
        <property name="geometry">
         <rect>
-         <x>20</x>
-         <y>40</y>
+         <x>30</x>
+         <y>80</y>
          <width>111</width>
          <height>111</height>
         </rect>
@@ -1628,73 +1585,6 @@
        <property name="text">
         <string>🐢 </string>
        </property>
-      </widget>
-      <widget class="QFrame" name="frame_20">
-       <property name="geometry">
-        <rect>
-         <x>20</x>
-         <y>170</y>
-         <width>111</width>
-         <height>71</height>
-        </rect>
-       </property>
-       <property name="styleSheet">
-        <string notr="true"/>
-       </property>
-       <property name="frameShape">
-        <enum>QFrame::Box</enum>
-       </property>
-       <property name="frameShadow">
-        <enum>QFrame::Plain</enum>
-       </property>
-       <property name="lineWidth">
-        <number>2</number>
-       </property>
-       <widget class="QSplitter" name="splitter_32">
-        <property name="geometry">
-         <rect>
-          <x>0</x>
-          <y>0</y>
-          <width>101</width>
-          <height>71</height>
-         </rect>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <widget class="QLabel" name="tankstatus_label_3">
-         <property name="font">
-          <font>
-           <family>DejaVu Sans</family>
-           <pointsize>40</pointsize>
-           <weight>75</weight>
-           <bold>true</bold>
-          </font>
-         </property>
-         <property name="text">
-          <string>🔋</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-        <widget class="QLabel" name="robot_A_battery_label">
-         <property name="font">
-          <font>
-           <family>DejaVu Sans</family>
-           <pointsize>13</pointsize>
-           <weight>75</weight>
-           <bold>true</bold>
-          </font>
-         </property>
-         <property name="text">
-          <string>50 %</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </widget>
       </widget>
       <widget class="QLabel" name="robot_A_status">
        <property name="geometry">
@@ -1827,7 +1717,7 @@ color: rgb(192, 28, 40);</string>
        <property name="geometry">
         <rect>
          <x>20</x>
-         <y>40</y>
+         <y>80</y>
          <width>111</width>
          <height>111</height>
         </rect>
@@ -1845,73 +1735,6 @@ color: rgb(192, 28, 40);</string>
        <property name="text">
         <string>🐢 </string>
        </property>
-      </widget>
-      <widget class="QFrame" name="frame_21">
-       <property name="geometry">
-        <rect>
-         <x>20</x>
-         <y>170</y>
-         <width>111</width>
-         <height>71</height>
-        </rect>
-       </property>
-       <property name="styleSheet">
-        <string notr="true"/>
-       </property>
-       <property name="frameShape">
-        <enum>QFrame::Box</enum>
-       </property>
-       <property name="frameShadow">
-        <enum>QFrame::Plain</enum>
-       </property>
-       <property name="lineWidth">
-        <number>2</number>
-       </property>
-       <widget class="QSplitter" name="splitter_33">
-        <property name="geometry">
-         <rect>
-          <x>0</x>
-          <y>0</y>
-          <width>101</width>
-          <height>71</height>
-         </rect>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <widget class="QLabel" name="tankstatus_label_11">
-         <property name="font">
-          <font>
-           <family>DejaVu Sans</family>
-           <pointsize>40</pointsize>
-           <weight>75</weight>
-           <bold>true</bold>
-          </font>
-         </property>
-         <property name="text">
-          <string>🔋</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-        <widget class="QLabel" name="robot_B_battery_label">
-         <property name="font">
-          <font>
-           <family>DejaVu Sans</family>
-           <pointsize>13</pointsize>
-           <weight>75</weight>
-           <bold>true</bold>
-          </font>
-         </property>
-         <property name="text">
-          <string>30 %</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </widget>
       </widget>
       <widget class="QLabel" name="robot_B_status">
        <property name="geometry">
@@ -2833,30 +2656,6 @@ color: rgb(192, 28, 40);</string>
         <string>capture</string>
        </property>
       </widget>
-      <widget class="QPushButton" name="return_button">
-       <property name="font">
-        <font>
-         <pointsize>13</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="text">
-        <string>Return to Station</string>
-       </property>
-      </widget>
-      <widget class="QPushButton" name="resume_work_button">
-       <property name="font">
-        <font>
-         <pointsize>13</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="text">
-        <string>Resume work</string>
-       </property>
-      </widget>
       <widget class="QPushButton" name="foodtrailer_servo_open_button">
        <property name="font">
         <font>
@@ -2869,26 +2668,18 @@ color: rgb(192, 28, 40);</string>
         <string>Food Trailer Servo Open</string>
        </property>
       </widget>
-     </widget>
-     <widget class="QPushButton" name="foodtrailer_servo_close_button">
-      <property name="geometry">
-       <rect>
-        <x>400</x>
-        <y>700</y>
-        <width>221</width>
-        <height>43</height>
-       </rect>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>13</pointsize>
-        <weight>75</weight>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="text">
-       <string>Food Trailer Servo Close</string>
-      </property>
+      <widget class="QPushButton" name="foodtrailer_servo_close_button">
+       <property name="font">
+        <font>
+         <pointsize>13</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>Food Trailer Servo Close</string>
+       </property>
+      </widget>
      </widget>
      <widget class="QPushButton" name="emergency_stop_button">
       <property name="geometry">
@@ -2918,84 +2709,6 @@ rgb(255, 210, 30)</string>
      </widget>
     </widget>
     <widget class="QWidget" name="control_facilities_page">
-     <widget class="QGroupBox" name="waterpump">
-      <property name="geometry">
-       <rect>
-        <x>110</x>
-        <y>260</y>
-        <width>461</width>
-        <height>141</height>
-       </rect>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>20</pointsize>
-        <weight>75</weight>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="title">
-       <string>Water Pump</string>
-      </property>
-      <widget class="QPushButton" name="waterpump_off_button">
-       <property name="enabled">
-        <bool>true</bool>
-       </property>
-       <property name="geometry">
-        <rect>
-         <x>270</x>
-         <y>60</y>
-         <width>160</width>
-         <height>60</height>
-        </rect>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>18</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">background-color: #D32F2F; color: #fff;</string>
-       </property>
-       <property name="text">
-        <string>Off</string>
-       </property>
-       <property name="checkable">
-        <bool>false</bool>
-       </property>
-      </widget>
-      <widget class="QPushButton" name="waterpump_on_button">
-       <property name="enabled">
-        <bool>true</bool>
-       </property>
-       <property name="geometry">
-        <rect>
-         <x>40</x>
-         <y>60</y>
-         <width>160</width>
-         <height>60</height>
-        </rect>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>18</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">background-color: #4CAF50; color: #fff;</string>
-       </property>
-       <property name="text">
-        <string>On</string>
-       </property>
-       <property name="checkable">
-        <bool>false</bool>
-       </property>
-      </widget>
-     </widget>
      <widget class="QGroupBox" name="foodtank">
       <property name="geometry">
        <rect>
@@ -3078,7 +2791,7 @@ rgb(255, 210, 30)</string>
       <property name="geometry">
        <rect>
         <x>110</x>
-        <y>440</y>
+        <y>300</y>
         <width>461</width>
         <height>141</height>
        </rect>
@@ -3301,9 +3014,9 @@ rgb(255, 210, 30)</string>
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>40</y>
+        <y>130</y>
         <width>211</width>
-        <height>691</height>
+        <height>601</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_14">
@@ -3342,7 +3055,7 @@ rgb(255, 210, 30)</string>
           <property name="geometry">
            <rect>
             <x>50</x>
-            <y>80</y>
+            <y>90</y>
             <width>98</width>
             <height>107</height>
            </rect>
@@ -3356,65 +3069,6 @@ rgb(255, 210, 30)</string>
           </property>
           <property name="text">
            <string>🐢</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-         </widget>
-        </widget>
-       </item>
-       <item>
-        <widget class="QFrame" name="frame_2">
-         <property name="frameShape">
-          <enum>QFrame::StyledPanel</enum>
-         </property>
-         <property name="frameShadow">
-          <enum>QFrame::Raised</enum>
-         </property>
-         <widget class="QLabel" name="remain_battery">
-          <property name="geometry">
-           <rect>
-            <x>50</x>
-            <y>90</y>
-            <width>111</width>
-            <height>101</height>
-           </rect>
-          </property>
-          <property name="font">
-           <font>
-            <pointsize>18</pointsize>
-            <weight>75</weight>
-            <bold>true</bold>
-           </font>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">color: white; background-color: rgb(255, 0, 50);  border-radius: 50px;</string>
-          </property>
-          <property name="text">
-           <string> 20%</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-         </widget>
-         <widget class="QLabel" name="label_32">
-          <property name="geometry">
-           <rect>
-            <x>0</x>
-            <y>20</y>
-            <width>211</width>
-            <height>28</height>
-           </rect>
-          </property>
-          <property name="font">
-           <font>
-            <pointsize>18</pointsize>
-            <weight>75</weight>
-            <bold>true</bold>
-           </font>
-          </property>
-          <property name="text">
-           <string>Battery Remain</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignCenter</set>
@@ -3457,7 +3111,7 @@ rgb(255, 210, 30)</string>
           <property name="geometry">
            <rect>
             <x>0</x>
-            <y>70</y>
+            <y>90</y>
             <width>211</width>
             <height>121</height>
            </rect>
@@ -3513,7 +3167,7 @@ rgb(255, 210, 30)</string>
         </rect>
        </property>
        <property name="currentIndex">
-        <number>0</number>
+        <number>1</number>
        </property>
        <widget class="QWidget" name="page_task_add">
         <widget class="QLabel" name="robot_task_task_id_2">
@@ -5794,73 +5448,6 @@ rgb(255, 210, 30)</string>
       <widget class="QWidget" name="page_3"/>
      </widget>
     </widget>
-    <widget class="QWidget" name="datamanager_choose_facilities_job">
-     <widget class="QPushButton" name="choose_register_employee_button">
-      <property name="geometry">
-       <rect>
-        <x>159</x>
-        <y>260</y>
-        <width>411</width>
-        <height>250</height>
-       </rect>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>30</pointsize>
-        <weight>75</weight>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="text">
-       <string>Register
-Employee</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_38">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>140</y>
-        <width>1261</width>
-        <height>51</height>
-       </rect>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>30</pointsize>
-        <weight>75</weight>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="text">
-       <string>Choose what you want to do with the Facilities</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignCenter</set>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="choose_others_button">
-      <property name="geometry">
-       <rect>
-        <x>720</x>
-        <y>260</y>
-        <width>400</width>
-        <height>250</height>
-       </rect>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>30</pointsize>
-        <weight>75</weight>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="text">
-       <string>Register
-Others</string>
-      </property>
-     </widget>
-    </widget>
     <widget class="QWidget" name="register_employee_page">
      <widget class="QGroupBox" name="groupBox_9">
       <property name="geometry">
@@ -6092,805 +5679,6 @@ Others</string>
          </font>
         </property>
        </column>
-      </widget>
-     </widget>
-    </widget>
-    <widget class="QWidget" name="register_others_page">
-     <widget class="QGroupBox" name="groupBox_21">
-      <property name="geometry">
-       <rect>
-        <x>30</x>
-        <y>0</y>
-        <width>1091</width>
-        <height>451</height>
-       </rect>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>25</pointsize>
-        <weight>75</weight>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="title">
-       <string>Setting Facilities</string>
-      </property>
-      <widget class="QGroupBox" name="groupBox_12">
-       <property name="geometry">
-        <rect>
-         <x>20</x>
-         <y>60</y>
-         <width>431</width>
-         <height>301</height>
-        </rect>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>20</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="title">
-        <string>Current Settings</string>
-       </property>
-       <widget class="QTableWidget" name="facility_table">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>50</y>
-          <width>411</width>
-          <height>221</height>
-         </rect>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>15</pointsize>
-          <weight>75</weight>
-          <bold>true</bold>
-         </font>
-        </property>
-        <row>
-         <property name="text">
-          <string/>
-         </property>
-        </row>
-        <row>
-         <property name="text">
-          <string/>
-         </property>
-        </row>
-        <row>
-         <property name="text">
-          <string/>
-         </property>
-        </row>
-        <row>
-         <property name="text">
-          <string/>
-         </property>
-        </row>
-        <row>
-         <property name="text">
-          <string/>
-         </property>
-        </row>
-        <column>
-         <property name="text">
-          <string>facility_name</string>
-         </property>
-        </column>
-        <column>
-         <property name="text">
-          <string>level(cm)</string>
-         </property>
-        </column>
-        <item row="0" column="0">
-         <property name="text">
-          <string>water tank warning level</string>
-         </property>
-        </item>
-        <item row="1" column="0">
-         <property name="text">
-          <string>water tank charging level</string>
-         </property>
-        </item>
-        <item row="2" column="0">
-         <property name="text">
-          <string>water container warning level</string>
-         </property>
-        </item>
-        <item row="3" column="0">
-         <property name="text">
-          <string>food tank warning level</string>
-         </property>
-        </item>
-        <item row="4" column="0">
-         <property name="text">
-          <string>food tank charging level</string>
-         </property>
-        </item>
-       </widget>
-      </widget>
-      <widget class="QGroupBox" name="groupBox_13">
-       <property name="geometry">
-        <rect>
-         <x>460</x>
-         <y>60</y>
-         <width>611</width>
-         <height>381</height>
-        </rect>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>20</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="title">
-        <string>Update Settings</string>
-       </property>
-       <widget class="QSplitter" name="splitter_29">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>200</y>
-          <width>421</width>
-          <height>101</height>
-         </rect>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Vertical</enum>
-        </property>
-        <widget class="QLabel" name="label_192">
-         <property name="font">
-          <font>
-           <pointsize>20</pointsize>
-           <weight>75</weight>
-           <bold>true</bold>
-          </font>
-         </property>
-         <property name="text">
-          <string>Food tank Warning level :</string>
-         </property>
-         <property name="textFormat">
-          <enum>Qt::AutoText</enum>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-         </property>
-        </widget>
-        <widget class="QLabel" name="label_193">
-         <property name="font">
-          <font>
-           <pointsize>20</pointsize>
-           <weight>75</weight>
-           <bold>true</bold>
-          </font>
-         </property>
-         <property name="text">
-          <string>Food tank Charging level :</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-         </property>
-        </widget>
-       </widget>
-       <widget class="QSplitter" name="splitter_28">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>50</y>
-          <width>421</width>
-          <height>151</height>
-         </rect>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Vertical</enum>
-        </property>
-        <widget class="QLabel" name="label_189">
-         <property name="font">
-          <font>
-           <pointsize>20</pointsize>
-           <weight>75</weight>
-           <bold>true</bold>
-          </font>
-         </property>
-         <property name="text">
-          <string>Water tank Warning level :</string>
-         </property>
-         <property name="textFormat">
-          <enum>Qt::AutoText</enum>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-         </property>
-        </widget>
-        <widget class="QLabel" name="label_190">
-         <property name="font">
-          <font>
-           <pointsize>20</pointsize>
-           <weight>75</weight>
-           <bold>true</bold>
-          </font>
-         </property>
-         <property name="text">
-          <string>Water tank Charging level :</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-         </property>
-        </widget>
-        <widget class="QLabel" name="label_191">
-         <property name="font">
-          <font>
-           <pointsize>20</pointsize>
-           <weight>75</weight>
-           <bold>true</bold>
-          </font>
-         </property>
-         <property name="text">
-          <string>Water container Warning level :</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-         </property>
-        </widget>
-       </widget>
-       <widget class="QPushButton" name="update_button">
-        <property name="geometry">
-         <rect>
-          <x>240</x>
-          <y>320</y>
-          <width>121</width>
-          <height>41</height>
-         </rect>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>18</pointsize>
-          <weight>75</weight>
-          <bold>true</bold>
-         </font>
-        </property>
-        <property name="styleSheet">
-         <string notr="true"/>
-        </property>
-        <property name="text">
-         <string>Update</string>
-        </property>
-       </widget>
-       <widget class="QComboBox" name="food_tank_charging_level_box">
-        <property name="geometry">
-         <rect>
-          <x>440</x>
-          <y>260</y>
-          <width>150</width>
-          <height>40</height>
-         </rect>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>15</pointsize>
-          <weight>50</weight>
-          <bold>false</bold>
-         </font>
-        </property>
-        <item>
-         <property name="text">
-          <string>1</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>2</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>3</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>4</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>5</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>6</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>7</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>8</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>9</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>10</string>
-         </property>
-        </item>
-       </widget>
-       <widget class="QComboBox" name="water_tank_charging_level_box">
-        <property name="geometry">
-         <rect>
-          <x>440</x>
-          <y>110</y>
-          <width>150</width>
-          <height>40</height>
-         </rect>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>15</pointsize>
-          <weight>50</weight>
-          <bold>false</bold>
-         </font>
-        </property>
-        <item>
-         <property name="text">
-          <string>1</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>2</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>3</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>4</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>5</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>6</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>7</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>8</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>9</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>10</string>
-         </property>
-        </item>
-       </widget>
-       <widget class="QComboBox" name="food_tank_warning_level_box">
-        <property name="geometry">
-         <rect>
-          <x>440</x>
-          <y>210</y>
-          <width>150</width>
-          <height>40</height>
-         </rect>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>15</pointsize>
-          <weight>50</weight>
-          <bold>false</bold>
-         </font>
-        </property>
-        <item>
-         <property name="text">
-          <string>1</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>2</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>3</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>4</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>5</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>6</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>7</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>8</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>9</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>10</string>
-         </property>
-        </item>
-       </widget>
-       <widget class="QComboBox" name="water_container_warning_level_box">
-        <property name="geometry">
-         <rect>
-          <x>440</x>
-          <y>160</y>
-          <width>150</width>
-          <height>40</height>
-         </rect>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>15</pointsize>
-          <weight>50</weight>
-          <bold>false</bold>
-         </font>
-        </property>
-        <item>
-         <property name="text">
-          <string>1</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>2</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>3</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>4</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>5</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>6</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>7</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>8</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>9</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>10</string>
-         </property>
-        </item>
-       </widget>
-       <widget class="QComboBox" name="water_tank_warning_level_box">
-        <property name="geometry">
-         <rect>
-          <x>440</x>
-          <y>60</y>
-          <width>150</width>
-          <height>40</height>
-         </rect>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>15</pointsize>
-          <weight>50</weight>
-          <bold>false</bold>
-         </font>
-        </property>
-        <property name="editable">
-         <bool>false</bool>
-        </property>
-        <item>
-         <property name="text">
-          <string>1</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>2</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>3</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>4</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>5</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>6</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>7</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>8</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>9</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>10</string>
-         </property>
-        </item>
-       </widget>
-      </widget>
-     </widget>
-     <widget class="QGroupBox" name="groupBox_23">
-      <property name="geometry">
-       <rect>
-        <x>30</x>
-        <y>460</y>
-        <width>961</width>
-        <height>321</height>
-       </rect>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>25</pointsize>
-        <weight>75</weight>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="title">
-       <string>Harmful Animal</string>
-      </property>
-      <widget class="QTableWidget" name="harmful_animal_table">
-       <property name="geometry">
-        <rect>
-         <x>50</x>
-         <y>60</y>
-         <width>471</width>
-         <height>241</height>
-        </rect>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>13</pointsize>
-         <weight>50</weight>
-         <bold>false</bold>
-        </font>
-       </property>
-       <row>
-        <property name="text">
-         <string>1</string>
-        </property>
-       </row>
-       <column>
-        <property name="text">
-         <string>Index</string>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>13</pointsize>
-          <weight>75</weight>
-          <bold>true</bold>
-         </font>
-        </property>
-       </column>
-       <column>
-        <property name="text">
-         <string>Name</string>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>13</pointsize>
-          <weight>75</weight>
-          <bold>true</bold>
-         </font>
-        </property>
-       </column>
-      </widget>
-      <widget class="QGroupBox" name="groupBox_11">
-       <property name="geometry">
-        <rect>
-         <x>600</x>
-         <y>60</y>
-         <width>311</width>
-         <height>231</height>
-        </rect>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>20</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="title">
-        <string>Add Harmful Animal</string>
-       </property>
-       <widget class="QPushButton" name="add_harmful_animal_button">
-        <property name="geometry">
-         <rect>
-          <x>100</x>
-          <y>170</y>
-          <width>131</width>
-          <height>41</height>
-         </rect>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>15</pointsize>
-          <weight>75</weight>
-          <bold>true</bold>
-         </font>
-        </property>
-        <property name="styleSheet">
-         <string notr="true"/>
-        </property>
-        <property name="text">
-         <string>Add</string>
-        </property>
-       </widget>
-       <widget class="QLabel" name="label_195">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>58</y>
-          <width>85</width>
-          <height>41</height>
-         </rect>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>20</pointsize>
-          <weight>75</weight>
-          <bold>true</bold>
-         </font>
-        </property>
-        <property name="text">
-         <string>Index :</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-        </property>
-       </widget>
-       <widget class="QLineEdit" name="harmful_animal_name_edit">
-        <property name="geometry">
-         <rect>
-          <x>110</x>
-          <y>110</y>
-          <width>181</width>
-          <height>40</height>
-         </rect>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>15</pointsize>
-          <weight>50</weight>
-          <bold>false</bold>
-         </font>
-        </property>
-       </widget>
-       <widget class="QLabel" name="label_194">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>110</y>
-          <width>88</width>
-          <height>41</height>
-         </rect>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>20</pointsize>
-          <weight>75</weight>
-          <bold>true</bold>
-         </font>
-        </property>
-        <property name="text">
-         <string>Name :</string>
-        </property>
-        <property name="textFormat">
-         <enum>Qt::AutoText</enum>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-        </property>
-       </widget>
-       <widget class="QComboBox" name="harmful_animal_index_box">
-        <property name="geometry">
-         <rect>
-          <x>110</x>
-          <y>60</y>
-          <width>181</width>
-          <height>40</height>
-         </rect>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>15</pointsize>
-          <weight>50</weight>
-          <bold>false</bold>
-         </font>
-        </property>
-       </widget>
       </widget>
      </widget>
     </widget>
@@ -7757,7 +6545,7 @@ Others</string>
           <item>
            <widget class="QPushButton" name="datamanager_facilitiespage_button">
             <property name="text">
-             <string>Facilities</string>
+             <string>HR</string>
             </property>
            </widget>
           </item>
