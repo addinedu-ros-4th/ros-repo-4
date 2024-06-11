@@ -39,8 +39,8 @@ import rclpy as rp
 from rclpy.node import Node
 from geometry_msgs.msg import Twist
 from turtles_service_msgs.srv import ArucoNavigateTo
-# from turtles_service_msgs.srv import NavToPose
-# from turtles_service_msgs.msg import ActionClientResult
+from turtles_service_msgs.srv import NavToPose
+from turtles_service_msgs.msg import ActionClientResult
 from rclpy.executors import MultiThreadedExecutor
 from geometry_msgs.msg import PoseWithCovarianceStamped
 from rclpy.qos import QoSProfile, QoSDurabilityPolicy, QoSReliabilityPolicy, QoSHistoryPolicy
@@ -184,12 +184,11 @@ class RosSignalCheckThread(QThread):
 
     def run(self):
         time.sleep(1)  # 1초 대기
-        # self.update_signal.emit()
         rp.spin(self.subscriber_node)
 
     def callback(self,data):
         print("callback-----")
-        print(data.result)
+        print(data.dist_remain)
 
 class CameraThread(QThread):
     update = QtCore.pyqtSignal()
@@ -334,11 +333,6 @@ class ServerThread(QThread):
 
                         q_img = self.cv2ToQimage(img_decoded)
                         self.image_signal.emit(q_img,frame)
-                    
-                        # ros service를 처리하는 client로 이미지 전송 
-                        # print("sock")
-                        # print(sock)
-                        # print(sock.getpeername()[0])
                         
                         if sock.getpeername()[0] == '192.168.1.103':
                             for cli in self.client_sockets:
@@ -480,7 +474,7 @@ class WindowClass(QMainWindow, from_class) :
         self.record.update.connect(self.updateRecording)
         self.btnCapture.clicked.connect(self.capture)   #     
 
-        # self.startThreadForRosCheck()
+        self.startThreadForRosCheck()
 
         #robot task 리스트
         self.task_list = []
@@ -510,7 +504,7 @@ class WindowClass(QMainWindow, from_class) :
         self.model = YOLO('yolov8n.pt')
 
         #databases 연결
-        self.data_manage = DBManager("192.168.0.86", "0000", 3306, "turtles", "TurtlesDB")
+        self.data_manage = DBManager("172.30.1.93", "0000", 3306, "turtles", "TurtlesDB")
         self.animal_df = self.data_manage.getAnimal()
         self.camera_df = self.get_file_info()
         self.food_df = self.data_manage.getFood()
@@ -603,13 +597,13 @@ class WindowClass(QMainWindow, from_class) :
         self.task_add_button.clicked.connect(self.task_add_button_clicked)
         self.save_button.clicked.connect(self.save_button_clicked)
 
-        #ros 
-        # self.service_client_node = rp.create_node('turtles_main_node')
-        # self.service_name_nav = '/navigation_service'
-        # # self.cli = self.service_client_node.create_client(NavToPose, self.service_name_nav)
-        # self.future = None
-        # # self.req = NavToPose.Request()
-        # self.service_call_flag = False
+        # ros 
+        self.service_client_node = rp.create_node('turtles_main_node')
+        self.service_name_nav = '/navigation_service'
+        self.cli = self.service_client_node.create_client(NavToPose, self.service_name_nav)
+        self.future = None
+        self.req = NavToPose.Request()
+        self.service_call_flag = False
 
         self.layout = QVBoxLayout()
         self.setTableWidget(self.feeding_table) 
@@ -678,6 +672,7 @@ class WindowClass(QMainWindow, from_class) :
         
         self.search_button_animal.clicked.connect(self.animal_search)
         self.search_button_food.clicked.connect(self.food_search)
+
         # 시작 날짜 콤보박스 변경 시 종료 날짜 콤보박스 업데이트
         self.captured_date_start.currentIndexChanged.connect(self.update_captured_date_end)
         self.search_button_video.clicked.connect(self.camera_search)
@@ -685,6 +680,7 @@ class WindowClass(QMainWindow, from_class) :
         self.employee_register_camera_button.clicked.connect(self.change_button_text)
 
         self.add_harmful_animal_button.clicked.connect(self.register_new_harmful_animal)
+
         #self.delete_harmful_animal_button.clicked.connect(self.delete_harmful_animal)
         self.refresh_combo_box()
         self.register_button_food.clicked.connect(self.register_new_food)
@@ -1180,7 +1176,7 @@ class WindowClass(QMainWindow, from_class) :
         
     def show_notification_dialog(self):
         #test용 코드--------
-        self.ros2ServiceCallNavTo(self.point_list[0])
+        self.ros2ServiceCallNavTo(self.point_list[5])
         #--------
         dialog = QDialog(self)
         dialog.setWindowTitle('Notifications')
@@ -1985,9 +1981,9 @@ class WindowClass(QMainWindow, from_class) :
         #     print("현재 시간은 수정된 시간과 같습니다.")
 
     def isServiceCalled(self):
-        # if self.service_call_flag:
-        #         print("service call")
-        #         return True
+        if self.service_call_flag:
+                print("service call")
+                return True
         return False
     
     def isNavArucoFinished(self):

@@ -38,6 +38,7 @@ class YamlFileManager:
         position_list.append(self.config['position']['point3'])
         position_list.append(self.config['position']['point4'])
         position_list.append(self.config['position']['point5'])
+        position_list.append(self.config['position']['point6'])
 
 
         return position_list
