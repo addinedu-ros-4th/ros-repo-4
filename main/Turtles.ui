@@ -496,7 +496,7 @@
      <enum>QFrame::NoFrame</enum>
     </property>
     <property name="currentIndex">
-     <number>18</number>
+     <number>2</number>
     </property>
     <widget class="QWidget" name="home_page">
      <widget class="QLabel" name="label">
@@ -6356,17 +6356,23 @@ rgb(255, 210, 30)</string>
      <rect>
       <x>0</x>
       <y>0</y>
-      <width>221</width>
-      <height>671</height>
+      <width>251</width>
+      <height>851</height>
      </rect>
     </property>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <widget class="QToolBox" name="toolBox">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="font">
         <font>
          <family>DejaVu Sans</family>
-         <pointsize>15</pointsize>
+         <pointsize>20</pointsize>
          <weight>75</weight>
          <bold>true</bold>
         </font>
@@ -6374,30 +6380,43 @@ rgb(255, 210, 30)</string>
        <property name="currentIndex">
         <number>3</number>
        </property>
+       <property name="tabSpacing">
+        <number>50</number>
+       </property>
        <widget class="QWidget" name="monitor_page">
         <property name="geometry">
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>219</width>
-          <height>365</height>
+          <width>249</width>
+          <height>121</height>
          </rect>
         </property>
+        <attribute name="icon">
+         <iconset>
+          <normaloff>../../../Downloads/feather/monitor.svg</normaloff>../../../Downloads/feather/monitor.svg</iconset>
+        </attribute>
         <attribute name="label">
-         <string>Monitor</string>
+         <string> Monitor</string>
         </attribute>
         <widget class="QWidget" name="verticalLayoutWidget">
          <property name="geometry">
           <rect>
-           <x>0</x>
+           <x>10</x>
            <y>0</y>
            <width>221</width>
-           <height>128</height>
+           <height>121</height>
           </rect>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout">
           <item>
            <widget class="QPushButton" name="monitor_barnpage_button">
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>32</height>
+             </size>
+            </property>
             <property name="text">
              <string>Barn</string>
             </property>
@@ -6405,6 +6424,12 @@ rgb(255, 210, 30)</string>
           </item>
           <item>
            <widget class="QPushButton" name="monitor_facilitiespage_button">
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>32</height>
+             </size>
+            </property>
             <property name="text">
              <string>Facilities</string>
             </property>
@@ -6412,10 +6437,16 @@ rgb(255, 210, 30)</string>
           </item>
           <item>
            <widget class="QPushButton" name="monitor_camerapage_button">
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>32</height>
+             </size>
+            </property>
             <property name="font">
              <font>
               <family>DejaVu Sans</family>
-              <pointsize>15</pointsize>
+              <pointsize>20</pointsize>
               <weight>75</weight>
               <bold>true</bold>
              </font>
@@ -6433,20 +6464,24 @@ rgb(255, 210, 30)</string>
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>219</width>
-          <height>365</height>
+          <width>249</width>
+          <height>121</height>
          </rect>
         </property>
+        <attribute name="icon">
+         <iconset>
+          <normaloff>../../../Downloads/feather/move.svg</normaloff>../../../Downloads/feather/move.svg</iconset>
+        </attribute>
         <attribute name="label">
-         <string>Control</string>
+         <string> Control</string>
         </attribute>
         <widget class="QWidget" name="verticalLayoutWidget_2">
          <property name="geometry">
           <rect>
-           <x>0</x>
+           <x>10</x>
            <y>0</y>
            <width>221</width>
-           <height>129</height>
+           <height>121</height>
           </rect>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -6472,20 +6507,24 @@ rgb(255, 210, 30)</string>
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>219</width>
-          <height>365</height>
+          <width>249</width>
+          <height>121</height>
          </rect>
         </property>
+        <attribute name="icon">
+         <iconset>
+          <normaloff>../../../Downloads/feather/truck.svg</normaloff>../../../Downloads/feather/truck.svg</iconset>
+        </attribute>
         <attribute name="label">
-         <string>Robot Manager</string>
+         <string> Robot</string>
         </attribute>
         <widget class="QWidget" name="verticalLayoutWidget_3">
          <property name="geometry">
           <rect>
-           <x>0</x>
-           <y>0</y>
+           <x>10</x>
+           <y>2</y>
            <width>221</width>
-           <height>43</height>
+           <height>111</height>
           </rect>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -6504,25 +6543,37 @@ rgb(255, 210, 30)</string>
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>219</width>
-          <height>365</height>
+          <width>249</width>
+          <height>121</height>
          </rect>
         </property>
+        <attribute name="icon">
+         <iconset>
+          <normaloff>../../../Downloads/feather/database.svg</normaloff>../../../Downloads/feather/database.svg</iconset>
+        </attribute>
         <attribute name="label">
-         <string>Data Manager</string>
+         <string> Data </string>
         </attribute>
         <widget class="QWidget" name="verticalLayoutWidget_4">
          <property name="geometry">
           <rect>
-           <x>0</x>
+           <x>10</x>
            <y>0</y>
            <width>221</width>
-           <height>184</height>
+           <height>121</height>
           </rect>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_4">
           <item>
            <widget class="QPushButton" name="datamanager_animalpage_button">
+            <property name="font">
+             <font>
+              <family>DejaVu Sans</family>
+              <pointsize>15</pointsize>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
             <property name="text">
              <string>Animal</string>
             </property>
@@ -6530,6 +6581,14 @@ rgb(255, 210, 30)</string>
           </item>
           <item>
            <widget class="QPushButton" name="datamanager_foodpage_button">
+            <property name="font">
+             <font>
+              <family>DejaVu Sans</family>
+              <pointsize>15</pointsize>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
             <property name="text">
              <string>Food</string>
             </property>
@@ -6537,6 +6596,14 @@ rgb(255, 210, 30)</string>
           </item>
           <item>
            <widget class="QPushButton" name="datamanager_videopage_button">
+            <property name="font">
+             <font>
+              <family>DejaVu Sans</family>
+              <pointsize>15</pointsize>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
             <property name="text">
              <string>Video</string>
             </property>
@@ -6544,6 +6611,14 @@ rgb(255, 210, 30)</string>
           </item>
           <item>
            <widget class="QPushButton" name="datamanager_facilitiespage_button">
+            <property name="font">
+             <font>
+              <family>DejaVu Sans</family>
+              <pointsize>15</pointsize>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
             <property name="text">
              <string>HR</string>
             </property>
@@ -6557,20 +6632,24 @@ rgb(255, 210, 30)</string>
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>219</width>
-          <height>365</height>
+          <width>249</width>
+          <height>121</height>
          </rect>
         </property>
+        <attribute name="icon">
+         <iconset>
+          <normaloff>../../../Downloads/feather/clock.svg</normaloff>../../../Downloads/feather/clock.svg</iconset>
+        </attribute>
         <attribute name="label">
-         <string>Schedule</string>
+         <string> Schedule</string>
         </attribute>
         <widget class="QWidget" name="verticalLayoutWidget_5">
          <property name="geometry">
           <rect>
-           <x>0</x>
-           <y>0</y>
+           <x>10</x>
+           <y>5</y>
            <width>221</width>
-           <height>116</height>
+           <height>111</height>
           </rect>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_5">
@@ -6596,20 +6675,24 @@ rgb(255, 210, 30)</string>
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>219</width>
-          <height>365</height>
+          <width>249</width>
+          <height>121</height>
          </rect>
         </property>
+        <attribute name="icon">
+         <iconset>
+          <normaloff>../../../Downloads/feather/book-open.svg</normaloff>../../../Downloads/feather/book-open.svg</iconset>
+        </attribute>
         <attribute name="label">
-         <string>Log</string>
+         <string> Log</string>
         </attribute>
         <widget class="QPushButton" name="log_button">
          <property name="geometry">
           <rect>
-           <x>0</x>
-           <y>20</y>
+           <x>10</x>
+           <y>10</y>
            <width>219</width>
-           <height>32</height>
+           <height>51</height>
           </rect>
          </property>
          <property name="text">
@@ -6622,20 +6705,24 @@ rgb(255, 210, 30)</string>
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>219</width>
-          <height>365</height>
+          <width>249</width>
+          <height>121</height>
          </rect>
         </property>
+        <attribute name="icon">
+         <iconset>
+          <normaloff>../../../Downloads/feather/settings.svg</normaloff>../../../Downloads/feather/settings.svg</iconset>
+        </attribute>
         <attribute name="label">
-         <string>Setting</string>
+         <string> Setting</string>
         </attribute>
         <widget class="QPushButton" name="setting_button">
          <property name="geometry">
           <rect>
-           <x>0</x>
-           <y>20</y>
+           <x>10</x>
+           <y>10</y>
            <width>219</width>
-           <height>32</height>
+           <height>51</height>
           </rect>
          </property>
          <property name="text">
@@ -6648,8 +6735,8 @@ rgb(255, 210, 30)</string>
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>219</width>
-          <height>365</height>
+          <width>249</width>
+          <height>121</height>
          </rect>
         </property>
         <attribute name="label">
