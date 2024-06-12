@@ -496,7 +496,7 @@
      <enum>QFrame::NoFrame</enum>
     </property>
     <property name="currentIndex">
-     <number>2</number>
+     <number>4</number>
     </property>
     <widget class="QWidget" name="home_page">
      <widget class="QLabel" name="label">
@@ -512,7 +512,7 @@
        <string/>
       </property>
       <property name="pixmap">
-       <pixmap>../../../../../../Pictures/Screenshots/Turtles.png</pixmap>
+       <pixmap>../../../../../../../Pictures/Screenshots/Turtles.png</pixmap>
       </property>
      </widget>
      <widget class="QPushButton" name="logout_button">
@@ -1038,7 +1038,7 @@
         <string/>
        </property>
        <property name="pixmap">
-        <pixmap>../../../../../../Pictures/Screenshots/graph2.png</pixmap>
+        <pixmap>../../../../../../../Pictures/Screenshots/graph2.png</pixmap>
        </property>
       </widget>
      </widget>
@@ -1077,7 +1077,7 @@
         <string/>
        </property>
        <property name="pixmap">
-        <pixmap>../../../../../../Pictures/Screenshots/graph2.png</pixmap>
+        <pixmap>../../../../../../../Pictures/Screenshots/graph2.png</pixmap>
        </property>
       </widget>
      </widget>
@@ -1116,7 +1116,7 @@
         <string/>
        </property>
        <property name="pixmap">
-        <pixmap>../../../../../../Pictures/Screenshots/graph2.png</pixmap>
+        <pixmap>../../../../../../../Pictures/Screenshots/graph2.png</pixmap>
        </property>
       </widget>
      </widget>
@@ -1395,7 +1395,7 @@
         <string/>
        </property>
        <property name="pixmap">
-        <pixmap>../../../../../../Pictures/Screenshots/grap1.png</pixmap>
+        <pixmap>../../../../../../../Pictures/Screenshots/grap1.png</pixmap>
        </property>
       </widget>
      </widget>
@@ -1458,7 +1458,7 @@
         <string/>
        </property>
        <property name="pixmap">
-        <pixmap>../../../../../../Pictures/Screenshots/grap1.png</pixmap>
+        <pixmap>../../../../../../../Pictures/Screenshots/grap1.png</pixmap>
        </property>
       </widget>
       <widget class="QLabel" name="food_tank_A_display_label">
@@ -1477,7 +1477,7 @@
         <string/>
        </property>
        <property name="pixmap">
-        <pixmap>../../../../../../Pictures/Screenshots/grap1.png</pixmap>
+        <pixmap>../../../../../../../Pictures/Screenshots/grap1.png</pixmap>
        </property>
       </widget>
       <widget class="QLabel" name="tankstatus_label_9">
@@ -1540,7 +1540,7 @@
         <string/>
        </property>
        <property name="pixmap">
-        <pixmap>../../../../../../Pictures/Screenshots/graph2.png</pixmap>
+        <pixmap>../../../../../../../Pictures/Screenshots/graph2.png</pixmap>
        </property>
       </widget>
      </widget>
@@ -6388,13 +6388,13 @@ rgb(255, 210, 30)</string>
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>249</width>
-          <height>121</height>
+          <width>98</width>
+          <height>28</height>
          </rect>
         </property>
         <attribute name="icon">
          <iconset>
-          <normaloff>../../../Downloads/feather/monitor.svg</normaloff>../../../Downloads/feather/monitor.svg</iconset>
+          <normaloff>../../../../Downloads/feather/monitor.svg</normaloff>../../../../Downloads/feather/monitor.svg</iconset>
         </attribute>
         <attribute name="label">
          <string> Monitor</string>
@@ -6464,13 +6464,13 @@ rgb(255, 210, 30)</string>
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>249</width>
-          <height>121</height>
+          <width>98</width>
+          <height>28</height>
          </rect>
         </property>
         <attribute name="icon">
          <iconset>
-          <normaloff>../../../Downloads/feather/move.svg</normaloff>../../../Downloads/feather/move.svg</iconset>
+          <normaloff>../../../../Downloads/feather/move.svg</normaloff>../../../../Downloads/feather/move.svg</iconset>
         </attribute>
         <attribute name="label">
          <string> Control</string>
@@ -6507,13 +6507,13 @@ rgb(255, 210, 30)</string>
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>249</width>
-          <height>121</height>
+          <width>98</width>
+          <height>28</height>
          </rect>
         </property>
         <attribute name="icon">
          <iconset>
-          <normaloff>../../../Downloads/feather/truck.svg</normaloff>../../../Downloads/feather/truck.svg</iconset>
+          <normaloff>../../../../Downloads/feather/truck.svg</normaloff>../../../../Downloads/feather/truck.svg</iconset>
         </attribute>
         <attribute name="label">
          <string> Robot</string>
@@ -6549,7 +6549,7 @@ rgb(255, 210, 30)</string>
         </property>
         <attribute name="icon">
          <iconset>
-          <normaloff>../../../Downloads/feather/database.svg</normaloff>../../../Downloads/feather/database.svg</iconset>
+          <normaloff>../../../../Downloads/feather/database.svg</normaloff>../../../../Downloads/feather/database.svg</iconset>
         </attribute>
         <attribute name="label">
          <string> Data </string>
@@ -6560,7 +6560,7 @@ rgb(255, 210, 30)</string>
            <x>10</x>
            <y>0</y>
            <width>221</width>
-           <height>121</height>
+           <height>148</height>
           </rect>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -6632,13 +6632,13 @@ rgb(255, 210, 30)</string>
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>249</width>
-          <height>121</height>
+          <width>98</width>
+          <height>28</height>
          </rect>
         </property>
         <attribute name="icon">
          <iconset>
-          <normaloff>../../../Downloads/feather/clock.svg</normaloff>../../../Downloads/feather/clock.svg</iconset>
+          <normaloff>../../../../Downloads/feather/clock.svg</normaloff>../../../../Downloads/feather/clock.svg</iconset>
         </attribute>
         <attribute name="label">
          <string> Schedule</string>
@@ -6675,13 +6675,13 @@ rgb(255, 210, 30)</string>
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>249</width>
-          <height>121</height>
+          <width>98</width>
+          <height>28</height>
          </rect>
         </property>
         <attribute name="icon">
          <iconset>
-          <normaloff>../../../Downloads/feather/book-open.svg</normaloff>../../../Downloads/feather/book-open.svg</iconset>
+          <normaloff>../../../../Downloads/feather/book-open.svg</normaloff>../../../../Downloads/feather/book-open.svg</iconset>
         </attribute>
         <attribute name="label">
          <string> Log</string>
@@ -6705,13 +6705,13 @@ rgb(255, 210, 30)</string>
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>249</width>
-          <height>121</height>
+          <width>98</width>
+          <height>28</height>
          </rect>
         </property>
         <attribute name="icon">
          <iconset>
-          <normaloff>../../../Downloads/feather/settings.svg</normaloff>../../../Downloads/feather/settings.svg</iconset>
+          <normaloff>../../../../Downloads/feather/settings.svg</normaloff>../../../../Downloads/feather/settings.svg</iconset>
         </attribute>
         <attribute name="label">
          <string> Setting</string>
@@ -6735,8 +6735,8 @@ rgb(255, 210, 30)</string>
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>249</width>
-          <height>121</height>
+          <width>98</width>
+          <height>28</height>
          </rect>
         </property>
         <attribute name="label">
