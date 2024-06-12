@@ -76,13 +76,11 @@ class Pages(Enum):
     PAGE_REGISTER_FOOD = 14
     PAGE_SEARCH_FOOD = 15
     PAGE_DATAMANAGER_VIDEO = 16
-    PAGE_CHOOSE_DATAMANAGER_FACILITIES = 17
-    PAGE_REGISTER_EMPLOYEE = 18
-    PAGE_REGISTER_OTHERS = 19
-    PAGE_SCHEDULE_FOOD = 20
-    PAGE_SCHEDULE_FACILITIES = 21
-    PAGE_LOG = 22
-    PAGE_SETTING = 23
+    PAGE_REGISTER_EMPLOYEE = 17
+    PAGE_SCHEDULE_FOOD = 18
+    PAGE_SCHEDULE_FACILITIES = 19
+    PAGE_LOG = 20
+    PAGE_SETTING = 21
     
 
 class TaskScheduleType(Enum):
@@ -151,76 +149,90 @@ class Task:
         return self.task_food_tank_num
     
 class FaceRecognizer:
-    def __init__(self, faces_folder='faces', sample_image_names=['elon_2024-06-11.png', 'mark_2024-06-11.png']):
+    def __init__(self, faces_folder='faces'):
         self.face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
         self.recognizer = cv2.face.LBPHFaceRecognizer_create()
         self.faces_folder = faces_folder
-        self.sample_image_paths = [os.path.join(faces_folder, name) for name in sample_image_names]
         self.model_path = os.path.join('./yaml/faces_model.yml')
         
         if not os.path.exists(faces_folder):
             os.makedirs(faces_folder)
         
+        self.sample_image_paths = []
+        self.labels = []
+
+        for filename in os.listdir(faces_folder):
+            if filename.endswith(".png") or filename.endswith(".jpg"):
+                filepath = os.path.join(faces_folder, filename)
+                label = filename.split('_')[0]  # 언더스코어 앞의 부분을 라벨로 사용
+                self.sample_image_paths.append(filepath)
+                self.labels.append(label)
+
+        self.label_dict = {name: idx for idx, name in enumerate(set(self.labels))}
+
         self.train_recognizer()
 
 
     def train_recognizer(self):
-        faces = []
-        labels = []
+            faces = []
+            labels = []
 
-        for i, image_path in enumerate(self.sample_image_paths):
-            if os.path.exists(image_path):
-                sample_image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
-                detected_faces = self.face_cascade.detectMultiScale(sample_image, scaleFactor=1.1, minNeighbors=5)
-                
-                if len(detected_faces) > 0:
-                    for (x, y, w, h) in detected_faces:
-                        face = sample_image[y:y+h, x:x+w]
-                        faces.append(face)
-                        labels.append(i)  # 각 얼굴에 대한 라벨 추가
-                    print(f"{image_path}에서 얼굴 감지 및 추가")
-                else:
-                    print(f"{image_path}에서 얼굴을 감지하지 못했습니다.")
-            else:
-                print(f"{image_path}가 존재하지 않습니다.")
+            for image_path, label in zip(self.sample_image_paths, self.labels):
+                if os.path.exists(image_path):
+                    sample_image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+                    detected_faces = self.face_cascade.detectMultiScale(sample_image, scaleFactor=1.1, minNeighbors=5)
+                    
+                    if len(detected_faces) > 0:
+                        for (x, y, w, h) in detected_faces:
+                            face = sample_image[y:y+h, x:x+w]
+                            faces.append(face)
+                            labels.append(self.label_dict[label])  # 라벨을 인덱스로 변환
+                #         print(f"{image_path}에서 얼굴 감지 및 추가")
+                #     else:
+                #         print(f"{image_path}에서 얼굴을 감지하지 못했습니다.")
+                # else:
+                #     print(f"{image_path}가 존재하지 않습니다.")
 
-        self.recognizer.train(faces, np.array(labels))
-        print("이미지 학습 완료")
+            if faces:
+                self.recognizer.train(faces, np.array(labels))
+                # print("이미지 학습 완료")
 
-        # 모델 저장
-        self.recognizer.save(self.model_path)
-        print(f"모델 저장 완료")
+                # 모델 저장
+                self.recognizer.save(self.model_path)
+                # print(f"모델 저장 완료")
+            # else:
+                # print("학습할 얼굴 이미지가 없습니다.")
 
     def recognize_faces(self, frame):
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        faces = self.face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5)
-        
-        for (x, y, w, h) in faces:
-            face = gray[y:y+h, x:x+w]
-            label, confidence = self.recognizer.predict(face)
-            if confidence < 100:
-                if label == 0:
-                    name = "elon"
-                elif label == 1:
-                    name = "mark"
-            else:
-                name = "Unknown"
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            faces = self.face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5)
             
-            # 얼굴 영역에 이름 표시 
-            cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 0, 255), 2)
-            cv2.putText(frame, name, (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
-        
-        return frame
+            for (x, y, w, h) in faces:
+                face = gray[y:y+h, x:x+w]
+                label, confidence = self.recognizer.predict(face)
+                if confidence < 100:
+                    name = list(self.label_dict.keys())[list(self.label_dict.values()).index(label)]
+                else:
+                    name = "Unknown"
+                
+                # 얼굴 영역에 이름 표시 
+                cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 0, 255), 2)
+                cv2.putText(frame, name, (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 0, 0), 2)
+            
+            return frame
 
     def save_image(self, frame):
         # 새로운 이미지를 저장
         index = len(self.sample_image_paths)
         new_image_path = os.path.join(self.faces_folder, f'face_{index}.png')
         cv2.imwrite(new_image_path, cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY))
-        print(f"새 이미지 {new_image_path}에 저장됨")
+        # print(f"새 이미지 {new_image_path}에 저장됨")
         
         # 모델 다시 학습
         self.sample_image_paths.append(new_image_path)
+        new_label = os.path.basename(new_image_path).split('_')[0]  # 파일 이름에서 라벨 추출
+        self.labels.append(new_label)
+        self.label_dict = {name: idx for idx, name in enumerate(set(self.labels))}
         self.train_recognizer()
 
 class Teleop(Node):
@@ -635,8 +647,6 @@ class WindowClass(QMainWindow, from_class) :
         self.choose_search_button_food.clicked.connect(self.searchFoodButtonClicked)
         self.datamanager_videopage_button.clicked.connect(self.datamanagerVideoPageButtonClicked)
         self.datamanager_facilitiespage_button.clicked.connect(self.chooseDatamanagerFacilitiesPageButtonClicked)
-        self.choose_register_employee_button.clicked.connect(self.registerEmployeeButtonClicked)
-        self.choose_others_button.clicked.connect(self.registerOthersButtonClicked)
         self.schedule_foodpage_button.clicked.connect(self.scheduleFoodPageButtonClicked)
         self.schedule_facilitiespage_button.clicked.connect(self.scheduleFacilitiesPageButtonClicked)
 
@@ -705,15 +715,11 @@ class WindowClass(QMainWindow, from_class) :
         # self.camera_df.rename(columns={'camera_num': 'cam_num'}, inplace=True)
         self.load_data_to_table(self.search_camera_table, self.camera_df)
         self.load_data_to_table(self.registered_employee_table, self.employee_df)
-        self.load_data_to_table(self.harmful_animal_table, self.harmful_animal_df)
-        self.load_data_to_table(self.facility_table,self.facility_setting_df)
         
         self.auto_resize_columns(self.search_animal_table)
         self.auto_resize_columns(self.search_food_table)
         self.auto_resize_columns(self.search_camera_table)
         self.auto_resize_columns(self.registered_employee_table)
-        self.auto_resize_columns(self.harmful_animal_table)
-        self.auto_resize_columns(self.facility_table)
         
         
         # animal_df 컬럼 데이터를 ComboBox에 추가
@@ -755,13 +761,10 @@ class WindowClass(QMainWindow, from_class) :
         self.employee_register_button.clicked.connect(self.register_new_employee)
         self.employee_register_camera_button.clicked.connect(self.change_button_text)
 
-        self.add_harmful_animal_button.clicked.connect(self.register_new_harmful_animal)
 
-        #self.delete_harmful_animal_button.clicked.connect(self.delete_harmful_animal)
-        self.refresh_combo_box()
         self.register_button_food.clicked.connect(self.register_new_food)
         self.register_button_animal.clicked.connect(self.register_new_animal)
-        self.update_button.clicked.connect(self.update_facility_setting)
+        # self.update_button.clicked.connect(self.update_facility_setting)
         
         self.set_food_button.clicked.connect(self.on_set_food_button_click)
         self.populate_table()
@@ -876,7 +879,6 @@ class WindowClass(QMainWindow, from_class) :
         status=self.is_remote_start
         self.up_button.setEnabled(status);self.down_button.setEnabled(status)
         self.left_button.setEnabled(status);self.right_button.setEnabled(status)
-        self.return_button.setEnabled(status);self.resume_work_button.setEnabled(status)
         self.foodtrailer_servo_open_button.setEnabled(status);self.foodtrailer_servo_close_button.setEnabled(status)
          
         
@@ -884,7 +886,6 @@ class WindowClass(QMainWindow, from_class) :
         status=self.is_remote_start
         self.up_button.setEnabled(status);self.down_button.setEnabled(status)
         self.left_button.setEnabled(status);self.right_button.setEnabled(status)
-        self.return_button.setEnabled(status);self.resume_work_button.setEnabled(status)
         self.foodtrailer_servo_open_button.setEnabled(status);self.foodtrailer_servo_close_button.setEnabled(status)
                       
     
@@ -1159,7 +1160,6 @@ class WindowClass(QMainWindow, from_class) :
         self.food_intake_average_label.setPixmap(pixmap)
         label_size = self.food_intake_average_label.size()
         self.food_intake_average_label.setFixedSize(label_size)
-        self.drawTank(self.water_tank_display_label, 70)
         self.drawTank(self.food_tank_A_display_label, 50)
         self.drawTank(self.food_tank_B_display_label, 30)
 
@@ -1405,18 +1405,18 @@ class WindowClass(QMainWindow, from_class) :
         
     
     def update_facility_setting(self):
-        # 업데이트할 새 설정 (예시로 값 지정)
-        new_settings = {
-            'water_tank_warning_level': self.water_tank_warning_level_box.currentText(),
-            'water_tank_charging_level': self.water_tank_charging_level_box.currentText(),
-            'water_container_warning_level':self.water_container_warning_level_box.currentText(),
-            'food_tank_warning_level': self.food_tank_warning_level_box.currentText(),
-            'food_tank_charging_level': self.food_tank_charging_level_box.currentText() 
-        }
-        self.data_manage.updateFacilitySetting(new_settings)        
-        self.facility_setting_df=self.data_manage.getFacilitySetting()
-        self.load_data_to_table(self.facility_table,self.facility_setting_df)
+        # # 업데이트할 새 설정 (예시로 값 지정)
+        # new_settings = {
+        #     'water_tank_warning_level': self.water_tank_warning_level_box.currentText(),
+        #     'water_tank_charging_level': self.water_tank_charging_level_box.currentText(),
+        #     'water_container_warning_level':self.water_container_warning_level_box.currentText(),
+        #     'food_tank_warning_level': self.food_tank_warning_level_box.currentText(),
+        #     'food_tank_charging_level': self.food_tank_charging_level_box.currentText() 
+        # }
+        # self.data_manage.updateFacilitySetting(new_settings)        
+        # self.facility_setting_df=self.data_manage.getFacilitySetting()
             # 버튼 클릭 시, 테이블명을 인수로 전달       
+        pass
         
     def register_new_animal(self):
         rfid_uid=self.RFID_edit.text()
@@ -1451,23 +1451,7 @@ class WindowClass(QMainWindow, from_class) :
         self.load_combobox(self.food_df, 'expiry_date', self.search_expiry_date_box)
         
                         
-    def register_new_harmful_animal(self):
-        animal_name= self.harmful_animal_name_edit.text()
-        index_num = self.harmful_animal_index_box.currentText()
-        self.data_manage.register_harmful_animal(index_num,animal_name)
-        self.harmful_animal_df=self.data_manage.getHarmfulAnimal()
-        self.load_data_to_table(self.harmful_animal_table, self.harmful_animal_df)
-        self.refresh_combo_box()
     
-                
-    def refresh_combo_box(self):
-        # harmful_animal_df 데이터프레임에서 index_num 열의 모든 값 추출
-        used_numbers = self.harmful_animal_df['index_num'].tolist()
-        all_numbers = list(range(1, 11))
-        unused_numbers = [num for num in all_numbers if num not in used_numbers]
-        self.harmful_animal_index_box.clear()
-        for num in unused_numbers:
-            self.harmful_animal_index_box.addItem(str(num))
 
     # def show_employee_face(sefl):
     #     self.show_employee_label()
@@ -1861,14 +1845,14 @@ class WindowClass(QMainWindow, from_class) :
         self.face_recognizer = FaceRecognizer()
         self.face_recognizer.train_recognizer()
         # self.face_recognizer.save_image(self)
-        print("직원 얼굴 등록 완료")
+        # print("직원 얼굴 등록 완료")
         
     def train_face_recognizer(self):
         if self.face_recognizer_instance is None:
             self.face_recognizer_instance = FaceRecognizer()
         else:
             self.face_recognizer_instance.train_recognizer()
-        print("얼굴 인식기 학습 완료")
+        # print("얼굴 인식기 학습 완료")
         
     def updateRecording(self):
         rgb_image = cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
@@ -1947,7 +1931,7 @@ class WindowClass(QMainWindow, from_class) :
                             self.feed_weight_edit.setText(barcode_items[2])
                             self.expiry_date_edit.setText(barcode_items[3])
 
-        if self.stackedWidget.currentIndex() == 18: #사용자 등록 페이지
+        if self.stackedWidget.currentIndex() == 17: #사용자 등록 페이지
             if len(image_list) !=0:
                 #웹캠띄우는코드 
                 self.image = cv2.cvtColor(image_list[0],cv2.COLOR_BGR2RGB)
@@ -1972,9 +1956,9 @@ class WindowClass(QMainWindow, from_class) :
                     # print("이미지: ", self.image)
                     
                     # 나머지 YOLO 및 기타 처리
-                    self.updateDetectedListWithYolo(self.image)
-                    self.image = self.drawRedBox(self.image)
-                    self.image = self.checkRemainedFood(self.image)
+                    # self.updateDetectedListWithYolo(self.image)
+                    # self.image = self.drawRedBox(self.image)
+                    # self.image = self.checkRemainedFood(self.image)
 
                     # 이미지 화면에 띄우기
                     h, w, c = self.image.shape
@@ -2619,7 +2603,6 @@ class WindowClass(QMainWindow, from_class) :
         self.stackedWidget.setCurrentIndex(Pages.PAGE_CONTROL_ROBOT.value)
         self.up_button.setEnabled(False);self.down_button.setEnabled(False)
         self.left_button.setEnabled(False);self.right_button.setEnabled(False)
-        self.return_button.setEnabled(False);self.resume_work_button.setEnabled(False)
         self.foodtrailer_servo_open_button.setEnabled(False);self.foodtrailer_servo_close_button.setEnabled(False)
         self.emergency_stop_button.setEnabled(False) 
         self.robot_name_label.setText(robot_name)
@@ -2690,13 +2673,7 @@ class WindowClass(QMainWindow, from_class) :
         
 
     def chooseDatamanagerFacilitiesPageButtonClicked(self):
-        self.stackedWidget.setCurrentIndex(Pages.PAGE_CHOOSE_DATAMANAGER_FACILITIES.value)
-
-    def registerEmployeeButtonClicked(self):
         self.stackedWidget.setCurrentIndex(Pages.PAGE_REGISTER_EMPLOYEE.value)
-    
-    def registerOthersButtonClicked(self):
-        self.stackedWidget.setCurrentIndex(Pages.PAGE_REGISTER_OTHERS.value)
 
     def scheduleFoodPageButtonClicked(self):
         self.stackedWidget.setCurrentIndex(Pages.PAGE_SCHEDULE_FOOD.value)
