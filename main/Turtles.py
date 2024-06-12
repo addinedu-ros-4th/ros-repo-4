@@ -589,7 +589,8 @@ class WindowClass(QMainWindow, from_class) :
         self.yolo_harmful_animal_detect_class = []
         self.yolo_harmful_animal_detect_class_coordinate = []
         # Load the YOLOv8 model
-        self.model = YOLO('yolov8n.pt')
+        self.model = YOLO('./models/yolov8n.pt')
+        self.pose_model = YOLO('./models/yolov8n-pose.pt')
 
         #databases 연결
         self.data_manage = DBManager("192.168.0.47", "4231", 3306, "root", "TurtlesDB")
@@ -626,6 +627,17 @@ class WindowClass(QMainWindow, from_class) :
         self.toolBox.setCurrentIndex(7)
         for idx in range(self.toolBox.count()):
             self.toolBox.setItemEnabled(idx,False)
+
+        #notification dialog 초기화
+        self.notification_dialog = QDialog(self)
+        self.notification_dialog.setWindowFlags(self.windowFlags() & ~Qt.WindowCloseButtonHint )
+
+        self.notification_dialog.setWindowTitle('Notifications')
+        self.notification_dialog.resize(400, 500)  # 팝업 크기 조정
+        self.harmful_animal_rec_time = 100
+        self.harmful_animal_rec_flag = 0
+        self.harmful_animal_count = 0
+
 
         #버튼과 페이지 이동 연결
         self.home_page_button.clicked.connect(self.homePageButtonClicked)
@@ -812,16 +824,6 @@ class WindowClass(QMainWindow, from_class) :
         
         self.feedingtime_display_label.setText(str(self.schedule_num)) # 
         self.record_label.hide()
-        
-        if torch.cuda.is_available():
-            print("GPU 사용가능 여부를 확인중입니다......")
-        # GPU를 사용하도록 설정
-            self.device = torch.device("cuda")
-            print("GPU를 사용합니다.")
-        else:
-        # CPU를 사용하도록 설정
-            self.device = torch.device("cpu")
-            print("GPU를 사용할 수 없습니다. CPU를 사용합니다.")  
                   
         yaml_file_path = "map_turtles_3.yaml"
         # YAML 파일 읽기
@@ -857,12 +859,39 @@ class WindowClass(QMainWindow, from_class) :
         #register employee parameter
         self.is_camera_on_flag = False
         self.employee_register_button.setEnabled(False)
-    
+
+        self.abnormal_temp_aninal = 0
+        self.setAbnormalAnimalTemperature(0)
+        self.notification_number = 0
+
+        if torch.cuda.is_available():
+            print("GPU 사용가능 여부를 확인중입니다......")
+        # GPU를 사용하도록 설정
+            self.device = torch.device("cuda")
+            print("GPU를 사용합니다.")
+        else:
+        # CPU를 사용하도록 설정
+            self.device = torch.device("cpu")
+            print("GPU를 사용할 수 없습니다. CPU를 사용합니다.")  
         
-    # def startThreadForRosCheck(self):
-    #     self.thread = RosSignalCheckThread()
-    #     # self.thread.update_signal.connect(self.updateRosCheck)
-    #     self.thread.start()
+    
+    def setAbnormalAnimalTemperature(self, num):
+        self.abnormal_temp_display_label.setText(str(num))
+
+    def setNotificationButtonText(self):
+        if self.notification_number == 0:
+            self.notification_page_button.setStyleSheet("color: black")  # 이전 버튼의 색상 초기화
+            temp_str = "Notification"
+        else:
+            self.notification_page_button.setStyleSheet("color: red")  # 이전 버튼의 색상 초기화
+            temp_str = "Notification " +str(self.notification_number)
+        self.notification_page_button.setText(temp_str)
+
+
+    def startThreadForRosCheck(self):
+        self.thread = RosSignalCheckThread()
+        # self.thread.update_signal.connect(self.updateRosCheck)
+        self.thread.start()
 
         
     def remote_button_clicked(self):
@@ -1252,16 +1281,14 @@ class WindowClass(QMainWindow, from_class) :
         
     def show_notification_dialog(self):
         #test용 코드--------
-        self.ros2ServiceCallNavTo(self.point_list[5])
+        # self.ros2ServiceCallNavTo(self.point_list[5])
         #--------
-        dialog = QDialog(self)
-        dialog.setWindowTitle('Notifications')
-        dialog.resize(400, 500)  # 팝업 크기 조정
-        
         layout = QVBoxLayout()
         
         notification_text = QTextEdit()
         notification_text.setReadOnly(True)
+        # self.notifications.append("Notification test")
+        close_button = QPushButton("Close")
         
         if len(self.notifications) != 0:
             notification_text.setText('\n'.join(self.notifications))
@@ -1269,16 +1296,35 @@ class WindowClass(QMainWindow, from_class) :
             notification_text.setText('No notifications.')
         
         layout.addWidget(notification_text)
+        layout.addWidget(close_button)
+
+        close_button.clicked.connect(self.notificationDialogCloseButtonClicked)
+
         
-        dialog.setLayout(layout)
-        dialog.exec_()
+        self.notification_dialog.setLayout(layout)
+        self.notification_dialog.exec_()
+        
+
+    def notificationDialogCloseButtonClicked(self):
+        self.notification_dialog.close()
+        self.notification_page_button.setStyleSheet("font-family: Ubuntu;font-size: 20px;")
+        self.notification_number = 0
+        self.setNotificationButtonText()
+
         
     def handle_button_click(self):
         clicked_button = self.sender()
         if self.current_active_button:
-            self.current_active_button.setStyleSheet("font-size: 20px; font-weight: bold;")  # 이전 버튼의 색상 초기화
+            if self.toolBox.currentIndex() == 3:
+                self.current_active_button.setStyleSheet("font-family: DejaVu Sans;font-size: 15px; font-weight: bold;")  # 이전 버튼의 색상 초기화
+            else:
+                self.current_active_button.setStyleSheet("font-family: DejaVu Sans;font-size: 25px; font-weight: bold;")  # 이전 버튼의 색상 초기화
         
-        clicked_button.setStyleSheet("font-size: 20px;font-weight: bold; background-color: darkgray")  # 현재 버튼의 색상 설정
+        if self.toolBox.currentIndex() == 3:
+            clicked_button.setStyleSheet("font-family: DejaVu Sans;font-size: 15px;font-weight: bold; background-color: darkgray")  # 현재 버튼의 색상 설정
+        else:
+            clicked_button.setStyleSheet("font-family: DejaVu Sans;font-size: 25px;font-weight: bold; background-color: darkgray")  # 현재 버튼의 색상 설정
+
         self.current_active_button = clicked_button
         
     def show_shortcut_dialog(self):
@@ -1627,6 +1673,7 @@ class WindowClass(QMainWindow, from_class) :
 
     def drawRedBox(self,img_form):
         result = img_form.copy()
+        add_abnormal_temp_animal = 0
 
         for val in self.yolo_detect_class_coordinate:
             for idx, coord in enumerate(val):
@@ -1637,7 +1684,7 @@ class WindowClass(QMainWindow, from_class) :
 
                 roi = result[int(y1):int(y2), int(x1):int(x2)]
                 # result[int(y1):int(y2), int(x1):int(x2)] = self.checkAnimalTemepature(roi)
-                self.checkAnimalTemperature(roi)
+                add_abnormal_temp_animal = add_abnormal_temp_animal + self.checkAnimalTemperature(roi)
 
                 #소만 crop한 이미지
                 # cv2.imshow('ROI', roi)
@@ -1654,11 +1701,20 @@ class WindowClass(QMainWindow, from_class) :
                 text_y = int(y2 + text_size[1] + 5)  # 객체 아래에 위치
                 cv2.putText(result, self.yolo_detect_class[idx], (text_x, text_y), font, font_scale, font_color, font_thickness)
                 
+        if self.abnormal_temp_aninal != add_abnormal_temp_animal:
+            self.abnormal_temp_aninal = add_abnormal_temp_animal
+            self.setAbnormalAnimalTemperature(self.abnormal_temp_aninal)
+            if self.abnormal_temp_aninal >0:
+                self.notifications.append("[Warning] Cow abnormal Temperature detected")
+                self.notification_number += 1
+                self.setNotificationButtonText()
+
+
         return result 
     
     def drawBlueBox(self,img_form,detect_class, coordinate):
         result = img_form.copy()
-
+        harmful_animal_count = 0
         for val in coordinate:
             for idx, coord in enumerate(val):
                 x1 = coord[0]
@@ -1668,10 +1724,10 @@ class WindowClass(QMainWindow, from_class) :
 
                 roi = result[int(y1):int(y2), int(x1):int(x2)]
                 # result[int(y1):int(y2), int(x1):int(x2)] = self.checkAnimalTemepature(roi)
-                self.checkAnimalTemperature(roi)
 
                 #소만 crop한 이미지
                 # cv2.imshow('ROI', roi)
+                harmful_animal_count += 1
 
                 cv2.rectangle(result, (int(x1.item()), int(y1.item())), (int(x2.item()), int(y2.item())), (0, 0, 255), 2)
                 
@@ -1684,7 +1740,18 @@ class WindowClass(QMainWindow, from_class) :
                 text_x = int((x1 + x2) / 2 - text_size[0] / 2)
                 text_y = int(y2 + text_size[1] + 5)  # 객체 아래에 위치
                 cv2.putText(result, detect_class[idx], (text_x, text_y), font, font_scale, font_color, font_thickness)
+        
+        if harmful_animal_count > 0:
+            if self.harmful_animal_count != harmful_animal_count:
+                self.harmful_animal_count = harmful_animal_count
+                if self.harmful_animal_rec_flag == 0:
+                    self.clickRecord()
+                    self.harmful_animal_rec_flag = 1
+                    self.notifications.append("[Warning] Harmful animal detected")
+                    self.notification_number += 1
+                    self.setNotificationButtonText()
                 
+
         return result 
     
         
@@ -1748,11 +1815,14 @@ class WindowClass(QMainWindow, from_class) :
         return result 
     
     def checkAnimalTemperature(self,cropped_img):
-        result = cropped_img.copy()
+
+        result = 0
+
+        copy_raw_image = cropped_img.copy()
         
         #HSV 색상으로 변환
-        hsv_image = cv2.cvtColor(result, cv2.COLOR_RGB2HSV)
-        bgr_image = cv2.cvtColor(result, cv2.COLOR_RGB2BGR)
+        hsv_image = cv2.cvtColor(copy_raw_image, cv2.COLOR_RGB2HSV)
+        bgr_image = cv2.cvtColor(copy_raw_image, cv2.COLOR_RGB2BGR)
         # 빨간색과 분홍색의 HSV 범위 정의
         lower_red_pink1 = np.array([0, 70, 50])
         upper_red_pink1 = np.array([10, 255, 255])
@@ -1776,8 +1846,8 @@ class WindowClass(QMainWindow, from_class) :
         upper_blue_cyan2 = np.array([100, 255, 255])
         
         # 두 범위의 마스크 생성
-        mask_blue1 = cv2.inRange(result, lower_blue_cyan1, upper_blue_cyan1)
-        mask_blue2 = cv2.inRange(result, lower_blue_cyan2, upper_blue_cyan2)
+        mask_blue1 = cv2.inRange(hsv_image, lower_blue_cyan1, upper_blue_cyan1)
+        mask_blue2 = cv2.inRange(hsv_image, lower_blue_cyan2, upper_blue_cyan2)
         
         # 두 마스크를 합쳐서 최종 마스크 생성
         mask_blue = cv2.bitwise_or(mask_blue1, mask_blue2)
@@ -1789,7 +1859,7 @@ class WindowClass(QMainWindow, from_class) :
         # cv2.imshow('blue', blue_cyan_only)
 
         # 각 이미지가 차지하는 픽셀 수 계산
-        cropped_pixel_count = np.count_nonzero(result)
+        cropped_pixel_count = np.count_nonzero(copy_raw_image)
         red_masked_pixel_count = np.count_nonzero(red_pink_only)
         blue_masked_pixel_count = np.count_nonzero(blue_cyan_only)
 
@@ -1813,7 +1883,10 @@ class WindowClass(QMainWindow, from_class) :
         h = self.monitor_camera_label.height()
         text_x = int(h /2) 
         text_y = int(w /2)
-        cv2.putText(result, result_str, (text_x, text_y), font, font_scale, font_color, font_thickness)
+
+        if (blue_area > 15 ) or (red_area >20):
+            result = 1
+            cv2.putText(copy_raw_image, result_str, (text_x, text_y), font, font_scale, font_color, font_thickness)
 
         print(result_str)
 
@@ -1821,6 +1894,7 @@ class WindowClass(QMainWindow, from_class) :
         # result = masked_image
 
         return result 
+    
     def capture(self):
         if not os.path.exists('captures'):
             os.makedirs('captures')
@@ -1894,6 +1968,17 @@ class WindowClass(QMainWindow, from_class) :
         self.cam_num = self.select_camera_box.currentIndex()
 
     def updateCameraView(self):   
+        # #demo용
+        # if self.harmful_animal_rec_flag == 1:
+        #     if self.harmful_animal_rec_time > 0:
+        #         self.harmful_animal_rec_time -= 1
+        #         print(self.harmful_animal_rec_time)
+        #     else:
+        #         self.harmful_animal_rec_time = 30
+        #         self.harmful_animal_rec_flag = 0
+        #         self.clickRecord()
+
+        # #####
         retval_list = []
         image_list = []
         for idx,cam in enumerate(self.camera_list):
@@ -1949,20 +2034,26 @@ class WindowClass(QMainWindow, from_class) :
             if self.cam_num < len(image_list):
                 if retval_list[self.cam_num]:
                     self.image = cv2.cvtColor(image_list[self.cam_num],cv2.COLOR_BGR2RGB)
-                    
-                    # 추가된 얼굴 인식 처리
-                # try:
+
+                    # if self.cam_num != 0:    # Entrance 카메라를 제외하고 나머지는 cow yolo 인식 처리 하기 
                     self.image = self.face_recognizer.recognize_faces(self.image)
                     # print("이미지: ", self.image)
                     
                     # 나머지 YOLO 및 기타 처리
                     # self.updateDetectedListWithYolo(self.image)
                     # self.image = self.drawRedBox(self.image)
-                    # self.image = self.checkRemainedFood(self.image)
+                    self.image = self.checkRemainedFood(self.image)
 
-                    # 이미지 화면에 띄우기
-                    h, w, c = self.image.shape
-                    qimage = QImage(self.image.data, w, h, w * c, QImage.Format_RGB888)
+                    # self.updateHarmfulAnimalDetectedListWithYolo(self.image)
+                    # self.image = self.drawBlueBox(self.image,self.yolo_harmful_animal_detect_class, self.yolo_harmful_animal_detect_class_coordinate)
+                    
+                    rgb_image = cv2.cvtColor(self.image,cv2.COLOR_BGR2RGB)
+
+                    # cv2.imshow('camera_view', rgb_image)
+
+                    #이미지 화면에 띄우기
+                    h,w,c = self.image.shape
+                    qimage = QImage(self.image.data, w, h, w*c, QImage.Format_RGB888)
 
                     self.pixmap = self.pixmap.fromImage(qimage)
                     self.pixmap = self.pixmap.scaled(self.monitor_camera_label.width(), self.monitor_camera_label.height())
@@ -2567,7 +2658,7 @@ class WindowClass(QMainWindow, from_class) :
 
             
     # def toolbox_changed(self):
-        # print("toolbox")
+    #     print("toolbox")
         # if self.toolBox.currentIndex() == 5 and self.is_logged_in == True:
         #     self.stackedWidget.setCurrentIndex(Pages.PAGE_LOG.value)
         # elif self.toolBox.currentIndex() == 6 and self.is_logged_in == True:
