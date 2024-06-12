@@ -38,9 +38,9 @@ from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 import rclpy as rp
 from rclpy.node import Node
 from geometry_msgs.msg import Twist
-from turtles_service_msgs.srv import ArucoNavigateTo
-from turtles_service_msgs.srv import NavToPose
-from turtles_service_msgs.msg import ActionClientResult
+# from turtles_service_msgs.srv import ArucoNavigateTo
+# from turtles_service_msgs.srv import NavToPose
+# from turtles_service_msgs.msg import ActionClientResult
 from rclpy.executors import MultiThreadedExecutor
 from geometry_msgs.msg import PoseWithCovarianceStamped
 from rclpy.qos import QoSProfile, QoSDurabilityPolicy, QoSReliabilityPolicy, QoSHistoryPolicy
@@ -149,6 +149,79 @@ class Task:
     
     def getFoodTank(self):
         return self.task_food_tank_num
+    
+class FaceRecognizer:
+    def __init__(self, faces_folder='faces', sample_image_names=['elon_2024-06-11.png', 'mark_2024-06-11.png']):
+        self.face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+        self.recognizer = cv2.face.LBPHFaceRecognizer_create()
+        self.faces_folder = faces_folder
+        self.sample_image_paths = [os.path.join(faces_folder, name) for name in sample_image_names]
+        self.model_path = os.path.join('./yaml/faces_model.yml')
+        
+        if not os.path.exists(faces_folder):
+            os.makedirs(faces_folder)
+        
+        self.train_recognizer()
+
+
+    def train_recognizer(self):
+        faces = []
+        labels = []
+
+        for i, image_path in enumerate(self.sample_image_paths):
+            if os.path.exists(image_path):
+                sample_image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+                detected_faces = self.face_cascade.detectMultiScale(sample_image, scaleFactor=1.1, minNeighbors=5)
+                
+                if len(detected_faces) > 0:
+                    for (x, y, w, h) in detected_faces:
+                        face = sample_image[y:y+h, x:x+w]
+                        faces.append(face)
+                        labels.append(i)  # 각 얼굴에 대한 라벨 추가
+                    print(f"{image_path}에서 얼굴 감지 및 추가")
+                else:
+                    print(f"{image_path}에서 얼굴을 감지하지 못했습니다.")
+            else:
+                print(f"{image_path}가 존재하지 않습니다.")
+
+        self.recognizer.train(faces, np.array(labels))
+        print("이미지 학습 완료")
+
+        # 모델 저장
+        self.recognizer.save(self.model_path)
+        print(f"모델 저장 완료")
+
+    def recognize_faces(self, frame):
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        faces = self.face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5)
+        
+        for (x, y, w, h) in faces:
+            face = gray[y:y+h, x:x+w]
+            label, confidence = self.recognizer.predict(face)
+            if confidence < 100:
+                if label == 0:
+                    name = "elon"
+                elif label == 1:
+                    name = "mark"
+            else:
+                name = "Unknown"
+            
+            # 얼굴 영역에 이름 표시 
+            cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 0, 255), 2)
+            cv2.putText(frame, name, (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
+        
+        return frame
+
+    def save_image(self, frame):
+        # 새로운 이미지를 저장
+        index = len(self.sample_image_paths)
+        new_image_path = os.path.join(self.faces_folder, f'face_{index}.png')
+        cv2.imwrite(new_image_path, cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY))
+        print(f"새 이미지 {new_image_path}에 저장됨")
+        
+        # 모델 다시 학습
+        self.sample_image_paths.append(new_image_path)
+        self.train_recognizer()
 
 class Teleop(Node):
     def __init__(self):
@@ -174,21 +247,21 @@ class RosThread(QThread):
         self.msleep(100) #추가 안하면 UI에 딜레이 발생
         rp.spin(self.node)
             
-class RosSignalCheckThread(QThread):
-    # 이 신호는 스레드에서 메인 스레드로 메시지를 보낼 때 사용됩니다.
-    update_signal = pyqtSignal()
-    def __init__(self):
-        super().__init__()
-        self.subscriber_node = rp.create_node('action_client_check_node')
-        self.subscriber = self.subscriber_node.create_subscription(ActionClientResult, '/pub_action_result',self.callback, 10)
+# class RosSignalCheckThread(QThread):
+#     # 이 신호는 스레드에서 메인 스레드로 메시지를 보낼 때 사용됩니다.
+#     update_signal = pyqtSignal()
+#     def __init__(self):
+#         super().__init__()
+#         self.subscriber_node = rp.create_node('action_client_check_node')
+#         self.subscriber = self.subscriber_node.create_subscription(ActionClientResult, '/pub_action_result',self.callback, 10)
 
-    def run(self):
-        time.sleep(1)  # 1초 대기
-        rp.spin(self.subscriber_node)
+#     def run(self):
+#         time.sleep(1)  # 1초 대기
+#         rp.spin(self.subscriber_node)
 
-    def callback(self,data):
-        print("callback-----")
-        print(data.dist_remain)
+#     def callback(self,data):
+#         print("callback-----")
+#         print(data.dist_remain)
 
 class CameraThread(QThread):
     update = QtCore.pyqtSignal()
@@ -474,7 +547,10 @@ class WindowClass(QMainWindow, from_class) :
         self.record.update.connect(self.updateRecording)
         self.btnCapture.clicked.connect(self.capture)   #     
 
-        self.startThreadForRosCheck()
+        # self.startThreadForRosCheck()
+        self.face_recognizer = FaceRecognizer()
+        print("--face recognizer---")
+        print(self.face_recognizer.model_path)
 
         #robot task 리스트
         self.task_list = []
@@ -504,7 +580,7 @@ class WindowClass(QMainWindow, from_class) :
         self.model = YOLO('yolov8n.pt')
 
         #databases 연결
-        self.data_manage = DBManager("172.30.1.93", "0000", 3306, "turtles", "TurtlesDB")
+        self.data_manage = DBManager("192.168.0.47", "4231", 3306, "root", "TurtlesDB")
         self.animal_df = self.data_manage.getAnimal()
         self.camera_df = self.get_file_info()
         self.food_df = self.data_manage.getFood()
@@ -600,9 +676,9 @@ class WindowClass(QMainWindow, from_class) :
         # ros 
         self.service_client_node = rp.create_node('turtles_main_node')
         self.service_name_nav = '/navigation_service'
-        self.cli = self.service_client_node.create_client(NavToPose, self.service_name_nav)
+        # self.cli = self.service_client_node.create_client(NavToPose, self.service_name_nav)
         self.future = None
-        self.req = NavToPose.Request()
+        # self.req = NavToPose.Request()
         self.service_call_flag = False
 
         self.layout = QVBoxLayout()
@@ -780,10 +856,10 @@ class WindowClass(QMainWindow, from_class) :
         self.employee_register_button.setEnabled(False)
     
         
-    def startThreadForRosCheck(self):
-        self.thread = RosSignalCheckThread()
-        # self.thread.update_signal.connect(self.updateRosCheck)
-        self.thread.start()
+    # def startThreadForRosCheck(self):
+    #     self.thread = RosSignalCheckThread()
+    #     # self.thread.update_signal.connect(self.updateRosCheck)
+    #     self.thread.start()
 
         
     def remote_button_clicked(self):
@@ -1404,6 +1480,7 @@ class WindowClass(QMainWindow, from_class) :
         self.employee_df= self.data_manage.getEmployeeData()
         self.load_data_to_table(self.registered_employee_table, self.employee_df)
 
+
     def change_button_text(self):
         if self.is_camera_on_flag == False:
             self.employee_register_camera_button.setText("Camera Off")
@@ -1781,8 +1858,17 @@ class WindowClass(QMainWindow, from_class) :
         rgb_image = cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
 
         cv2.imwrite(filename, rgb_image)
-
+        self.face_recognizer = FaceRecognizer()
+        self.face_recognizer.train_recognizer()
+        # self.face_recognizer.save_image(self)
         print("직원 얼굴 등록 완료")
+        
+    def train_face_recognizer(self):
+        if self.face_recognizer_instance is None:
+            self.face_recognizer_instance = FaceRecognizer()
+        else:
+            self.face_recognizer_instance.train_recognizer()
+        print("얼굴 인식기 학습 완료")
         
     def updateRecording(self):
         rgb_image = cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
@@ -1869,37 +1955,61 @@ class WindowClass(QMainWindow, from_class) :
                 qimage = QImage(self.image.data, w, h, w*c, QImage.Format_RGB888)
 
                 self.pixmap = self.pixmap.fromImage(qimage)
-                self.pixmap = self.pixmap.scaled(self.monitor_camera_label.width(), self.monitor_camera_label.height())
+                self.pixmap = self.pixmap.scaled(self.employee_cam_label.width(), self.employee_cam_label.height())
                 if self.is_camera_on_flag == True:
                     self.employee_cam_label.setPixmap(self.pixmap)
 
-                    
-                
+
                                             
         if self.stackedWidget.currentIndex() == 4: #카메라 페이지 
             if self.cam_num < len(image_list):
-
                 if retval_list[self.cam_num]:
                     self.image = cv2.cvtColor(image_list[self.cam_num],cv2.COLOR_BGR2RGB)
-
-                    # if self.cam_num != 0:    # Entrance 카메라를 제외하고 나머지는 cow yolo 인식 처리 하기 
+                    
+                    # 추가된 얼굴 인식 처리
+                # try:
+                    self.image = self.face_recognizer.recognize_faces(self.image)
+                    # print("이미지: ", self.image)
+                    
+                    # 나머지 YOLO 및 기타 처리
                     self.updateDetectedListWithYolo(self.image)
                     self.image = self.drawRedBox(self.image)
                     self.image = self.checkRemainedFood(self.image)
 
-                    # self.updateHarmfulAnimalDetectedListWithYolo(self.image)
-                    # self.image = self.drawBlueBox(self.image,self.yolo_harmful_animal_detect_class, self.yolo_harmful_animal_detect_class_coordinate)
-                    
-                    #이미지 화면에 띄우기
-                    h,w,c = self.image.shape
-                    qimage = QImage(self.image.data, w, h, w*c, QImage.Format_RGB888)
+                    # 이미지 화면에 띄우기
+                    h, w, c = self.image.shape
+                    qimage = QImage(self.image.data, w, h, w * c, QImage.Format_RGB888)
 
                     self.pixmap = self.pixmap.fromImage(qimage)
                     self.pixmap = self.pixmap.scaled(self.monitor_camera_label.width(), self.monitor_camera_label.height())
 
                     self.monitor_camera_label.setPixmap(self.pixmap)
-                else:
-                    print(f"Camera cannot be opened")            
+                # except cv2.error as e:
+                #                 print(f"OpenCV Error: {e}")
+                #                 # 에러가 발생했지만 화면이 꺼지지 않도록 pass
+                #                 pass
+            else:
+                print(f"Camera cannot be opened")
+
+
+                #     # if self.cam_num != 0:    # Entrance 카메라를 제외하고 나머지는 cow yolo 인식 처리 하기 
+                #     self.updateDetectedListWithYolo(self.image)
+                #     self.image = self.drawRedBox(self.image)
+                #     self.image = self.checkRemainedFood(self.image)
+
+                #     # self.updateHarmfulAnimalDetectedListWithYolo(self.image)
+                #     # self.image = self.drawBlueBox(self.image,self.yolo_harmful_animal_detect_class, self.yolo_harmful_animal_detect_class_coordinate)
+                    
+                #     #이미지 화면에 띄우기
+                #     h,w,c = self.image.shape
+                #     qimage = QImage(self.image.data, w, h, w*c, QImage.Format_RGB888)
+
+                #     self.pixmap = self.pixmap.fromImage(qimage)
+                #     self.pixmap = self.pixmap.scaled(self.monitor_camera_label.width(), self.monitor_camera_label.height())
+
+                #     self.monitor_camera_label.setPixmap(self.pixmap)
+                # else:
+                #     print(f"Camera cannot be opened")            
 
 
 
@@ -2186,17 +2296,17 @@ class WindowClass(QMainWindow, from_class) :
         
 
         
-    def sendToFoodTank(self, pt,tank_num = 1):
-        service_name = '/navigate_to_pose'
-        cli = self.service_client_node.create_client(ArucoNavigateTo, service_name)
-        req = ArucoNavigateTo.Request()
-        req.x = pt['x']
-        req.y = pt['y']
-        req.z = pt['z']
-        req.aruco_id = pt['aruco_id']
-        req.mode = pt['mode']
+    # def sendToFoodTank(self, pt,tank_num = 1):
+    #     service_name = '/navigate_to_pose'
+    #     cli = self.service_client_node.create_client(ArucoNavigateTo, service_name)
+    #     req = ArucoNavigateTo.Request()
+    #     req.x = pt['x']
+    #     req.y = pt['y']
+    #     req.z = pt['z']
+    #     req.aruco_id = pt['aruco_id']
+    #     req.mode = pt['mode']
         
-        print(req)
+    #     print(req)
 
 
         # rp.spin_once(self.service_client_node)
@@ -2398,15 +2508,15 @@ class WindowClass(QMainWindow, from_class) :
             self.client_label.show()
 
     
-    def nav_to_station1_button_clicked(self):
-        service_name = '/nav_service'
-        cli = self.service_client_node.create_client(NavToPose, service_name)
-        req = NavToPose.Request()
-        req.x = 0.007822726853191853
-        req.y = -0.024536626413464546
-        req.z = 0.002471923828125
+    # def nav_to_station1_button_clicked(self):
+    #     service_name = '/nav_service'
+    #     cli = self.service_client_node.create_client(NavToPose, service_name)
+    #     req = NavToPose.Request()
+    #     req.x = 0.007822726853191853
+    #     req.y = -0.024536626413464546
+    #     req.z = 0.002471923828125
         
-        print(req)
+    #     print(req)
 
         # while not cli.wait_for_service(timeout_sec=1.0):
         #     print("Waiting for service")
