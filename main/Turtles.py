@@ -38,9 +38,9 @@ from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 import rclpy as rp
 from rclpy.node import Node
 from geometry_msgs.msg import Twist
-# from turtles_service_msgs.srv import ArucoNavigateTo
-# from turtles_service_msgs.srv import NavToPose
-# from turtles_service_msgs.msg import ActionClientResult
+from turtles_service_msgs.srv import ArucoNavigateTo
+from turtles_service_msgs.srv import NavToPose
+from turtles_service_msgs.msg import ActionClientResult
 from rclpy.executors import MultiThreadedExecutor
 from geometry_msgs.msg import PoseWithCovarianceStamped
 from rclpy.qos import QoSProfile, QoSDurabilityPolicy, QoSReliabilityPolicy, QoSHistoryPolicy
@@ -153,7 +153,7 @@ class FaceRecognizer:
         self.face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
         self.recognizer = cv2.face.LBPHFaceRecognizer_create()
         self.faces_folder = faces_folder
-        self.model_path = os.path.join('./yaml/faces_model.yml')
+        self.model_path = os.path.join('faces_model.yml')
         
         if not os.path.exists(faces_folder):
             os.makedirs(faces_folder)
@@ -593,7 +593,7 @@ class WindowClass(QMainWindow, from_class) :
         self.pose_model = YOLO('./models/yolov8n-pose.pt')
 
         #databases 연결
-        self.data_manage = DBManager("192.168.0.47", "4231", 3306, "root", "TurtlesDB")
+        self.data_manage = DBManager("192.168.0.86", "0000", 3306, "turtles", "TurtlesDB")
         self.animal_df = self.data_manage.getAnimal()
         self.camera_df = self.get_file_info()
         self.food_df = self.data_manage.getFood()
@@ -694,13 +694,16 @@ class WindowClass(QMainWindow, from_class) :
         #task add
         self.task_add_button.clicked.connect(self.task_add_button_clicked)
         self.save_button.clicked.connect(self.save_button_clicked)
+        self.cancel_button.clicked.connect(self.cancel_button_clicked)
+        self.task_list_table.cellClicked.connect(self.task_list_table_clicked)
+
 
         # ros 
         self.service_client_node = rp.create_node('turtles_main_node')
         self.service_name_nav = '/navigation_service'
-        # self.cli = self.service_client_node.create_client(NavToPose, self.service_name_nav)
+        self.cli = self.service_client_node.create_client(NavToPose, self.service_name_nav)
         self.future = None
-        # self.req = NavToPose.Request()
+        self.req = NavToPose.Request()
         self.service_call_flag = False
 
         self.layout = QVBoxLayout()
@@ -742,7 +745,7 @@ class WindowClass(QMainWindow, from_class) :
         self.load_combobox(self.animal_df, 'room', self.search_room_box)
         self.load_combobox(self.animal_df, 'weight (kg)', self.search_weight_box)
         self.load_combobox(self.animal_df, 'registered_date', self.search_rfid_box)
-        self.load_combobox(self.animal_df, 'rfid_uid', self.search_animal_date_box)
+        # self.load_combobox(self.animal_df, 'rfid_uid', self.search_animal_date_box)
         
         # food_df 컬럼 데이터를 ComboBox에 추가
         self.load_combobox(self.food_df, 'barcode_id', self.search_food_id_box)
@@ -841,6 +844,8 @@ class WindowClass(QMainWindow, from_class) :
         self.map_origin = map_yaml_data['origin'][:2]   
         self.search_camera_table.cellClicked.connect(self.on_click)
         self.registered_employee_table.cellClicked.connect(self.on_click_2)
+
+        self.num_count = 0
 
         # Initialize Teleop node
         # self.teleop_node = Teleop()
@@ -1191,6 +1196,7 @@ class WindowClass(QMainWindow, from_class) :
         self.food_intake_average_label.setFixedSize(label_size)
         self.drawTank(self.food_tank_A_display_label, 50)
         self.drawTank(self.food_tank_B_display_label, 30)
+        
 
     def drawTank(self, label, percentage):
         # Create a QPixmap with the same size as the label
@@ -1475,7 +1481,7 @@ class WindowClass(QMainWindow, from_class) :
         registered_date=self.registered_date_animal.text()
         self.data_manage.register_animal(animal_id, gender, age, food_brand, room , weight, registered_date, rfid_uid)
         self.annimal_df=self.data_manage.getAnimal()
-        self.label_33.setText("새로운 동물 등록이 완료되었습니다.")
+        # self.label_33.setText("새로운 동물 등록이 완료되었습니다.")
 
                 
     def register_new_food(self):
@@ -1632,6 +1638,19 @@ class WindowClass(QMainWindow, from_class) :
     
     
     def updateDetectedListWithYolo(self, frame_for_yolo):
+        #demo 영상용
+        # num_list = [80, 70, 60, 50, 40, 30]
+        # num_list2 = [50, 60, 70, 80, 70, 70]
+
+        # self.drawTank(self.food_tank_A_display_label, num_list[self.num_count])
+
+        # self.drawTank(self.food_tank_B_display_label, num_list2[self.num_count])
+
+        # if self.num_count < 5 :
+        #     self.num_count += 1
+        # else:
+        #     self.num_count = 0
+
 
         self.yolo_detect_class.clear()
         self.yolo_detect_class_coordinate.clear()
@@ -2036,13 +2055,13 @@ class WindowClass(QMainWindow, from_class) :
                     self.image = cv2.cvtColor(image_list[self.cam_num],cv2.COLOR_BGR2RGB)
 
                     # if self.cam_num != 0:    # Entrance 카메라를 제외하고 나머지는 cow yolo 인식 처리 하기 
-                    self.image = self.face_recognizer.recognize_faces(self.image)
+                    # self.image = self.face_recognizer.recognize_faces(self.image)
                     # print("이미지: ", self.image)
                     
                     # 나머지 YOLO 및 기타 처리
-                    # self.updateDetectedListWithYolo(self.image)
-                    # self.image = self.drawRedBox(self.image)
-                    self.image = self.checkRemainedFood(self.image)
+                    self.updateDetectedListWithYolo(self.image)
+                    self.image = self.drawRedBox(self.image)
+                    # self.image = self.checkRemainedFood(self.image)
 
                     # self.updateHarmfulAnimalDetectedListWithYolo(self.image)
                     # self.image = self.drawBlueBox(self.image,self.yolo_harmful_animal_detect_class, self.yolo_harmful_animal_detect_class_coordinate)
@@ -2065,26 +2084,6 @@ class WindowClass(QMainWindow, from_class) :
                 #                 pass
             else:
                 print(f"Camera cannot be opened")
-
-
-                #     # if self.cam_num != 0:    # Entrance 카메라를 제외하고 나머지는 cow yolo 인식 처리 하기 
-                #     self.updateDetectedListWithYolo(self.image)
-                #     self.image = self.drawRedBox(self.image)
-                #     self.image = self.checkRemainedFood(self.image)
-
-                #     # self.updateHarmfulAnimalDetectedListWithYolo(self.image)
-                #     # self.image = self.drawBlueBox(self.image,self.yolo_harmful_animal_detect_class, self.yolo_harmful_animal_detect_class_coordinate)
-                    
-                #     #이미지 화면에 띄우기
-                #     h,w,c = self.image.shape
-                #     qimage = QImage(self.image.data, w, h, w*c, QImage.Format_RGB888)
-
-                #     self.pixmap = self.pixmap.fromImage(qimage)
-                #     self.pixmap = self.pixmap.scaled(self.monitor_camera_label.width(), self.monitor_camera_label.height())
-
-                #     self.monitor_camera_label.setPixmap(self.pixmap)
-                # else:
-                #     print(f"Camera cannot be opened")            
 
 
 
@@ -2227,8 +2226,8 @@ class WindowClass(QMainWindow, from_class) :
                 
 
             elif robot.status == Status.STATUS_NAV_ARUCO.value:
-                self.robot_status_label.setText("NAV_ARUCO")
-                self.robot_A_status.setText("NAV_ARUCO")
+                self.robot_status_label.setText("NAV\nARUCO")
+                self.robot_A_status.setText("NAV\nARUCO")
 
                 if self.isServiceCallDone() == True:
                     robot.setStatus(Status.STATUS_STANDBY.value)
@@ -2422,6 +2421,38 @@ class WindowClass(QMainWindow, from_class) :
         temp_task = Task(self.task_id,TaskScheduleType.TASK_REGISTERED.value, self.robot_task_room_num_combobox.currentText(),modified_datetime)
         temp_task.setFoodTank(self.get_food_type())
         self.task_list.append(temp_task)
+        #demo용
+        # self.task_list_table
+        print("=== task list")
+        print(self.task_list[0].task_id)
+        # self.client_table.setColumnCount(2)
+        self.task_list_table.setRowCount(1)
+
+        self.task_list_table.setItem(0, 0, QTableWidgetItem(str(self.task_list[0].task_id)))  # 첫 번째 열에 IP 설정
+        self.task_list_table.setItem(0, 1, QTableWidgetItem("assigned"))  # 두 번째 열에 Port 설정   
+
+
+
+    def cancel_button_clicked(self):
+        #task add 화면으로 만들어 주기 
+        self.stackedWidget_robot_task.setCurrentIndex(1)           # task add 화면으로 이동    
+
+
+    def task_list_table_clicked(self):
+        current_datetime = datetime.now()
+        formatted_time = current_datetime.strftime("%Y-%m-%d %H:%M")
+        self.robot_task_task_id_edit.setText(str(self.task_list[0].task_id))
+        self.robot_task_robot_number_edit.setText(str(self.task_list[0].task_room_num))
+        self.robot_task_tank_num_edit.setText(str("1"))
+        self.robot_task_register_time_edit.setText(str(formatted_time))
+        self.robot_task_work_start_edit.setText(str(formatted_time))
+        self.robot_task_work_finish_edit.setText("---")
+
+
+
+
+        
+        
 
     def foodrobot_up_button_clicked(self):
         teleop_node.twist.linear.x = 3.0
@@ -2714,7 +2745,7 @@ class WindowClass(QMainWindow, from_class) :
         self.stackedWidget.setCurrentIndex(Pages.PAGE_CHOOSE_DATAMANAGER_ANIMAL.value)
     
     def registerAnimalButtonClicked(self):
-        self.label_33.setText("등록할 RFID를 리더기 위에 얹어주세요.")
+        # self.label_33.setText("등록할 RFID를 리더기 위에 얹어주세요.")
         self.load_combobox_except_all(self.food_df, 'brand_name', self.select_feed_box)
         self.RFID_edit.setText("")
         self.ID_edit.setText("")

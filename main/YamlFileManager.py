@@ -57,12 +57,12 @@ class YamlFileManager:
 class TestYamlFileManager(unittest.TestCase):
     
     def test_get_return_value_taskid(self):
-        yaml_manager = YamlFileManager('config.yaml')
+        yaml_manager = YamlFileManager('./yaml/config.yaml')
         result = yaml_manager.getLastTaskID()
         self.assertEqual(result,0)
 
     def test_get_return_value_robot_num(self):
-        yaml_manager = YamlFileManager('config.yaml')
+        yaml_manager = YamlFileManager('./yaml/config.yaml')
         result = yaml_manager.getTotalRobotNum()
         self.assertEqual(result,1)
 

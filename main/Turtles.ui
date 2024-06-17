@@ -486,7 +486,7 @@
    <widget class="QStackedWidget" name="stackedWidget">
     <property name="geometry">
      <rect>
-      <x>230</x>
+      <x>260</x>
       <y>40</y>
       <width>1271</width>
       <height>831</height>
@@ -496,7 +496,7 @@
      <enum>QFrame::NoFrame</enum>
     </property>
     <property name="currentIndex">
-     <number>4</number>
+     <number>9</number>
     </property>
     <widget class="QWidget" name="home_page">
      <widget class="QLabel" name="label">
@@ -1608,7 +1608,7 @@ color: rgb(255, 255, 255);
 border-radius: 20px;</string>
        </property>
        <property name="text">
-        <string>Working</string>
+        <string>NAV_ARUCO</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
@@ -1635,7 +1635,7 @@ border-radius: 20px;</string>
 color: rgb(192, 28, 40);</string>
        </property>
        <property name="text">
-        <string>order now</string>
+        <string>Food TankA</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
@@ -1661,7 +1661,7 @@ color: rgb(192, 28, 40);</string>
         <string notr="true">background-color: rgb(249, 240, 107);</string>
        </property>
        <property name="text">
-        <string>order 2</string>
+        <string>Food Charge</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
@@ -1687,7 +1687,7 @@ color: rgb(192, 28, 40);</string>
         <string notr="true">background-color: rgb(249, 240, 107);</string>
        </property>
        <property name="text">
-        <string>order 3</string>
+        <string>Room3</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
@@ -1758,7 +1758,7 @@ color: rgb(255, 255, 255);
 border-radius: 20px;</string>
        </property>
        <property name="text">
-        <string>Working</string>
+        <string>STANDBY</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
@@ -1776,15 +1776,15 @@ border-radius: 20px;</string>
        <property name="font">
         <font>
          <pointsize>13</pointsize>
-         <weight>50</weight>
-         <bold>false</bold>
+         <weight>75</weight>
+         <bold>true</bold>
         </font>
        </property>
        <property name="styleSheet">
         <string notr="true">background-color: rgb(249, 240, 107);</string>
        </property>
        <property name="text">
-        <string>order 1</string>
+        <string>-</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
@@ -1808,10 +1808,10 @@ border-radius: 20px;</string>
        </property>
        <property name="styleSheet">
         <string notr="true">background-color: rgb(249, 240, 107);
-color: rgb(192, 28, 40);</string>
+</string>
        </property>
        <property name="text">
-        <string>order now</string>
+        <string>-</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
@@ -1829,15 +1829,15 @@ color: rgb(192, 28, 40);</string>
        <property name="font">
         <font>
          <pointsize>13</pointsize>
-         <weight>50</weight>
-         <bold>false</bold>
+         <weight>75</weight>
+         <bold>true</bold>
         </font>
        </property>
        <property name="styleSheet">
         <string notr="true">background-color: rgb(249, 240, 107);</string>
        </property>
        <property name="text">
-        <string>order 3</string>
+        <string>-</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
@@ -3334,6 +3334,29 @@ rgb(255, 210, 30)</string>
           <string>SAVE</string>
          </property>
         </widget>
+        <widget class="QPushButton" name="cancel_button">
+         <property name="geometry">
+          <rect>
+           <x>660</x>
+           <y>510</y>
+           <width>131</width>
+           <height>41</height>
+          </rect>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>15</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="styleSheet">
+          <string notr="true"/>
+         </property>
+         <property name="text">
+          <string>Cancel</string>
+         </property>
+        </widget>
        </widget>
        <widget class="QWidget" name="task_view">
         <widget class="QPushButton" name="right_button_date">
@@ -3399,15 +3422,15 @@ rgb(255, 210, 30)</string>
           </font>
          </property>
          <property name="text">
-          <string>2024-06-04</string>
+          <string>2024-06-13</string>
          </property>
         </widget>
-        <widget class="QTableWidget" name="feeding_table_2">
+        <widget class="QTableWidget" name="task_list_table">
          <property name="geometry">
           <rect>
            <x>40</x>
            <y>90</y>
-           <width>191</width>
+           <width>211</width>
            <height>441</height>
           </rect>
          </property>
@@ -3418,9 +3441,17 @@ rgb(255, 210, 30)</string>
            <bold>false</bold>
           </font>
          </property>
+         <property name="gridStyle">
+          <enum>Qt::SolidLine</enum>
+         </property>
          <column>
           <property name="text">
-           <string>Service List</string>
+           <string>Task id</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Status</string>
           </property>
          </column>
         </widget>
@@ -3451,7 +3482,7 @@ rgb(255, 210, 30)</string>
          <property name="geometry">
           <rect>
            <x>350</x>
-           <y>162</y>
+           <y>172</y>
            <width>185</width>
            <height>32</height>
           </rect>
@@ -3464,7 +3495,7 @@ rgb(255, 210, 30)</string>
          <property name="geometry">
           <rect>
            <x>620</x>
-           <y>160</y>
+           <y>170</y>
            <width>261</width>
            <height>40</height>
           </rect>
@@ -3474,7 +3505,7 @@ rgb(255, 210, 30)</string>
          <property name="geometry">
           <rect>
            <x>620</x>
-           <y>210</y>
+           <y>226</y>
            <width>261</width>
            <height>40</height>
           </rect>
@@ -3484,7 +3515,7 @@ rgb(255, 210, 30)</string>
          <property name="geometry">
           <rect>
            <x>350</x>
-           <y>214</y>
+           <y>230</y>
            <width>235</width>
            <height>32</height>
           </rect>
@@ -3493,34 +3524,11 @@ rgb(255, 210, 30)</string>
           <string>Food tank number</string>
          </property>
         </widget>
-        <widget class="QLabel" name="robot_task_room_num">
-         <property name="geometry">
-          <rect>
-           <x>350</x>
-           <y>276</y>
-           <width>180</width>
-           <height>32</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Room number</string>
-         </property>
-        </widget>
-        <widget class="QLineEdit" name="robot_task_room_num_edit">
-         <property name="geometry">
-          <rect>
-           <x>620</x>
-           <y>270</y>
-           <width>261</width>
-           <height>40</height>
-          </rect>
-         </property>
-        </widget>
         <widget class="QLabel" name="robot_task_register_time">
          <property name="geometry">
           <rect>
            <x>350</x>
-           <y>339</y>
+           <y>289</y>
            <width>174</width>
            <height>32</height>
           </rect>
@@ -3533,7 +3541,7 @@ rgb(255, 210, 30)</string>
          <property name="geometry">
           <rect>
            <x>620</x>
-           <y>340</y>
+           <y>290</y>
            <width>261</width>
            <height>40</height>
           </rect>
@@ -3543,7 +3551,7 @@ rgb(255, 210, 30)</string>
          <property name="geometry">
           <rect>
            <x>350</x>
-           <y>460</y>
+           <y>430</y>
            <width>212</width>
            <height>32</height>
           </rect>
@@ -3556,7 +3564,7 @@ rgb(255, 210, 30)</string>
          <property name="geometry">
           <rect>
            <x>620</x>
-           <y>400</y>
+           <y>360</y>
            <width>261</width>
            <height>40</height>
           </rect>
@@ -3566,7 +3574,7 @@ rgb(255, 210, 30)</string>
          <property name="geometry">
           <rect>
            <x>620</x>
-           <y>460</y>
+           <y>430</y>
            <width>261</width>
            <height>40</height>
           </rect>
@@ -3576,7 +3584,7 @@ rgb(255, 210, 30)</string>
          <property name="geometry">
           <rect>
            <x>350</x>
-           <y>400</y>
+           <y>360</y>
            <width>203</width>
            <height>32</height>
           </rect>
@@ -3730,29 +3738,6 @@ rgb(255, 210, 30)</string>
      </widget>
     </widget>
     <widget class="QWidget" name="register_animal_page">
-     <widget class="QLabel" name="label_33">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>50</y>
-        <width>1251</width>
-        <height>51</height>
-       </rect>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>30</pointsize>
-        <weight>75</weight>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="text">
-       <string>등록할 RFID를 리더기 위에 얹어주세요.</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignCenter</set>
-      </property>
-     </widget>
      <widget class="QGroupBox" name="groupBox_4">
       <property name="geometry">
        <rect>
@@ -5427,6 +5412,9 @@ rgb(255, 210, 30)</string>
         <height>381</height>
        </rect>
       </property>
+      <property name="currentIndex">
+       <number>0</number>
+      </property>
       <widget class="QWidget" name="page">
        <widget class="QLabel" name="video_label">
         <property name="geometry">
@@ -6560,7 +6548,7 @@ rgb(255, 210, 30)</string>
            <x>10</x>
            <y>0</y>
            <width>221</width>
-           <height>121</height>
+           <height>148</height>
           </rect>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_4">

@@ -27,6 +27,6 @@ def connect_to_server(host, port):
         print("클라이언트 연결을 종료했습니다.")
 
 if __name__ == "__main__":
-    host = "192.168.0.138"  # 서버가 사용하는 ip
+    host = "192.168.0.86"  # 서버가 사용하는 ip
     port = 2000  # 서버가 사용하는 포트 번호
     connect_to_server(host, port)
