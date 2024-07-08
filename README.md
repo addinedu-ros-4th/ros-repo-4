@@ -1,5 +1,9 @@
 # 🐮 WHAT 소 🤠  
+
+<img src="https://img.shields.io/badge/ROS2-22314E?style=for-the-badge&logo=ROS&logoColor=white">    <img src="https://img.shields.io/badge/PyQt-41CD52?style=for-the-badge&logo=Qt&logoColor=white">  <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=Python&logoColor=white">  
+
 ![pngegg](https://github.com/addinedu-ros-4th/ros-repo-4/assets/132053839/5e423a47-2743-4505-b3c3-8f7c954b6a3b)
+
 
 
 1. 프로젝트 설명
