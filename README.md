@@ -1,5 +1,5 @@
-# ros-repo-4
-WHAT소![pngegg](https://github.com/addinedu-ros-4th/ros-repo-4/assets/132053839/5e423a47-2743-4505-b3c3-8f7c954b6a3b)
+# 🐮 WHAT 소 🤠  
+![pngegg](https://github.com/addinedu-ros-4th/ros-repo-4/assets/132053839/5e423a47-2743-4505-b3c3-8f7c954b6a3b)
 
 
 1. 프로젝트 설명
