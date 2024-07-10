@@ -4,8 +4,8 @@ import pickle
 import struct
 from _thread import start_new_thread
 
-HOST = '192.168.0.20'  # 서버 IP 주소
-PORT = 5002
+HOST = '192.168.1.100'  # 서버 IP 주소
+PORT = 3000
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client_socket.connect((HOST, PORT))
 

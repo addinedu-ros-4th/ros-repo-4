@@ -8,231 +8,187 @@ import time
 import rclpy
 from rclpy.node import Node
 from turtles_service_msgs.srv import ArucoNavigateTo
-from rclpy.action import ActionClient
-from nav2_msgs.action import NavigateToPose
-from geometry_msgs.msg import PoseStamped, Twist
-from tf_transformations import euler_from_quaternion, quaternion_from_euler
+from geometry_msgs.msg import Point
 
-TCP_IP = '192.168.1.104'  # 서버 IP 주소
-TCP_PORT = 3000            # 서버 포트
+TCP_IP = '192.168.1.104'
+TCP_PORT = 3000
 
-class Nav_Aruco_Service(Node):
+class NavArucoService(Node):
 
     def __init__(self):
-        super().__init__('Nav_Aruco_Service')
-        self.srv = self.create_service(ArucoNavigateTo, 'correct_turtles', self.service_callback)
-        self.action_client = ActionClient(self, NavigateToPose, '/navigate_to_pose')
-
-        self.cmd_vel_pub = self.create_publisher(Twist, '/base_controller/cmd_vel_unstamped', 10)
-
-        self.target_reached = False
-        self.aruco_found = False
-        self.rotating = False
-        self.finding_final_id = False
-
-        self.aruco_dict = cv2.aruco.Dictionary_get(cv2.aruco.DICT_6X6_250)
-        self.aruco_params = cv2.aruco.DetectorParameters_create()
-        self.intrinsic_camera = np.array([[933.15867, 0, 657.59],
-                                          [0, 933.1586, 400.36993],
-                                          [0, 0, 1]])
-        self.distortion = np.array([-0.43948, 0.18514, 0, 0])
-
-        self.create_timer(0.1, self.rotation_loop)
+        super().__init__('nav_aruco_service')
+        self.detected_count = 0  # 탐지 횟수를 추적하는 변수 추가
+        self.detection_active = False  # 탐지 활성화 플래그 추가
+        self.aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_6X6_250)
+        self.aruco_params = cv2.aruco.DetectorParameters()
 
         self.image_queue = []
-        self.processing_thread = threading.Thread(target=self.process_images)
+        self.image_queue_lock = threading.Lock()
+
+        # Use calibration data
+        self.intrinsic_camera = np.array([
+            [500.8251042496629, 0, 297.06186891146444],
+            [0, 495.01966287604364, 229.461575892311],
+            [0, 0, 1]
+        ])
+
+        self.distortion = np.array([0.2411284519030748, -1.04497582377272, -0.027966318140935194, -0.016250782774982115, 1.2957406835430951])
+
+        # Camera offset in robot coordinates (example values)
+        self.camera_offset = np.array([0.03, 0.0, 0.0])  # 3 cm in front of the robot
+
+        self.robot_position = None  # 로봇의 위치 저장할 변수 추가
+
+        # 새로운 좌표 퍼블리셔 추가
+        self.new_position_publisher = self.create_publisher(Point, 'new_position', 10)
+
         self.processing_thread_running = True
+        self.processing_thread = threading.Thread(target=self.process_images)
         self.processing_thread.start()
 
+        self.tcp_thread_running = True
         self.tcp_thread = threading.Thread(target=self.receive_images_via_tcp)
         self.tcp_thread.start()
 
+        self.srv = self.create_service(ArucoNavigateTo, 'start_aruco_detection', self.start_detection_callback)
+
     def receive_images_via_tcp(self):
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        client_socket.connect((TCP_IP, TCP_PORT))
-        self.get_logger().info('Connected to server')
+        try:
+            self.get_logger().info('Attempting to connect to server')
+            client_socket.connect((TCP_IP, TCP_PORT))
+            self.get_logger().info('Connected to server')
 
-        data = b""
-        payload_size = struct.calcsize("L")
-        
-        while True:
-            try:
-                while len(data) < payload_size:
-                    packet = client_socket.recv(4096)
-                    if not packet: 
-                        break
-                    data += packet
-                if len(data) < payload_size:
-                    continue
-                packed_msg_size = data[:payload_size]
-                data = data[payload_size:]
-                msg_size = struct.unpack("L", packed_msg_size)[0]
-                
-                while len(data) < msg_size:
-                    data += client_socket.recv(4096)
-                frame_data = data[:msg_size]
-                data = data[msg_size:]
-                
-                frame = pickle.loads(frame_data)
-                self.image_queue.append(frame)
-                cv2.imshow('Received Frame', frame)
-                if cv2.waitKey(1) & 0xFF == ord('q'):
+            data = b""
+            payload_size = struct.calcsize("L")
+            
+            while self.tcp_thread_running:
+                try:
+                    while len(data) < payload_size:
+                        packet = client_socket.recv(4096)
+                        data += packet
+
+                    if len(data) < payload_size:
+                        continue
+
+                    packed_msg_size = data[:payload_size]
+                    data = data[payload_size:]
+                    msg_size = struct.unpack("L", packed_msg_size)[0]
+
+                    while len(data) < msg_size:
+                        packet = client_socket.recv(4096)
+                        data += packet
+
+                    frame_data = data[:msg_size]
+                    data = data[msg_size:]
+
+                    frame = pickle.loads(frame_data)
+                    frame = cv2.imdecode(frame, cv2.IMREAD_COLOR)
+                    
+                    with self.image_queue_lock:
+                        self.image_queue.append(frame)
+
+                except Exception as e:
+                    self.get_logger().error(f"Error receiving image: {e}")
                     break
-            except Exception as e:
-                self.get_logger().error(f"Error receiving image: {e}")
-                break
-
-        client_socket.close()
-
-    def service_callback(self, request: ArucoNavigateTo.Request, response: ArucoNavigateTo.Response):
-
-        if self.target_reached:
-            response.success = False
-            response.message = "Already navigating to pose"
-            return response
-
-        self.get_logger().info('Service called: Navigating to pose...')
-        goal_msg = self.create_goal_pose(request.x, request.y, request.z, 0.0, 0.0, 0.0, 1.0)
-
-        self.action_client.wait_for_server()
-        self._send_goal_future = self.action_client.send_goal_async(goal_msg)
-        self._send_goal_future.add_done_callback(lambda future: self.goal_response_callback(future, request.aruco_id, request.final_id))
-
-        response.success = True
-        response.message = "NavigateToPose action called successfully"
-        return response
-
-    def goal_response_callback(self, future, aruco_id, final_id):
-        goal_handle = future.result()
-        if not goal_handle.accepted:
-            self.get_logger().info('Goal rejected')
-            return
-        self.get_logger().info('Goal accepted')
-        self._get_result_future = goal_handle.get_result_async()
-        self._get_result_future.add_done_callback(lambda future: self.get_result_callback(future, aruco_id, final_id))
-
-    def get_result_callback(self, future, aruco_id, final_id):
-        result = future.result().result
-        self.get_logger().info('Result: {0}'.format(result))
-        if result:
-            self.target_reached = True
-            self.get_logger().info('Target reached. Starting ArUco marker detection.')
-            self.rotating = False
-            self.finding_final_id = False
-            self.aruco_id = aruco_id
-            self.final_id = final_id
-            self.aruco_found = False
-
-    def rotation_loop(self):
-        if self.finding_final_id and not self.aruco_found:
-            twist = Twist()
-            twist.angular.z = 0.15  # 작은 각도 회전
-            self.cmd_vel_pub.publish(twist)
-            time.sleep(0.2)  # 회전 시간 단축
-            self.cmd_vel_pub.publish(Twist())  # 회전 멈춤
-            # 여기서 탐지를 호출하지 않고, `process_images` 스레드가 계속 탐지하도록 함
-
-    def stop_rotation(self):
-        self.get_logger().info('Stopping rotation...')
-        self.rotating = False
-        twist = Twist()
-        self.cmd_vel_pub.publish(twist)
+        finally:
+            client_socket.close()
 
     def process_images(self):
         while self.processing_thread_running:
-            if self.image_queue:
-                frame = self.image_queue.pop(0)
-                if not self.target_reached and not self.finding_final_id:
-                    continue
+            frame = None
+            with self.image_queue_lock:
+                if self.image_queue:
+                    frame = self.image_queue.pop(0)
 
+            if frame is not None:
                 gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-                corners, ids, rejected = cv2.aruco.detectMarkers(gray, self.aruco_dict, parameters=self.aruco_params)
+                corners, ids, _ = cv2.aruco.detectMarkers(gray, self.aruco_dict, parameters=self.aruco_params)
 
-                if ids is not None and len(ids) > 0:
-                    if not self.finding_final_id and self.aruco_id in ids:
-                        self.aruco_found = True
-                        _, tvecs, _ = cv2.aruco.estimatePoseSingleMarkers(corners, 0.05, self.intrinsic_camera, self.distortion)
-                        self.align_and_approach_marker(tvecs[0][0], 1.5)
-                    elif self.finding_final_id and self.final_id in ids:
-                        self.aruco_found = True
-                        _, tvecs, _ = cv2.aruco.estimatePoseSingleMarkers(corners, 0.05, self.intrinsic_camera, self.distortion)
-                        self.align_and_approach_marker(tvecs[0][0], 0.5, True)
-            # 탐지 후 바로 다음 이미지를 처리할 수 있도록 대기 시간을 줄임
+                if self.detection_active and ids is not None and len(ids) > 0 and self.detected_count < 3:
+                    self.get_logger().info(f'Detected Aruco markers: {ids.flatten()}')
+                    for i in range(len(ids)):
+                        rvec, tvec, _ = cv2.aruco.estimatePoseSingleMarkers(corners[i], 0.055, self.intrinsic_camera, self.distortion)
+                        
+                        # Adjusting for the camera offset to get the correct position in robot's coordinate system
+                        tvec_corrected = tvec[0][0] + self.camera_offset
+
+                        # Calculating the distance to the marker using the norm of the translation vector
+                        distance = np.linalg.norm(tvec_corrected)
+                        self.get_logger().info(f'Marker ID: {ids[i][0]}, Position: {tvec_corrected}, Distance: {distance:.15f}')
+                        
+                        # Calculate the new robot position to have the marker 1.25 meters away
+                        if self.robot_position is not None:
+                            new_map_position = self.calculate_new_map_position(tvec_corrected, 1.1)
+                            self.get_logger().info(f'New map position to achieve 1.25m distance: {new_map_position}')
+                            
+                            # Publish the new position
+                            self.publish_new_position(new_map_position)
+                    
+                    self.detected_count += 1
+                    if self.detected_count >= 1:  # 탐지 횟수가 3회 이상일 경우 추가 처리(예: 탐지 중단)
+                        self.get_logger().info('3 Aruco markers detected, stopping detection.')
+                        self.detection_active = False
+
+                cv2.imshow('Frame Video', frame)
+                if cv2.waitKey(1) & 0xFF == ord('q'):
+                    break
             time.sleep(0.1)
 
-    def align_and_approach_marker(self, tvec, target_distance, is_final=False):
-        while tvec is not None and abs(tvec[2] - target_distance) > 0.1:
-            twist = Twist()
+    def publish_new_position(self, new_position):
+        new_position_msg = Point()
+        new_position_msg.x = new_position[0]
+        new_position_msg.y = new_position[1]
+        new_position_msg.z = 0.0
 
-            if not is_final:
-                # Only move forward or backward to reach the target distance
-                twist.linear.x = 0.1 if tvec[2] > target_distance else -0.1
-                self.cmd_vel_pub.publish(twist)
-                time.sleep(0.5)  # Allow some time to move
-                self.cmd_vel_pub.publish(Twist())  # Stop moving
-                tvec = self.check_marker_position(final_check=is_final)
+        self.new_position_publisher.publish(new_position_msg)
+        self.get_logger().info(f'Published new position: {new_position}')
 
-        self.cmd_vel_pub.publish(Twist())  # Final stop to ensure the robot has stopped
+    def calculate_new_map_position(self, aruco_position, desired_distance):
+        # 현재 ArUco 마커와의 거리
+        current_distance = aruco_position[2]  # Z 좌표가 거리
 
-        if target_distance == 1.5:
-            self.aruco_found = False
-            self.finding_final_id = True
-        elif is_final and target_distance == 0.5:
-            self.get_logger().info('Reached final target distance')
+        # 목표 거리와의 차이
+        distance_diff = current_distance - desired_distance
 
-    def check_marker_position(self, final_check=False):
-        while self.image_queue:
-            frame = self.image_queue.pop(0)
-            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            corners, ids, rejected = cv2.aruco.detectMarkers(gray, self.aruco_dict, parameters=self.aruco_params)
-            if ids is not None and len(ids) > 0:
-                if final_check and self.final_id in ids:
-                    _, tvecs, _ = cv2.aruco.estimatePoseSingleMarkers(corners, 0.05, self.intrinsic_camera, self.distortion)
-                    return tvecs[0][0]
-                elif not final_check and self.aruco_id in ids:
-                    _, tvecs, _ = cv2.aruco.estimatePoseSingleMarkers(corners, 0.05, self.intrinsic_camera, self.distortion)
-                    return tvecs[0][0]
-        return None
+        # 새로운 로봇의 X 좌표 계산
+        new_x_position = self.robot_position[0] + distance_diff
 
-    def check_for_final_marker(self):
-        position = self.check_marker_position(final_check=True)
-        if position is not None:
-            self.aruco_found = True
-            self.stop_rotation()
+        # 새로운 목표 위치 계산 (맵 좌표계에서 로봇의 Y, Z 좌표는 그대로 사용)
+        new_position = [new_x_position, self.robot_position[1], self.robot_position[2]]
+        return np.round(new_position, 15)  # 소수점 15자리까지 반올림
 
-    def create_goal_pose(self, x, y, z, ox, oy, oz, ow):
-        goal_msg = NavigateToPose.Goal()
-        goal_msg.pose = PoseStamped()
-        goal_msg.pose.header.frame_id = 'map'
-        goal_msg.pose.pose.position.x = x
-        goal_msg.pose.pose.position.y = y
-        goal_msg.pose.pose.position.z = z
-        goal_msg.pose.pose.orientation.x = ox
-        goal_msg.pose.pose.orientation.y = oy
-        goal_msg.pose.pose.orientation.z = oz
-        goal_msg.pose.pose.orientation.w = ow
-        return goal_msg
+    def start_detection_callback(self, request, response):
+        self.get_logger().info(f'Starting detection for Aruco ID: {request.aruco_id}')
+        self.detected_count = 0  # 탐지 시작 시 탐지 횟수를 0으로 초기화
+        self.detection_active = False  # 탐지 비활성화
+        self.robot_position = [request.x, request.y, request.z]
+        self.get_logger().info(f'Robot position set to: {self.robot_position}')  # 디버깅 메시지 추가
+        # 탐지 활성화는 로봇이 도착한 후에 수행
+        time.sleep(5)  # 로봇이 도착할 시간을 기다림 (예시: 5초 대기)
+        self.detection_active = True
+        response.success = True
+        response.message = "Aruco detection started successfully after reaching the destination"
+        return response
 
-    def reset_state(self):
-        self.target_reached = False
-        self.aruco_found = False
-        self.rotating = False
-        self.finding_final_id = False
-
-    def destroy_node(self):
+    def shutdown(self):
         self.processing_thread_running = False
         self.processing_thread.join()
-        super().destroy_node()
+        self.tcp_thread_running = False
+        self.tcp_thread.join()
+        cv2.destroyAllWindows()
 
 def main(args=None):
     rclpy.init(args=args)
-    nav_service = Nav_Aruco_Service()
+    nav_aruco_service = NavArucoService()
     try:
-        rclpy.spin(nav_service)
+        rclpy.spin(nav_aruco_service)
     except KeyboardInterrupt:
         pass
-    nav_service.destroy_node()
-    rclpy.shutdown()
+    finally:
+        nav_aruco_service.shutdown()
+        nav_aruco_service.destroy_node()
+        rclpy.shutdown()
 
 if __name__ == '__main__':
     main()

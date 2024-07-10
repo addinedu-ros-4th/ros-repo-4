@@ -21,7 +21,8 @@ setup(
     entry_points={
         'console_scripts': [
             'nav_aruco_service = turtles_service.nav_aruco_service:main',
-            'waypoint_service = turtles_service.waypoint_service:main',
+            'nav_service = turtles_service.nav_service:main',
+            'new_position_subscriber = turtles_service.new_position_subscriber:main',
         ],
     },
 )
