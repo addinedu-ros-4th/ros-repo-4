@@ -118,8 +118,14 @@
  <p align="center"><img src="https://github.com/addinedu-ros-4th/ros-repo-4/assets/137265648/85333305-2f7f-4e83-b4de-d3d0994720c8"></p>
  <br/>
 
-# 결론
-## 시연영상
+ ## Face recognition 
+ * OpenCV의 LBPH 알고리즘을 활용해 등록된 얼굴과 등록되지 않은 얼굴을 구분하였다
+  
+  <p align="center"><img src="https://github.com/user-attachments/assets/d761b4cd-35a1-4a77-979a-7fcdc2a11230"></p>
+  <br/>
+
+  
+# 시연영상
 
 ## 🖼️ GUI
 <br/>
@@ -139,6 +145,10 @@
   
   <p align="center"><img src="https://github.com/addinedu-ros-4th/ros-repo-4/assets/137265648/ab71eacb-e290-469b-8003-3970d3736459"></p>
   <br/>
+
+## 🚜 사료 급이 영상 
+https://youtu.be/T_5NyYNz9TM
+  
 ## 회고 
 
 # 🧑‍💻 Role  
@@ -155,4 +165,4 @@
 ||||Github 관리|
 
 # 발표 자료
-https://docs.google.com/presentation/d/1nAdl37Y_I2kckYBX1_BZfDcR490SVoEkmQdbZBEPiyI/edit?usp=sharing
+[https://docs.google.com/presentation/d/1nAdl37Y_I2kckYBX1_BZfDcR490SVoEkmQdbZBEPiyI/edit?usp=sharing](https://docs.google.com/presentation/d/1H4WjFGnHm6StuJmhJeYEEVb2Se8VunOAy7G7wlqRxpU/edit?usp=sharing)
