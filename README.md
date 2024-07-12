@@ -97,7 +97,7 @@
 로봇이 특정 위치로 이동할때 위치를 보정해주는 순서를 나타냄
 <br/>
 <br/>
-<p align="center"><img src="https://github.com/addinedu-ros-4th/ros-repo-4/assets/137265648/a329df51-d41f-4f4d-b4ec-19490da596c6"></p>
+<p align="center"><img src="https://github.com/user-attachments/assets/9c6b7d49-5272-48b8-9187-2a6336116e12"></p>
 
 
 # Deep learning 요소
