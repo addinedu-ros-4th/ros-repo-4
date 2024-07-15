@@ -163,5 +163,5 @@ https://youtu.be/T_5NyYNz9TM
 ||UI 기능 구현|급이 로봇 URDF 구현|YOLO 자세 추정|
 ||||Github 관리|
 
-# 발표 자료
+# 📊 발표 자료
 [https://docs.google.com/presentation/d/1nAdl37Y_I2kckYBX1_BZfDcR490SVoEkmQdbZBEPiyI/edit?usp=sharing](https://docs.google.com/presentation/d/1H4WjFGnHm6StuJmhJeYEEVb2Se8VunOAy7G7wlqRxpU/edit?usp=sharing)
