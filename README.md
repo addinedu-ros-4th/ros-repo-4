@@ -149,6 +149,8 @@
 ## 🚜 사료 급이 영상 
 https://youtu.be/T_5NyYNz9TM
   
+<br/> 
+<br/>
 
 # 🧑‍💻 Role  
 
@@ -162,6 +164,9 @@ https://youtu.be/T_5NyYNz9TM
 ||소켓 통신 서버 구축|급이 로봇 HW 구축|YOLO 객체 인식|
 ||UI 기능 구현|급이 로봇 URDF 구현|YOLO 자세 추정|
 ||||Github 관리|
+
+<br/> 
+<br/>
 
 # 📊 발표 자료
 [https://docs.google.com/presentation/d/1nAdl37Y_I2kckYBX1_BZfDcR490SVoEkmQdbZBEPiyI/edit?usp=sharing](https://docs.google.com/presentation/d/1H4WjFGnHm6StuJmhJeYEEVb2Se8VunOAy7G7wlqRxpU/edit?usp=sharing)
