@@ -63,7 +63,7 @@
 
 
 
-# Project 환경
+# Project 구현
 ## 🗺️ Map
 <br/>
 
@@ -81,7 +81,7 @@
 
 
 
-# 🗒️ Auto Feeding Scenario
+## 🗒️ Auto Feeding Scenario
 <br/> 
 가축에게 사료를 급이하기 위한 시나리오
 <br/> 
@@ -92,7 +92,7 @@
 
 <p align="center"><img src="https://github.com/addinedu-ros-4th/ros-repo-4/assets/137265648/0564c909-d6c7-459e-9540-3cecd9f6840d"></p>
 
-# Position Feedback Sequence 
+## 🦾 Position Feedback Sequence 
 <br/>
 로봇이 특정 위치로 이동할때 위치를 보정해주는 순서를 나타냄
 <br/>
@@ -101,24 +101,24 @@
 
 
 # Deep learning 요소
-## pose estimation
+## 🐂 pose estimation
 * YOLOv8-pose를 사용하여 가축의 자세를 확인한다
   <br/>
   <p align="center"><img src="https://github.com/addinedu-ros-4th/ros-repo-4/assets/137265648/310da08e-fd0f-42cc-a11b-ff4518938945"></p>
   <br/>
-## temperature check
+## 🌡️ temperature check
 * OpenCV mask 기능을 사용하여 가축의 체온을 측정을 구현하였다
  <br/>
  <p align="center"><img src="https://github.com/addinedu-ros-4th/ros-repo-4/assets/137265648/d0e89fd3-9650-4d52-8422-12f134818b6c"></p>
  <br/>
  
-## food remain check
+## 🥕 food remain check
 * OpenCV mask 기능을 사용하여 가축의 사료 섭취량 확인을 구현하였다.
  <br/>
  <p align="center"><img src="https://github.com/addinedu-ros-4th/ros-repo-4/assets/137265648/85333305-2f7f-4e83-b4de-d3d0994720c8"></p>
  <br/>
 
- ## Face recognition 
+ ## 😋 Face recognition 
  * OpenCV의 LBPH 알고리즘을 활용해 등록된 얼굴과 등록되지 않은 얼굴을 구분하였다
   
   <p align="center"><img src="https://github.com/user-attachments/assets/d761b4cd-35a1-4a77-979a-7fcdc2a11230"></p>
@@ -149,7 +149,6 @@
 ## 🚜 사료 급이 영상 
 https://youtu.be/T_5NyYNz9TM
   
-## 회고 
 
 # 🧑‍💻 Role  
 
